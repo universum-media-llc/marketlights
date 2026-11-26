@@ -1,0 +1,265 @@
+"""Extra pages for MarketLights: unit converter, About, Contact, Privacy, Terms, 404.
+
+They reuse the exact <style> block of template.html so every page has the same look.
+Called from build.py after the main page is written:  pages.write_all(HERE, data)
+"""
+import json, os, re
+
+COMPANY = "Universum Media LLC"
+ADDRESS = "30 N Gould St, STE R, Sheridan, WY 82801, USA"
+EMAIL = "thementalarchictect@gmail.com"
+UPDATED = "26 November 2026"
+
+NAV = [("/", "Market Lights"), ("/convert/", "Unit Converter"), ("/about/", "About"), ("/contact/", "Contact")]
+
+EXTRA_CSS = """
+.topnav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.topnav a{font:800 13px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding:8px 14px;border:2px solid var(--line);border-radius:10px;background:var(--panel)}
+.topnav a:hover{border-color:var(--amb)}
+.topnav a.on{border-color:var(--amb);color:var(--amb)}
+.top{align-items:center!important}
+.prose{max-width:820px}
+.prose h1{font-size:clamp(30px,4vw,44px);margin:0 0 6px}
+.prose h2{font:700 24px "Barlow Semi Condensed",Inter,sans-serif;margin:0 0 8px;text-transform:uppercase;letter-spacing:.02em}
+.prose p,.prose li{font-size:16px;line-height:1.65}
+.prose a{color:var(--amb)}
+.stack{display:grid;gap:22px;margin-top:22px}
+.flinks{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 12px}
+.flinks a{color:var(--ink);font-weight:700;text-decoration:none;font-size:14px}
+.flinks a:hover{color:var(--amb)}
+/* converter */
+.convgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin-top:22px}
+@media(max-width:860px){.convgrid{grid-template-columns:minmax(0,1fr)}}
+.cv{border:3px solid var(--cc);border-radius:18px;background:color-mix(in srgb,var(--cc) 4%,var(--bg));padding:clamp(16px,2.4vw,26px);display:grid;gap:16px;align-content:start}
+.cv.wide{grid-column:1/-1}
+.cv .chead h2{font-size:clamp(22px,2.4vw,30px)}
+.cvin{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.cvin input,.cvin select{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:10px 12px}
+.cvin input{width:170px}
+.cvin input:focus,.cvin select:focus{outline:none;border-color:var(--cc)}
+.res{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.res div{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:10px 12px}
+.res b{display:block;font:700 22px "Barlow Semi Condensed",Inter,sans-serif;font-variant-numeric:tabular-nums;word-break:break-all}
+.res span{font:800 11px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.res div.src{border-color:var(--cc)}
+.val{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.val div{border:2px solid var(--c-gold);border-radius:10px;background:color-mix(in srgb,var(--c-gold) 10%,var(--panel));padding:12px 14px}
+.val b{display:block;font:700 26px "Barlow Semi Condensed",Inter,sans-serif;color:var(--c-gold)}
+.val span{font:800 11px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.note2{font-size:13px;color:var(--mute);margin:0}
+"""
+
+
+def shell(tpl, title, desc, path, body, script="", data=None):
+    style = re.search(r"<style>.*?</style>", tpl, re.S).group(0).replace("</style>", EXTRA_CSS + "</style>")
+    head = re.search(r"<head>.*?<style>", tpl, re.S).group(0)
+    head = re.sub(r"<title>.*?</title>", f"<title>{title}</title>", head)
+    head = re.sub(r'<meta name="description" content=".*?">', f'<meta name="description" content="{desc}">', head)
+    head = head.replace('href="https://marketlights.net/"', f'href="https://marketlights.net{path}"').replace(
+        'content="https://marketlights.net/"', f'content="https://marketlights.net{path}"')
+    head = re.sub(r'<meta property="og:title" content=".*?">', f'<meta property="og:title" content="{title}">', head)
+    head = head[: -len("<style>")]
+    nav = "".join(f'<a href="{h}"{" class=\"on\"" if h == path else ""}>{t}</a>' for h, t in NAV)
+    blob = "" if data is None else '<script id="data" type="application/json">' + json.dumps(data).replace("</", "<\\/") + "</script>"
+    return f"""<!DOCTYPE html>
+<html lang="en">
+{head}{style}
+</head>
+<body>
+<header class="band" style="padding-bottom:0">
+  <div class="wrap">
+    <div class="top">
+      <a href="/" style="text-decoration:none;color:inherit"><div class="brand disp"><i><b style="background:var(--red);box-shadow:0 0 7px var(--red)"></b><b style="background:var(--amb);box-shadow:0 0 7px var(--amb)"></b><b style="background:var(--grn);box-shadow:0 0 7px var(--grn)"></b></i>MarketLights</div></a>
+      <nav class="topnav" aria-label="Main">{nav}</nav>
+    </div>
+  </div>
+</header>
+<main class="band">
+  <div class="wrap">
+{body}
+  </div>
+</main>
+{footer()}
+{blob}
+{script}
+</body>
+</html>
+"""
+
+
+def footer():
+    links = "".join(f'<a href="{h}">{t}</a>' for h, t in NAV + [("/privacy/", "Privacy Policy"), ("/terms/", "Terms &amp; Disclaimer")])
+    return f"""<footer class="band">
+  <div class="wrap">
+    <nav class="flinks" aria-label="Footer">{links}</nav>
+    <p><strong>Information and education only, not financial advice.</strong> Nothing on this site is an instruction to buy, sell or hold. Make your own decisions and, if needed, speak to a licensed adviser.</p>
+    <p>© MarketLights · {COMPANY}</p>
+  </div>
+</footer>"""
+
+
+def box(title, inner, color="var(--line)"):
+    return f'<section class="box" style="border-color:{color}"><div class="bh">{title}</div>{inner}</section>'
+
+
+# ---------------------------------------------------------------- converter
+CONV_BODY = """
+<div class="prose" style="max-width:none">
+  <h1 class="disp">Unit Converter</h1>
+  <p style="margin:0;color:var(--mute)">Gold &amp; silver weights, length, area, weight, volume and temperature in one place. Type a number: every other unit updates at once.</p>
+</div>
+<div class="box" style="margin-top:22px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;border-color:var(--usd)">
+  <div class="bh" style="margin:0">Your Currency</div>
+  <select id="cur" aria-label="Currency" style="font:700 15px Inter,sans-serif;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px"></select>
+  <span id="goldsrc" class="note2"></span>
+</div>
+<div class="convgrid" id="conv"></div>
+"""
+
+CONV_JS = r"""<script>
+{
+const D = JSON.parse(document.getElementById('data').textContent);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = (x) => { if (!isFinite(x)) return '—'; const a = Math.abs(x); const d = a === 0 ? 0 : a >= 1e6 ? 0 : a >= 1000 ? 2 : a >= 1 ? 4 : a >= 0.001 ? 6 : 10;
+  return x.toLocaleString('en-US', {maximumFractionDigits: d}); };
+// Units: factor to the base unit (grams, metres, square metres, litres).
+const G = {
+  gold: {title: 'Gold &amp; Silver Weight', cc: 'var(--c-gold)', base: 'g', wide: true, units: [
+    ['ozt', 'Troy ounce', 31.1034768], ['g', 'Gram', 1], ['kg', 'Kilogram', 1000],
+    ['baht', 'Thai baht (gold)', 15.244], ['tola', 'Tola (India)', 11.6638038], ['tael', 'Tael (Hong Kong)', 37.429], ['oz', 'Ounce (regular)', 28.349523125]]},
+  length: {title: 'Length', cc: '#6f9fd0', units: [
+    ['m', 'Metre', 1], ['cm', 'Centimetre', 0.01], ['mm', 'Millimetre', 0.001], ['km', 'Kilometre', 1000],
+    ['in', 'Inch', 0.0254], ['ft', 'Foot', 0.3048], ['yd', 'Yard', 0.9144], ['mi', 'Mile', 1609.344], ['wah', 'Thai wah', 2]]},
+  area: {title: 'Area', cc: 'var(--grn)', units: [
+    ['m2', 'Square metre', 1], ['ft2', 'Square foot', 0.09290304], ['in2', 'Square inch', 0.00064516], ['yd2', 'Square yard', 0.83612736],
+    ['acre', 'Acre', 4046.8564224], ['ha', 'Hectare', 10000], ['km2', 'Square kilometre', 1e6],
+    ['rai', 'Rai (Thai)', 1600], ['ngan', 'Ngan (Thai)', 400], ['wah2', 'Square wah (Thai)', 4]]},
+  weight: {title: 'Weight', cc: 'var(--c-crypto)', units: [
+    ['kg', 'Kilogram', 1000], ['g', 'Gram', 1], ['mg', 'Milligram', 0.001], ['t', 'Tonne', 1e6],
+    ['lb', 'Pound', 453.59237], ['oz', 'Ounce', 28.349523125], ['st', 'Stone', 6350.29318]]},
+  volume: {title: 'Volume', cc: '#a970ff', units: [
+    ['l', 'Litre', 1], ['ml', 'Millilitre', 0.001], ['m3', 'Cubic metre', 1000], ['galus', 'US gallon', 3.785411784],
+    ['galuk', 'UK gallon', 4.54609], ['floz', 'US fluid ounce', 0.0295735295625], ['cup', 'US cup', 0.2365882365]]},
+  temp: {title: 'Temperature', cc: 'var(--red)', units: [['c', 'Celsius °C'], ['f', 'Fahrenheit °F'], ['k', 'Kelvin K']]}
+};
+const toC = {c: (v) => v, f: (v) => (v - 32) * 5 / 9, k: (v) => v - 273.15};
+const fromC = {c: (v) => v, f: (v) => v * 9 / 5 + 32, k: (v) => v + 273.15};
+const PUR = [['9999', '24K · 99.99%', 0.9999], ['965', 'Thai 96.5%', 0.965], ['916', '22K · 91.67%', 0.9167], ['750', '18K · 75%', 0.75], ['585', '14K · 58.5%', 0.585]];
+const CURS = [['USD','US dollar'],['EUR','Euro'],['GBP','British pound'],['THB','Thai baht'],['JPY','Japanese yen'],['KRW','Korean won'],['CNY','Chinese yuan'],['INR','Indian rupee'],['RUB','Russian ruble'],['BRL','Brazilian real'],['MXN','Mexican peso'],['CAD','Canadian dollar'],['AUD','Australian dollar'],['CHF','Swiss franc'],['SGD','Singapore dollar']];
+const rates = Object.assign({USD: 1}, D.fx || {});
+let cur = 'USD'; try { cur = localStorage.getItem('ml_cur') || 'USD'; } catch (e) {}
+let goldOz = D.gold_close, goldSrc = 'daily close ' + D.gold_date;
+const money = (usd) => { const c = rates[cur] ? cur : 'USD', x = usd * (rates[c] || 1);
+  try { return new Intl.NumberFormat('en-US', {style: 'currency', currency: c, currencyDisplay: 'narrowSymbol', maximumFractionDigits: x >= 100 ? 0 : 2}).format(x); } catch (e) { return c + ' ' + x.toFixed(2); } };
+
+document.getElementById('conv').innerHTML = Object.entries(G).map(([k, g]) => `
+  <section class="cv${g.wide ? ' wide' : ''}" style="--cc:${g.cc}" id="cv-${k}">
+    <header class="chead"><h2 class="disp" style="color:${g.cc}">${g.title}</h2></header>
+    <div class="cvin"><input type="number" inputmode="decimal" value="1" step="any" aria-label="${g.title} amount" data-k="${k}">
+      <select aria-label="${g.title} unit" data-k="${k}">${g.units.map((u) => `<option value="${u[0]}">${u[1]}</option>`).join('')}</select>
+      ${k === 'gold' ? `<select aria-label="Gold purity" id="pur">${PUR.map((p) => `<option value="${p[0]}">${p[1]}</option>`).join('')}</select>` : ''}</div>
+    <div class="res" id="res-${k}"></div>
+    ${k === 'gold' ? `<div class="bh" style="margin:6px 0 0">Gold Value <span class="note2" style="text-transform:none;letter-spacing:0;font-weight:500">at this weight and purity</span></div><div class="val" id="val"></div>
+    <p class="note2">Thai baht gold weight = 15.244 g (bullion); jewellery baht = 15.16 g. Silver uses the same weights. Value is for pure-gold content only, before shop premiums, making charges and taxes. Information only, not an offer to buy or sell.</p>` : ''}
+  </section>`).join('');
+
+function update(k) {
+  const g = G[k], box = document.getElementById('cv-' + k), v = parseFloat(box.querySelector('input').value), u = box.querySelector('select').value;
+  let rows;
+  if (k === 'temp') { const c = toC[u](v); rows = g.units.map((x) => [x, fromC[x[0]](c)]); }
+  else { const base = v * g.units.find((x) => x[0] === u)[2]; rows = g.units.map((x) => [x, base / x[2]]); }
+  document.getElementById('res-' + k).innerHTML = rows.map(([x, r]) => `<div class="${x[0] === u ? 'src' : ''}"><b>${isNaN(v) ? '—' : fmt(r)}</b><span>${esc(x[1])}</span></div>`).join('');
+  if (k === 'gold') {
+    const grams = v * g.units.find((x) => x[0] === u)[2], pur = PUR.find((p) => p[0] === document.getElementById('pur').value)[2];
+    const usd = grams / 31.1034768 * goldOz * pur;
+    document.getElementById('val').innerHTML = isNaN(v) || !goldOz ? '<div><b>—</b><span>Gold price unavailable</span></div>' :
+      `<div><b>${money(usd)}</b><span>Value · ${esc(cur)}</span></div><div><b>${money(goldOz)}</b><span>Gold per troy ounce</span></div><div><b>${money(goldOz / 31.1034768 * 15.244 * 0.965)}</b><span>Thai baht weight · 96.5%</span></div>`;
+    document.getElementById('goldsrc').textContent = `Gold price: ${goldSrc}` + (cur !== 'USD' && rates[cur] ? ` · 1 USD = ${rates[cur] >= 100 ? rates[cur].toFixed(0) : rates[cur].toFixed(4)} ${cur}` : '');
+  }
+}
+document.getElementById('conv').addEventListener('input', (e) => { const k = e.target.dataset.k || (e.target.id === 'pur' ? 'gold' : null); if (k) update(k); });
+Object.keys(G).forEach(update);
+
+const sel = document.getElementById('cur');
+const fillCur = () => { sel.innerHTML = CURS.filter(([c]) => rates[c]).map(([c, n]) => `<option value="${c}"${c === cur ? ' selected' : ''}>${c} · ${n}</option>`).join(''); };
+fillCur();
+sel.addEventListener('change', () => { cur = sel.value; try { localStorage.setItem('ml_cur', cur); } catch (e) {} update('gold'); });
+fetch('https://api.coinbase.com/v2/exchange-rates?currency=USD', {cache: 'no-store'}).then((r) => r.ok ? r.json() : Promise.reject()).then((j) => {
+  CURS.forEach(([c]) => { const x = +((j.data || {}).rates || {})[c]; if (x > 0) rates[c] = x; }); fillCur(); update('gold'); }).catch(() => {});
+const live = () => fetch('https://api.exchange.coinbase.com/products/PAXG-USD/ticker', {cache: 'no-store'}).then((r) => r.ok ? r.json() : Promise.reject()).then((j) => {
+  const p = +j.price; if (p > 0) { goldOz = p; goldSrc = 'LIVE ' + new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}) + ' (Coinbase, PAX Gold)'; update('gold'); } }).catch(() => {});
+live(); setInterval(() => { if (!document.hidden) live(); }, 30000);
+}
+</script>"""
+
+
+# ---------------------------------------------------------------- text pages
+ABOUT = f"""
+<div class="prose"><h1 class="disp">About MarketLights</h1></div>
+<div class="stack prose">
+{box("What It Is", '''<p>MarketLights shows the state of <b>Bitcoin</b>, <b>Ethereum</b>, <b>Gold</b> and <b>Solana</b> in one look, like a traffic light: green when the market is rising, amber for caution, red for danger. Next to each light you find the price, trend, support and resistance, RSI and the crypto fear &amp; greed mood, explained in plain words.</p>''')}
+{box("How It Works", '''<p>Every day a fixed set of rules reads public price data and sets each light. The rules look at the 50-day and 200-day moving averages, the 14-day RSI, the crypto fear &amp; greed index, the average-cost line (realized price) and the strength of the US dollar. We tested the rules on past data (2018–2026 for Bitcoin and Ethereum, 2020–2026 for gold); the results are shown on each card. Solana is shown without a light because the rules did not work well for it in testing.</p>
+<p>Prices update once a day after the daily close; the LIVE price refreshes every 15 seconds from Coinbase. Data sources: Coin Metrics community data, Alternative.me, the Federal Reserve Bank of St. Louis (FRED) and Coinbase.</p>''')}
+{box("What It Is Not", '''<p>MarketLights is information and education only. It is not financial advice and not an instruction to buy, sell or hold anything. Past results, including our backtests, do not guarantee future results. Always make your own decisions and, if needed, speak to a licensed adviser.</p>''')}
+{box("Who We Are", f'''<p>MarketLights is published by <b>{COMPANY}</b>, {ADDRESS}. Questions and suggestions are welcome on our <a href="/contact/">contact page</a>.</p>''')}
+</div>"""
+
+CONTACT = f"""
+<div class="prose"><h1 class="disp">Contact</h1></div>
+<div class="stack prose">
+{box("Email", f'''<p>Write to us at <a href="mailto:{EMAIL}"><b>{EMAIL}</b></a>. We read every message and usually answer within a few working days.</p>''', "var(--amb)")}
+{box("Company", f'''<p><b>{COMPANY}</b><br>{ADDRESS}</p>''')}
+{box("Please Note", '''<p>We cannot give personal investment advice or tell you what to buy or sell. For data errors or suggestions for new tools, please include the page and the date you saw.</p>''')}
+</div>"""
+
+PRIVACY = f"""
+<div class="prose"><h1 class="disp">Privacy Policy</h1><p style="color:var(--mute);margin:0">Last updated: {UPDATED}</p></div>
+<div class="stack prose">
+{box("Who We Are", f'''<p>This website, marketlights.net, is operated by <b>{COMPANY}</b>, {ADDRESS} ("we", "us"). Contact: <a href="mailto:{EMAIL}">{EMAIL}</a>.</p>''')}
+{box("What We Collect", '''<p>We do not ask you to sign up and we do not collect your name, email or other personal details through the site. If you email us, we use your message and address only to answer you.</p>
+<p><b>Saved settings on your device.</b> Your chosen currency and time zone are stored in your browser (local storage) so they are remembered next time. They never leave your device.</p>''')}
+{box("Services We Use", '''<ul>
+<li><b>Cloudflare</b> hosts and protects the site. Like any web host it processes technical data such as your IP address and browser type to deliver the page and stop attacks.</li>
+<li><b>Coinbase</b>: your browser asks Coinbase's public price service for the LIVE prices and exchange rates, so Coinbase receives your IP address.</li>
+<li><b>Google Fonts</b>: the page fonts load from Google's servers, so Google receives your IP address.</li>
+<li><b>Google AdSense</b> (when ads are shown): Google and its partners may use cookies to show ads based on your visits to this and other websites. You can turn off personalised ads at <a href="https://adssettings.google.com" rel="noopener">adssettings.google.com</a> and learn more at <a href="https://policies.google.com/technologies/ads" rel="noopener">policies.google.com/technologies/ads</a>. Where the law requires it, you will be asked for consent first.</li>
+</ul>''')}
+{box("Your Rights", '''<p>Depending on where you live (for example the EU, UK or California), you may have the right to access, correct or delete personal data about you and to object to its use. Because we hold almost no personal data, most requests are simple: write to us and we will answer within 30 days.</p>''')}
+{box("Children", '''<p>This site is not aimed at children under 16 and we do not knowingly collect their data.</p>''')}
+{box("Changes", '''<p>If we change this policy we will update the date at the top of this page.</p>''')}
+</div>"""
+
+TERMS = f"""
+<div class="prose"><h1 class="disp">Terms &amp; Disclaimer</h1><p style="color:var(--mute);margin:0">Last updated: {UPDATED}</p></div>
+<div class="stack prose">
+{box("Not Financial Advice", '''<p>Everything on MarketLights, including the traffic lights, levels, readings, outlooks, backtests and converter values, is general information and education. It is not financial, investment, tax or legal advice and not an offer or recommendation to buy, sell or hold any asset. Crypto and gold prices can fall sharply and you can lose money.</p>''', "var(--red)")}
+{box("Accuracy", '''<p>We take data from public sources and calculate the readings automatically. Data can be late, incomplete or wrong, and the site can be unavailable. We provide the site "as is" without any guarantee.</p>''')}
+{box("Your Responsibility", '''<p>You are responsible for your own decisions. To the extent the law allows, Universum Media LLC is not liable for any loss arising from use of this site.</p>''')}
+{box("Use of the Site", '''<p>You may use and share the site for personal purposes. Please do not copy it in bulk or scrape it in a way that overloads it.</p>''')}
+{box("Contact", f'''<p>{COMPANY}, {ADDRESS} · <a href="mailto:{EMAIL}">{EMAIL}</a></p>''')}
+</div>"""
+
+NOTFOUND = """
+<div class="prose"><h1 class="disp">Page Not Found</h1></div>
+<div class="stack prose">""" + box("Where To Go", '<p>This page does not exist. Go back to the <a href="/">Market Lights</a> or try the <a href="/convert/">Unit Converter</a>.</p>', "var(--amb)") + "</div>"
+
+
+def write_all(here, data):
+    tpl = open(os.path.join(here, "template.html")).read()
+    dist = os.path.join(here, "dist")
+    gold = next(a for a in data["assets"] if a["tick"] == "PAXG")
+    conv_data = {"fx": data.get("fx", {}), "gold_close": gold["price"], "gold_date": gold["date"]}
+    pages = {
+        "convert": ("Unit Converter · Gold Baht, Troy Ounce, Square Metre, Rai & More · MarketLights",
+                    "Free unit converter: gold and silver weights (troy ounce, gram, Thai baht, tola, tael) with live gold value, plus length, area (rai, ngan, square wah), weight, volume and temperature.",
+                    CONV_BODY, CONV_JS, conv_data),
+        "about": ("About · MarketLights", "What MarketLights is, how the daily traffic lights work and who publishes it.", ABOUT, "", None),
+        "contact": ("Contact · MarketLights", "How to contact MarketLights and Universum Media LLC.", CONTACT, "", None),
+        "privacy": ("Privacy Policy · MarketLights", "How MarketLights handles data, cookies and third-party services.", PRIVACY, "", None),
+        "terms": ("Terms & Disclaimer · MarketLights", "Terms of use and financial disclaimer for MarketLights.", TERMS, "", None),
+    }
+    for slug, (title, desc, body, js, d) in pages.items():
+        os.makedirs(os.path.join(dist, slug), exist_ok=True)
+        open(os.path.join(dist, slug, "index.html"), "w").write(shell(tpl, title, desc, f"/{slug}/", body, js, d))
+    open(os.path.join(dist, "404.html"), "w").write(shell(tpl, "Page Not Found · MarketLights", "Page not found.", "/404", NOTFOUND))
+    return ["/"] + [f"/{s}/" for s in pages]
