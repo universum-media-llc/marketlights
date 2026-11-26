@@ -7,7 +7,7 @@ import json, os, re
 
 COMPANY = "Universum Media LLC"
 ADDRESS = "30 N Gould St, STE R, Sheridan, WY 82801, USA"
-EMAIL = "thementalarchictect@gmail.com"
+EMAIL = "contact@marketlights.net"
 UPDATED = "26 November 2026"
 
 NAV = [("/", "Market Lights"), ("/convert/", "Unit Converter"), ("/about/", "About"), ("/contact/", "Contact")]
