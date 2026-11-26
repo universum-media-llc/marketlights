@@ -166,6 +166,8 @@ def main():
     os.makedirs(os.path.join(HERE, "dist"), exist_ok=True)
     open(os.path.join(HERE, "dist", "index.html"), "w").write(tpl.replace("/*DATA*/null", blob))
     json.dump(data, open(os.path.join(HERE, "dist", "data.json"), "w"), indent=1)
+    open(os.path.join(HERE, "dist", "robots.txt"), "w").write("User-agent: *\nAllow: /\nSitemap: https://marketlights.net/sitemap.xml\n")
+    open(os.path.join(HERE, "dist", "sitemap.xml"), "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://marketlights.net/</loc><lastmod>' + out[0]["date"] + '</lastmod><changefreq>daily</changefreq></url></urlset>\n')
     print(note)
     for a in out:
         print(a["name"], a["phase"], "since", a["since"], "S", [round(x) for x in a["support_d"]], "R", [round(x) for x in a["resist_d"]], "wS", [round(x) for x in a["support_w"]], "wR", [round(x) for x in a["resist_w"]])
