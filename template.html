@@ -181,6 +181,32 @@ footer{border-top:1px solid var(--line);color:var(--mute);font-size:14px}
 footer p{max-width:80ch;margin:0 0 10px}
 @media(max-width:860px){.card{grid-template-columns:minmax(0,1fr)}.thermo{flex-direction:row;align-items:center}.thermo .tube{min-height:14px;height:14px;width:auto;background:linear-gradient(90deg,#e4dcf2,#5b2a8c)}.thermo .pm{top:50%;transform:translate(-50%,-50%)}.legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.tile .v{font-size:24px}.tile .v svg{width:24px;height:24px}.strip{grid-template-columns:minmax(0,1fr)}.row{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:28px}.sig .ph{font-size:22px}}
+
+/* breathing room: more space between boxes, slightly smaller content */
+.band{padding:clamp(32px,5vw,72px) max(5vw,16px)}
+.box{padding:16px 20px}
+.brand{font-size:34px!important}
+h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
+.note{font-size:16px!important}
+.infobar{gap:24px!important;margin-top:28px!important}
+.notebox{margin-top:32px!important}
+.strip{gap:24px!important;margin-top:32px!important}
+.key{gap:24px!important;margin-bottom:14px!important}
+.kguide{margin-bottom:clamp(32px,4vw,52px)!important}
+.row{row-gap:44px!important}
+.cards{gap:44px!important}
+.card{gap:36px!important;padding:clamp(20px,3vw,36px)!important}
+.tiles{gap:16px!important}
+.tile{padding:16px 18px!important;gap:4px!important}
+.tile .v{font-size:26px!important}
+.card h2{font-size:26px!important}
+.card p{margin:10px 0 20px!important}
+.watch{margin-top:20px!important;padding:16px 18px!important}
+.lg{margin-top:12px!important;gap:8px 18px!important}
+.guide{gap:24px!important}
+.gcard .gb{padding:8px 18px 14px!important}
+.gr{padding:9px 0!important}
+@media(max-width:600px){.tile .v{font-size:22px!important}.infobar,.strip,.key{gap:16px!important}.cards{gap:32px!important}.card{gap:28px!important}}
 </style>
 </head>
 <body>
