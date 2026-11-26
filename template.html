@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MarketLights</title>
+<meta name="description" content="Bitcoin, Ethereum, gold and Solana in one look: a daily traffic light, support and resistance, RSI and market mood in plain words.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE work: a calm money tool anyone can read in ten seconds
+   IDEA a row of road traffic signals at a junction, one per market
+   PICTURE four drawn signal heads with the lit lamps, phase and price under each
+   COLOUR white / asphalt night ground, black signal housings, signal red, amber, green
+   TYPE Barlow Semi Condensed (road-sign lettering) + Inter
+   LAYOUT finding + mood bar on top, signals row full width, then one card per market; phone stacks in that order */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#121416);--ink:light-dark(#111316,#eef0f2);--mute:light-dark(#5b6168,#a3a9b0);--line:light-dark(#e3e5e8,#2a2e33);--panel:light-dark(#f6f7f8,#1a1d20);--house:#16181b;--red:#d65a52;--amb:#ffb000;--grn:#4aa874;--off:#2c3035;--flr:#2e9e62;--cel:#d0453f;--flr-bg:light-dark(#e3f5ea,#163a26);--cel-bg:light-dark(#fbe6e5,#45201e);--rose:#d9577a;--up:#c99a2e;--dn:light-dark(#4a63d8,#6680ff);--usd:#85bb65;--ma50:#e573c7;--ma200:light-dark(#555c64,#c9ced4)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(24px,4vw,56px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.disp{font-family:"Barlow Semi Condensed",Inter,sans-serif;font-weight:700;letter-spacing:-.01em}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand{font-size:40px;display:flex;align-items:center;gap:14px;letter-spacing:-.01em}
+@media(max-width:600px){.brand{font-size:30px;gap:10px}.brand i b{width:12px!important;height:12px!important}}
+.brand i{display:inline-flex;gap:6px;background:var(--house);padding:8px 10px;border-radius:12px;border:1px solid #333}
+.brand i b{width:16px;height:16px;border-radius:50%;display:block}
+.stamp{color:var(--mute);font-size:14px}
+h1{font-size:clamp(34px,5vw,52px);line-height:1.05;margin:18px 0 10px;text-wrap:balance}
+.note{max-width:70ch;margin:0;font-size:17px}
+.strip{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px;margin-top:16px;align-items:stretch}
+.mood .lbl,.chip .lbl{font-size:14px;color:var(--mute)}
+.mood .val{font-weight:600}
+.bar{position:relative;display:grid;grid-template-columns:repeat(10,1fr);height:18px;border-radius:9px;overflow:hidden;margin:8px 0 4px}
+.pin{position:absolute;top:-6px;width:4px;height:30px;background:var(--ink);border-radius:2px;transform:translateX(-2px)}
+.ends{display:flex;justify-content:space-between;font-size:13px;color:var(--mute)}
+.chip{border:2px solid var(--usd);border-radius:12px;padding:12px 16px;background:var(--panel)}
+.chip .val{font-weight:600}
+.chip .dv{text-transform:uppercase;width:fit-content;padding:4px 14px 4px 10px;border-radius:10px;margin:4px 0;font-family:"Barlow Semi Condensed",Inter,sans-serif;font-weight:700;font-size:28px;line-height:1.1;display:flex;align-items:center;gap:8px}
+.chip .dv svg{width:26px;height:26px}
+.signals{background:var(--house);color:#eef0f2}
+.row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,3vw,40px)}
+.sig{text-align:center}
+.sig svg{width:min(100%,110px);height:auto;display:block;margin:0 auto 10px;overflow:visible}
+.sig .nm{font-size:clamp(24px,3vw,34px);display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;line-height:1.1}
+.sig .ph{font-size:26px;line-height:1.1}
+.sig .px{font-variant-numeric:tabular-nums;color:#c9ced4;font-size:15px}
+.cards{display:grid;gap:20px}
+.card{border:1px solid var(--line);border-radius:14px;padding:clamp(16px,2.5vw,28px);display:grid;grid-template-columns:86px minmax(0,1.1fr) minmax(0,1fr);gap:24px}
+.thermo{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--mute);text-align:center}
+.thermo .tube{position:relative;flex:1;width:14px;min-height:260px;border-radius:7px;background:linear-gradient(0deg,#e4dcf2,#5b2a8c)}
+.thermo .pm{position:absolute;left:50%;transform:translate(-50%,50%);white-space:nowrap}
+.thermo .pm span{display:inline-block;color:#fff;font-weight:700;font-size:13px;padding:2px 7px;border-radius:6px;border:2px solid var(--bg)}
+.thermo b{color:var(--ink);font-size:13px}
+.ppill{padding:0 10px;border-radius:8px;line-height:1.25}
+.guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.gcard{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--panel)}
+.gcard{padding:0;overflow:hidden}
+.gcard .gb{padding:4px 16px 12px}
+.gcard h4{margin:0;padding:12px 16px 10px;font:700 24px "Barlow Semi Condensed",Inter,sans-serif;display:flex;align-items:center;gap:10px;border-bottom:4px solid;border-image:var(--gh) 1;background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.gcard h4 i{display:inline-flex;gap:3px}
+.gcard h4 i b{width:12px;height:12px;border-radius:50%;display:block}
+.ghead{display:block;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px 18px 10px;border-bottom-width:5px;font-size:clamp(30px,4vw,40px);margin:0 0 6px;padding-bottom:6px;border-bottom:5px solid;border-image:linear-gradient(90deg,var(--grn),var(--amb),var(--red),var(--up),var(--dn),#8a63d2) 1}
+.stampbox{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;font-size:14px;color:var(--mute);text-align:right}
+.stampbox .cal{display:inline-grid;grid-template-rows:12px 1fr;width:44px;height:46px;border:1px solid var(--line);border-radius:8px;overflow:hidden;text-align:center;flex:none}
+.stampbox .cal span:first-child{background:var(--red);color:#fff;font:700 9px/12px Inter;text-transform:uppercase}
+.stampbox .cal span:last-child{font:700 20px/32px "Barlow Semi Condensed",Inter;color:var(--ink)}
+.stampbox select{font:500 14px Inter;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+.stampbox b{color:var(--ink)}
+.curbox{margin-top:6px;display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;padding:6px 10px;border:2px solid var(--usd);border-radius:10px;color:var(--ink);font-weight:600}
+.curbox select{font-weight:700}
+#fxsrc{font-weight:400;font-size:12px;color:var(--mute)}
+.gr{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:15px}
+.gr:first-of-type{border-top:0}
+.sw{height:14px;border-radius:7px}
+.sw.ln{height:0;border-top:3px solid;border-radius:0}
+.sw.dot{width:18px;height:18px;border-radius:50%;margin:0 auto}
+.gr b{font-weight:700}
+.live{display:inline-flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:4px 6px;font-size:14px;font-variant-numeric:tabular-nums}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--ink);display:inline-block}
+@media (prefers-reduced-motion:no-preference){.live.on i{animation:pulse 1.6s ease-in-out infinite}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.live b{font-weight:700}.live .lab i{width:7px;height:7px;margin-right:2px;vertical-align:1px}.sig .px{margin-top:3px}
+.sig .live{color:#eef0f2;margin-top:4px}
+.big-btn{position:absolute;top:6px;right:6px;z-index:2;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;font:600 13px Inter,sans-serif;padding:6px 10px;cursor:pointer}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.65);display:grid;place-items:center;padding:16px}
+.modal .box{background:var(--bg);border-radius:14px;width:min(1200px,100%);padding:18px;position:relative}
+.modal .fig{min-height:min(70vh,640px)}
+.modal .x{position:absolute;top:10px;right:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;font:600 14px Inter;padding:6px 12px;cursor:pointer}
+.modal h4{margin:0 0 8px;font:700 22px "Barlow Semi Condensed",Inter,sans-serif}
+.lg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--mute);margin-top:6px}
+.lg span{display:flex;align-items:center;gap:6px}
+.lg i{display:inline-block;width:22px;height:0;border-top:3px solid}
+.ctip{position:absolute;pointer-events:none;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:13px;line-height:1.4;box-shadow:0 4px 14px rgba(0,0,0,.25);white-space:nowrap;font-variant-numeric:tabular-nums}
+.card h2{font-size:30px;margin:0;line-height:1.1;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tag{font-size:15px;font-family:Inter,sans-serif;font-weight:600;padding:3px 10px;border-radius:20px;color:#111}
+.card p{margin:8px 0 14px}
+.facts{width:100%;border-collapse:collapse;font-size:15px}
+.facts td{padding:7px 0;border-top:1px solid var(--line);vertical-align:top}
+.facts td:first-child{color:var(--mute);width:42%;padding-right:10px}
+.facts td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.meter{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--grn) 0 30%,var(--line) 30% 70%,var(--red) 70%);position:relative;margin-top:6px}
+.meter b{position:absolute;top:-4px;width:4px;height:16px;background:var(--ink);border-radius:2px;transform:translateX(-2px)}
+.fig{position:relative;min-height:330px}@media(max-width:860px){.fig{min-height:240px}}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.tile.wide{grid-column:1/-1}
+.tile .k{font-size:13px;color:var(--mute);font-weight:500}
+.tile .v{font-family:"Barlow Semi Condensed",Inter,sans-serif;font-size:30px;line-height:1.05;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tile .s{font-size:13px;color:var(--mute)}
+.tile .v svg{width:30px;height:30px;flex:none}
+.range{position:relative;margin:30px 0 4px;height:12px;border-radius:6px;background:linear-gradient(90deg,var(--flr),#d5dbe2 50%,var(--cel));box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.range .mk{position:absolute;top:-30px;transform:translateX(-50%);text-align:center}
+.range .mk span{display:inline-block;background:var(--ink);color:var(--bg);font-weight:700;padding:2px 8px;border-radius:6px;font-size:14px;white-space:nowrap}
+.range .mk i{display:block;width:0;height:0;margin:0 auto;border:7px solid transparent;border-top-color:var(--ink);border-bottom:0}
+.rlab{display:flex;justify-content:space-between;gap:8px;font-size:14px;font-weight:600;margin-top:6px}
+.rlab span{padding:2px 9px;border-radius:6px}.rlab .f{background:var(--flr-bg);color:var(--flr);border:1px solid var(--flr)}.rlab .c{background:var(--cel-bg);color:var(--cel);border:1px solid var(--cel)}
+.coin{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;font:700 22px/1 Inter,sans-serif;color:#fff;flex:none}
+.sig .coin{width:clamp(30px,3.4vw,42px);height:clamp(30px,3.4vw,42px);font-size:22px}
+.info{border:1px solid var(--line);background:none;color:var(--mute);border-radius:50%;width:22px;height:22px;font:600 13px/1 Inter;cursor:pointer;margin-left:6px;vertical-align:middle;padding:0}
+.info:focus-visible{outline:2px solid var(--ink)}
+.expl{font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:6px}
+.wl{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:4px 0}
+.wl em{font-style:normal;font-weight:700;font-size:13px;padding:3px 9px;border-radius:6px;white-space:nowrap}
+.wl .p{background:var(--up);color:#1d1600}.wl .n{background:var(--dn);color:#fff}
+.zones{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin-top:2px}
+.mini{height:8px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+.mini b{display:block;height:100%;background:var(--ink);border-radius:4px}
+.scale{position:relative;padding-top:38px;margin:4px 0 2px}
+.scale .track{height:14px;border-radius:7px;display:grid;overflow:hidden}
+.scale .mk{position:absolute;top:0;transform:translateX(-50%);text-align:center;pointer-events:none}
+.scale .mk span{display:inline-block;background:var(--ink);color:var(--bg);font-weight:700;padding:2px 9px;border-radius:6px;font-size:15px;white-space:nowrap}
+.scale .mk i{display:block;width:0;height:0;margin:0 auto;border:8px solid transparent;border-top-color:var(--ink);border-bottom:0}
+.ticks{position:relative;height:20px;font-size:12px;color:var(--mute);margin-top:4px}
+.ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.key{display:flex;flex-wrap:wrap;gap:10px 22px;justify-content:center;margin-bottom:clamp(20px,3vw,36px);font-size:16px;color:#eef0f2}
+.key span{display:flex;align-items:center;gap:8px}
+.key{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:8px}
+.kb{display:flex;align-items:center;gap:14px;padding:14px 18px;border:2px solid var(--k);border-radius:12px;background:color-mix(in srgb,var(--k) 14%,#16181b);color:#eef0f2;font-size:15px;line-height:1.35}
+.kb b{flex:none;width:26px;height:26px;border-radius:50%;background:var(--k);box-shadow:0 0 12px var(--k)}
+.kb>span{display:block}.key .kb span span{display:inline}
+@media(max-width:600px){.ends{flex-wrap:wrap}.ends #moodval{order:-1;width:100%;text-align:center;margin-bottom:2px}}.kb strong{display:block;color:var(--k);font-size:18px}
+.kguide{text-align:center;margin:0 0 clamp(20px,3vw,36px);font-size:14px}.kguide a{color:#c9ced4}
+@media(max-width:700px){.key{grid-template-columns:minmax(0,1fr)}}
+.act{font-size:16px;color:#c9ced4}
+.nr{display:inline-block;margin:2px auto 6px;padding:6px 16px 8px;border:2px dashed #8a9099;border-radius:10px;background:#2a2e33}
+.nr .ph{color:#f2f4f6!important}.nr .act{color:#c9ced4!important}
+.kw,.asset{display:inline-block;font-weight:800;text-transform:uppercase;letter-spacing:.03em;font-size:.86em;line-height:1.3;padding:0 .38em;border-radius:5px;vertical-align:baseline;background:var(--ac);color:var(--ai)}
+.term{text-transform:uppercase;font-weight:700;letter-spacing:.03em;font-size:.92em}
+:root{--c-btc:#f7931a;--c-eth:#aeb8e8;--c-gold:#d4af37;--c-sol:#a970ff;--c-crypto:#22b5a8;--c-usd:#85bb65}
+/* one box style for every panel; one title style for every box */
+.box{border:2px solid var(--line);border-radius:12px;background:var(--panel);padding:12px 16px}
+.bh,.tile .k,.mood .lbl,.chip .lbl.bh{font-size:13px!important;font-weight:800!important;text-transform:uppercase;letter-spacing:.07em;color:var(--ink)!important;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.tile .s{color:light-dark(#3d4349,#c9ced4)!important;font-size:14px!important}
+.lab{display:inline-block;padding:0 7px;border-radius:6px;border:1px solid var(--lc,#6b7178);background:color-mix(in srgb,var(--lc,#8a9099) 16%,transparent);color:var(--lc,var(--ink));font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:12px;line-height:20px;white-space:nowrap;vertical-align:middle}
+.tile .k,.bh{width:fit-content;max-width:100%;padding:0 0 5px;margin-bottom:10px;background:none;border:0;border-bottom:3px solid;border-image:linear-gradient(90deg,var(--grn),var(--amb),var(--red)) 1;font-size:14px!important;line-height:1.25}
+.live[hidden]{display:none!important}
+.ppill.sm{font-size:1em;padding:0 7px;border-radius:6px;font-weight:700;display:inline-block}
+.thermo .lab{margin-bottom:3px}
+.thermo>div{color:var(--ink);font-weight:700}
+.infobar{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:18px}
+.infobar .box{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--mute)}
+.infobar .box b{color:var(--ink)}
+.infobar .row1{display:flex;align-items:center;gap:12px}
+.infobar select{font:700 14px Inter,sans-serif;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px;max-width:100%}
+.notebox{margin-top:4px;max-width:none}
+.tile .v,.tag,.sig .ph,.sig .act,.rlab,.lg,.wl em,.zones,.ends,.scale .mk span,.thermo>div,.kb strong,.gr b,.sig .nm,.card h2 .nm{text-transform:uppercase}
+.tile .v{letter-spacing:.01em}
+@media(max-width:860px){.infobar{grid-template-columns:minmax(0,1fr)}}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.watch{background:var(--panel);border-radius:10px;padding:12px 14px;font-size:15px;margin-top:12px}
+.bt{font-size:14px;color:var(--mute);margin-top:10px}
+.legend{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.legend div{border-top:3px solid var(--line);padding-top:10px;font-size:15px}
+.legend svg{width:26px;height:auto;vertical-align:middle;margin-right:6px}
+.legend strong{font-size:17px}
+h3{font-size:28px;margin:0 0 14px}
+footer{border-top:1px solid var(--line);color:var(--mute);font-size:14px}
+footer p{max-width:80ch;margin:0 0 10px}
+@media(max-width:860px){.card{grid-template-columns:minmax(0,1fr)}.thermo{flex-direction:row;align-items:center}.thermo .tube{min-height:14px;height:14px;width:auto;background:linear-gradient(90deg,#e4dcf2,#5b2a8c)}.thermo .pm{top:50%;transform:translate(-50%,-50%)}.legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.tile .v{font-size:24px}.tile .v svg{width:24px;height:24px}.strip{grid-template-columns:minmax(0,1fr)}.row{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:28px}.sig .ph{font-size:22px}}
+</style>
+</head>
+<body>
+<header class="band">
+  <div class="wrap">
+    <div class="top">
+      <div class="brand disp"><i><b style="background:var(--red);box-shadow:0 0 7px var(--red)"></b><b style="background:var(--amb);box-shadow:0 0 7px var(--amb)"></b><b style="background:var(--grn);box-shadow:0 0 7px var(--grn)"></b></i>MarketLights</div>
+    </div>
+    <div class="infobar">
+      <div class="box"><div class="bh">Prices</div>
+        <div class="row1"><span class="stampbox" style="display:contents"><span class="cal" aria-hidden="true"><span id="calm"></span><span id="cald"></span></span></span>
+        <div><b id="closeday"></b> daily close, 00:00 UTC<br>Lights and charts: once a day · <b>LIVE</b> price: every 15 seconds</div></div></div>
+      <div class="box"><div class="bh">Last Update</div><b id="upd" style="font-size:16px"></b>
+        <select id="tz" aria-label="Time zone"><option value="">Your time zone</option><option value="UTC">UTC</option><option value="America/New_York">New York</option><option value="Europe/London">London</option><option value="Asia/Bangkok">Bangkok</option><option value="Asia/Tokyo">Tokyo</option></select></div>
+      <div class="box" style="border-color:var(--usd)"><div class="bh">Your Currency</div><select id="cur" aria-label="Currency"></select><span id="fxsrc" style="font-size:12px"></span></div>
+    </div>
+    <div class="box notebox" style="margin-top:22px">
+    <h1 class="disp" id="lead"></h1>
+    <p class="note" id="note"></p>
+    </div>
+    <div class="strip">
+      <div class="mood box">
+        <div class="lbl bh" data-hl>CRYPTO Market Mood · Fear &amp; Greed, 0–100</div>
+        <div id="mood"></div>
+        <div class="ends"><span style="color:#cc6a52;font-weight:700">Extreme fear</span><span id="moodval" class="val"></span><span style="color:#4a926a;font-weight:700">Extreme greed</span></div>
+      </div>
+      <div class="chip" id="dollarbox"><div class="lbl bh" data-hl>US DOLLAR Index</div><div class="dv" id="dollar"></div><div class="lbl" id="dollarsub"></div></div>
+    </div>
+  </div>
+</header>
+
+<section class="band signals" aria-label="Today's lights">
+  <div class="wrap">
+    <div class="key">
+      <div class="kb" style="--k:var(--grn)"><b></b><span><strong>Green: Favourable</strong><span data-hl>rising</span></span></div>
+      <div class="kb" style="--k:var(--amb)"><b></b><span><strong>Amber: Caution</strong><span data-hl>possible bottom or sideways: wait for confirmation</span></span></div>
+      <div class="kb" style="--k:var(--red)"><b></b><span><strong>Red: Danger</strong><span data-hl>falling or overheated</span></span></div>
+    </div>
+    <p class="kguide"><a href="#colours">Full Colour Guide ↓</a></p>
+    <div class="row" id="row"></div>
+  </div>
+</section>
+
+<main class="band">
+  <div class="wrap cards" id="cards"></div>
+</main>
+
+
+
+<section class="band" id="colours" style="padding-top:0" data-hl>
+  <div class="wrap">
+    <h3 class="disp ghead">Colour Guide</h3>
+    <p style="margin:0 0 16px;color:var(--mute)">Every colour on this page means one thing only.</p>
+    <div class="guide">
+      <div class="gcard" style="--gh:linear-gradient(90deg,var(--grn),var(--amb),var(--red))"><h4><i><b style="background:var(--grn)"></b><b style="background:var(--amb)"></b><b style="background:var(--red)"></b></i>Traffic Light</h4><div class="gb">
+        <div class="gr"><span class="sw dot" style="background:var(--grn)"></span><span><b style="color:var(--grn)">Green: favourable</b>. Rising.</span></div>
+        <div class="gr"><span class="sw dot" style="background:var(--amb)"></span><span><b style="color:var(--amb)">Amber: caution</b>. Possible bottom or sideways; wait for confirmation.</span></div>
+        <div class="gr"><span class="sw dot" style="background:var(--red)"></span><span><b style="color:var(--red)">Red: danger</b>. Falling or overheated.</span></div>
+        <div class="gr"><span class="sw dot" style="background:none;border:2px dashed #6b7178"></span><span><b>Grey dashed: not rated</b>. Too volatile for a signal.</span></div>
+      </div>
+      </div></div>
+      <div class="gcard" style="--gh:linear-gradient(90deg,var(--up),var(--dn),var(--ma50),var(--ma200))"><h4><i><b style="background:var(--up)"></b><b style="background:var(--dn)"></b></i>Trend &amp; Chart Lines</h4><div class="gb">
+        <div class="gr"><span class="sw ln" style="border-color:var(--up)"></span><span><b style="color:var(--up)">Gold: uptrend</b>. Price above its 50-day average. Also the positive sign.</span></div>
+        <div class="gr"><span class="sw ln" style="border-color:var(--dn)"></span><span><b style="color:var(--dn)">Blue: downtrend</b>. Price below its 50-day average. Also the negative sign.</span></div>
+        <div class="gr"><span class="sw ln" style="border-color:var(--ma50);border-top-style:dotted"></span><span><b style="color:var(--ma50)">Pink dotted: 50-day average</b> (50d). Medium-term trend.</span></div>
+        <div class="gr"><span class="sw ln" style="border-color:var(--ma200);border-top-style:dashed"></span><span><b style="color:var(--ma200)">Grey dashed: 200-day average</b> (200d). Long-term trend, the most watched line.</span></div>
+      </div>
+      </div></div>
+      <div class="gcard" style="--gh:linear-gradient(90deg,var(--flr),var(--cel),#8a63d2,var(--rose))"><h4><i><b style="background:var(--flr)"></b><b style="background:var(--cel)"></b></i>Price Levels</h4><div class="gb">
+        <div class="gr"><span class="sw ln" style="border-color:var(--flr);border-top-style:dashed"></span><span><b style="color:var(--flr)">Green: support</b>. A floor where buyers stepped in before. A close below it is a negative sign.</span></div>
+        <div class="gr"><span class="sw ln" style="border-color:var(--cel);border-top-style:dashed"></span><span><b style="color:var(--cel)">Red: resistance</b>. A ceiling where sellers stepped in before. A close above it is a positive sign.</span></div>
+        <div class="gr"><span class="sw" style="background:linear-gradient(90deg,#e4dcf2,#5b2a8c)"></span><span><b style="color:#9a7cc9">Purple: where price sits</b>. Pale = near its 2-year low; dark = near its record.</span></div>
+        <div class="gr"><span class="sw" style="background:var(--rose)"></span><span><b style="color:var(--rose)">Rose: distance from the record</b>. How far price is below its all-time high.</span></div>
+      </div>
+      </div></div>
+      <div class="gcard" style="--gh:linear-gradient(90deg,#6f9fd0,#d98c5f,#cc6a52,#4a926a)"><h4><i><b style="background:#6f9fd0"></b><b style="background:#d98c5f"></b></i>RSI &amp; Market Mood</h4><div class="gb">
+        <div class="gr"><span class="sw" style="background:#6f9fd0"></span><span><b style="color:#6f9fd0">Soft blue: oversold</b>. RSI below 30: sold hard, often near a bounce.</span></div>
+        <div class="gr"><span class="sw" style="background:#d98c5f"></span><span><b style="color:#d98c5f">Soft orange: overbought</b>. RSI above 70: bought hard, often near a pullback.</span></div>
+        <div class="gr"><span class="sw" style="background:linear-gradient(90deg,#b9524a,#e3bb72,#4a926a)"></span><span><b>Mood bar</b>: <b style="color:#cc6a52">red = extreme fear</b>, <b style="color:#4a926a">green = extreme greed</b>.</span></div>
+        <div class="gr"><span class="sw" style="background:var(--usd)"></span><span><b style="color:var(--usd)">Dollar green: the US dollar box</b>. Arrow up and "Strong" = a headwind for crypto and gold; arrow down and "Weak" = a tailwind.</span></div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<footer class="band">
+  <div class="wrap" data-hl>
+    <p><strong>Information and education only, not financial advice.</strong> The lights describe market conditions from public price data; they are not instructions to buy, sell or hold. Past results, including our backtests, do not guarantee future results. Crypto and gold prices can fall sharply. Make your own decisions and, if needed, speak to a licensed adviser.</p>
+    <p>Data: Coin Metrics community data (prices, average-cost line), Alternative.me (crypto fear &amp; greed), Federal Reserve Bank of St. Louis FRED (US dollar index). Prices are in US dollars and converted to your chosen currency at the latest exchange rate (Coinbase, or Federal Reserve FRED as a backup); history is converted at today's rate. GOLD is tracked through the PAXG token, backed by physical bullion. Updated once a day.</p>
+    <p>© MarketLights · Universum Media LLC</p>
+  </div>
+</footer>
+
+<script id="data" type="application/json">/*DATA*/null</script>
+<script>
+{
+const D = JSON.parse(document.getElementById('data').textContent);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LAMPS = {Falling:['r'], Bottoming:['a'], Consolidating:['a'], Rising:['g'], Overheated:['r']};
+const NAME = {Falling:'Falling', Bottoming:'Possible bottom', Consolidating:'Sideways', Rising:'Rising', Overheated:'Overheated'};
+const COIN = {BTC:['₿','#f7931a'], ETH:['Ξ','#627eea'], PAXG:['Au','#c9a227'], SOL:['◎','#7b52e0']};
+const coin = (t) => D.logos && D.logos[t] ? `<img class="coin" alt="" src="${D.logos[t]}">` : `<span class="coin" aria-hidden="true" style="background:${COIN[t][1]}">${COIN[t][0]}</span>`;
+const ACT = {Falling:'Danger', Overheated:'Danger', Bottoming:'Caution', Consolidating:'Caution', Rising:'Favourable'};
+const PCOL = {Falling:'var(--red)', Bottoming:'var(--amb)', Consolidating:'var(--amb)', Rising:'var(--grn)', Overheated:'var(--red)'};
+const CURS = [['USD','US dollar'],['EUR','Euro'],['GBP','British pound'],['THB','Thai baht'],['JPY','Japanese yen'],['KRW','Korean won'],['CNY','Chinese yuan'],['INR','Indian rupee'],['RUB','Russian ruble'],['BRL','Brazilian real'],['MXN','Mexican peso'],['CAD','Canadian dollar'],['AUD','Australian dollar'],['CHF','Swiss franc'],['SGD','Singapore dollar']];
+const FX = (() => {
+  let code = 'USD', rates = Object.assign({USD: 1}, D.fx || {}), src = D.fx_date ? 'Federal Reserve, ' + D.fx_date : '';
+  try {
+    code = localStorage.getItem('ml_cur') || 'USD';
+    const live = JSON.parse(localStorage.getItem('ml_fxlive') || 'null');
+    if (live && Date.now() - live.t < 3 * 864e5) { Object.assign(rates, live.rates); src = 'Coinbase, ' + new Date(live.t).toLocaleDateString('en-GB', {day: 'numeric', month: 'short'}); }
+  } catch (e) {}
+  if (!rates[code]) code = 'USD';  // e.g. RUB before live rates have loaded once
+  return {code, rate: rates[code], rates, src};
+})();
+const money = (v) => {
+  const x = v * FX.rate, big = Math.abs(x) >= 1000, d = big ? 0 : Math.abs(x) >= 10 ? 2 : 3;
+  try { return new Intl.NumberFormat('en-US', {style: 'currency', currency: FX.code, currencyDisplay: 'narrowSymbol', minimumFractionDigits: d, maximumFractionDigits: d}).format(x); }
+  catch (e) { return FX.code + ' ' + x.toFixed(d); }
+};
+const moneyAxis = (v) => {
+  const t = money(v); if (t.length <= 8) return t;
+  try { return new Intl.NumberFormat('en-US', {style: 'currency', currency: FX.code, currencyDisplay: 'narrowSymbol', notation: 'compact', maximumFractionDigits: 2}).format(v * FX.rate); } catch (e) { return t; }
+};
+const moneyText = (t) => FX.code === 'USD' ? t : String(t).replace(/\$([\d,]+(?:\.\d+)?)/g, (m, n) => money(+n.replace(/,/g, '')));
+const lerp = (a, b, k) => Math.round(a + (b - a) * k);
+const posCol = (k) => { k = Math.max(0, Math.min(1, k)); return `rgb(${lerp(196,91,k)},${lerp(178,42,k)},${lerp(230,140,k)})`; };
+const posOf = (a) => Math.max(0, Math.min(1, (a.price - a.low2y) / (a.ath - a.low2y)));
+const posInk = (k) => k < 0.55 ? '#1b1030' : '#ffffff';
+const pct = (v) => (v >= 0 ? '+' : '−') + Math.abs(v * 100).toFixed(1) + '%';
+const day = (s) => new Date(s + 'T00:00:00Z').toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric', timeZone:'UTC'});
+
+function signal(phase, on) {
+  const lit = on ? (LAMPS[phase] || []) : [];
+  const lamp = (k, cy, col) => {
+    const l = lit.includes(k);
+    return `<circle cx="50" cy="${cy}" r="24" fill="${l ? col : 'var(--off)'}"/>` +
+      (l ? `<circle cx="50" cy="${cy}" r="24" fill="${col}" opacity=".35" filter="url(#glow)"/><circle cx="43" cy="${cy - 8}" r="7" fill="#fff" opacity=".35"/>` : `<circle cx="43" cy="${cy - 8}" r="6" fill="#fff" opacity=".06"/>`);
+  };
+  return `<svg viewBox="0 0 100 230" role="img" aria-label="${esc(on ? phase : 'No light')}">
+    <defs><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter></defs>
+    <rect x="44" y="200" width="12" height="30" fill="#3a3f45"/>
+    <rect x="12" y="6" width="76" height="196" rx="16" fill="#0a0b0c" stroke="${on && PCOL[phase] ? PCOL[phase] : '#3a3f45'}" stroke-width="${on ? 3 : 2}" ${on ? '' : 'stroke-dasharray="6 5"'}/>
+    <path d="M14 40 h-8 v-10 h8z M86 40 h8 v-10 h-8z M14 104 h-8 v-10 h8z M86 104 h8 v-10 h-8z M14 168 h-8 v-10 h8z M86 168 h8 v-10 h-8z" fill="#2a2e33"/>
+    ${lamp('r', 44, 'var(--red)')}${lamp('a', 104, 'var(--amb)')}${lamp('g', 164, 'var(--grn)')}
+  </svg>`;
+}
+
+const TERMS = [
+  [/^bitcoin$/i, 'A:--c-btc'], [/^ethereum$/i, 'A:--c-eth'], [/^solana$/i, 'A:--c-sol'], [/^gold$/i, 'A:--c-gold'], [/^crypto$/i, 'A:--c-crypto'], [/^us dollar$/i, 'A:--c-usd'],
+  [/^(possible[ -]bottom|sideways|amber|caution)$/i, 'var(--amb)'],
+  [/^(falling|overheated|red|danger)$/i, 'var(--red)'],
+  [/^(rising|green|favourable)$/i, 'var(--grn)'],
+  [/^uptrend$/i, 'var(--up)'], [/^downtrend$/i, 'var(--dn)'],
+  [/^support$/i, 'var(--flr)'], [/^resistance$/i, 'var(--cel)'],
+  [/^(50-day|50d)$/i, 'var(--ma50)'], [/^(200-day|200d)$/i, 'var(--ma200)'],
+  [/^oversold$/i, '#6f9fd0'], [/^rsi$/i, 'var(--ink)'], [/^overbought$/i, '#d98c5f'],
+  [/^extreme fear$/i, '#cc6a52'], [/^extreme greed$/i, '#4a926a']
+];
+const TERM_RE = /\b(rsi|possible[ -]bottom|extreme fear|extreme greed|us dollar|bitcoin|ethereum|solana|gold|crypto|sideways|amber|caution|falling|overheated|red|danger|rising|green|favourable|uptrend|downtrend|support|resistance|50-day|50d|200-day|200d|oversold|overbought)\b/gi;
+const hl = (s) => esc(s).replace(TERM_RE, (w) => {
+  const hit = TERMS.find(([re]) => re.test(w)); if (!hit) return w;
+  return hit[1].startsWith('A:') ? `<span class="asset" style="--ac:var(${hit[1].slice(2)});--ai:${hit[1] === 'A:--c-sol' ? '#fff' : '#111'}">${w}</span>` : `<span class="term" style="color:${hit[1]}">${w}</span>`;
+});
+{
+  const cd = new Date(D.data_date + 'T00:00:00Z');
+  document.getElementById('calm').textContent = cd.toLocaleDateString('en-GB', {month: 'short', timeZone: 'UTC'});
+  document.getElementById('cald').textContent = cd.getUTCDate();
+  document.getElementById('closeday').textContent = day(D.data_date);
+  const tzSel = document.getElementById('tz');
+  try { const saved = localStorage.getItem('ml_tz'); if (saved !== null) tzSel.value = saved; } catch (e) {}
+  const showUpd = () => {
+    const opt = {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short'};
+    if (tzSel.value) opt.timeZone = tzSel.value;
+    document.getElementById('upd').textContent = new Date(D.updated).toLocaleString('en-GB', opt);
+  };
+  tzSel.addEventListener('change', () => { try { localStorage.setItem('ml_tz', tzSel.value); } catch (e) {} showUpd(); });
+  showUpd();
+}
+document.querySelectorAll('[data-hl]').forEach((root) => {
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), nodes = [];
+  while (w.nextNode()) nodes.push(w.currentNode);
+  nodes.forEach((t) => {
+    const p = t.parentElement;
+    if (!p || p.closest('select,script,.term,.asset,a') || ((p.tagName === 'B' || p.tagName === 'STRONG') && p.hasAttribute('style'))) return;
+    TERM_RE.lastIndex = 0; if (!TERM_RE.test(t.nodeValue)) return;
+    const sp = document.createElement('span'); sp.innerHTML = hl(t.nodeValue); t.replaceWith(...sp.childNodes);
+  });
+});
+const ACOL = {BTC: 'var(--c-btc)', ETH: 'var(--c-eth)', PAXG: 'var(--c-gold)', SOL: 'var(--c-sol)'};
+document.getElementById('lead').innerHTML = hl(moneyText(D.lead));
+document.getElementById('note').innerHTML = hl(moneyText(D.note));
+{
+  const sel = document.getElementById('cur');
+  sel.innerHTML = CURS.filter(([c]) => FX.rates[c]).map(([c, n]) => `<option value="${c}"${c === FX.code ? ' selected' : ''}>${c} · ${n}</option>`).join('');
+  document.getElementById('fxsrc').textContent = FX.code === 'USD' ? '' : `1 USD = ${FX.rate >= 100 ? FX.rate.toFixed(0) : FX.rate.toFixed(4)} ${FX.code} (${FX.src})`;
+  sel.addEventListener('change', () => { try { localStorage.setItem('ml_cur', sel.value); } catch (e) {} location.reload(); });
+  fetch('https://api.coinbase.com/v2/exchange-rates?currency=USD', {cache: 'no-store'}).then((r) => r.ok ? r.json() : Promise.reject(r.status)).then((j) => {
+    const rates = {}; CURS.forEach(([c]) => { const v = +((j.data || {}).rates || {})[c]; if (v > 0) rates[c] = v; });
+    if (!rates.EUR) return;
+    const hadCode = !!FX.rates[FX.code === 'USD' ? 'X' : FX.code] || FX.code === 'USD';
+    let stored = null; try { stored = localStorage.getItem('ml_fxlive'); localStorage.setItem('ml_fxlive', JSON.stringify({t: Date.now(), rates})); } catch (e) {}
+    const newOpts = CURS.filter(([c]) => rates[c] && !FX.rates[c]);
+    newOpts.forEach(([c, n]) => { FX.rates[c] = rates[c]; sel.insertAdjacentHTML('beforeend', `<option value="${c}">${c} · ${n}</option>`); });
+    if (FX.code !== 'USD' && !stored && Math.abs(rates[FX.code] / FX.rate - 1) > 0.003) location.reload();
+  }).catch(() => {});
+}
+function scale(v, fills, ticks, label) {
+  const x = Math.max(3, Math.min(97, +v));
+  return `<div class="scale"><div class="mk" style="left:${x}%"><span>${esc(label)}</span><i></i></div>
+    <div class="track" style="grid-template-columns:${fills.map((f) => f[0] + 'fr').join(' ')}">${fills.map((f) => `<b style="background:${f[1]}"></b>`).join('')}</div>
+    ${ticks.length ? '' : '<!--'}<div class="ticks">${ticks.map((k) => `<span style="left:${k}%">${k}</span>`).join('')}</div>${ticks.length ? '' : '-->'}</div>`;
+}
+const cols = ['#b9524a','#cc6a52','#d9835a','#e09e64','#e3bb72','#cdbf72','#a9bb72','#86b071','#64a26f','#4a926a'];
+document.getElementById('mood').innerHTML = scale(D.fng, cols.map((c) => [1, c]), [0, 25, 50, 75, 100], String(D.fng));
+document.getElementById('moodval').innerHTML = hl(`${D.fng_word} ${D.fng}` + (D.fng_week != null ? ` (a week ago ${D.fng_week})` : ''));
+{
+  const box = document.getElementById('dollarbox'), dv = document.getElementById('dollar');
+  const col = 'var(--usd)';
+  dv.style.background = col; dv.style.color = '#0f2a12';
+  dv.innerHTML = `<svg viewBox="0 0 30 30" aria-hidden="true"><g transform="rotate(${D.dollar_strong ? -40 : 40} 15 15)"><path d="M4 15h18M16 8l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>${D.dollar_strong ? 'Strong' : 'Weak'} · ${(+D.dollar_val).toFixed(1)}`;
+  box.style.borderColor = col; box.style.borderWidth = '2px';
+  document.getElementById('dollarsub').innerHTML = hl((D.dollar_strong ? 'Above' : 'Below') + ` its 200-day average (${(+D.dollar_avg).toFixed(1)}): ` + (D.dollar_strong ? 'a headwind for crypto and gold.' : 'a tailwind for crypto and gold.'));
+}
+
+document.getElementById('row').innerHTML = D.assets.map((a) => `
+  <div class="sig">
+    <div class="nm disp">${coin(a.tick)}<span style="color:${ACOL[a.tick]}">${esc(a.name)}</span></div>
+    ${signal(a.phase, a.light)}
+    ${a.light ? `<div class="ph disp" style="color:${PCOL[a.phase]}">${esc(ACT[a.phase])}</div>
+    <div class="act" style="color:${PCOL[a.phase]};font-weight:600">${esc(NAME[a.phase])}</div>` : `<div class="nr"><div class="ph disp">Not rated</div><div class="act" style="font-weight:600">Too volatile for a signal</div></div>`}
+    <div class="px"><span class="lab" style="--lc:#eef0f2">Close</span> <span class="ppill sm" style="background:${posCol(posOf(a))};color:${posInk(posOf(a))}">${money(a.price)}</span></div>
+    <div class="px"><span class="lab" style="--lc:#eef0f2">7 days</span> <b style="color:${a.chg7 < 0 ? 'var(--dn)' : 'var(--up)'}">${a.chg7 < 0 ? '▼' : '▲'} ${Math.abs(a.chg7 * 100).toFixed(1)}%</b></div>
+    <div class="live" data-live="${a.tick}" hidden><b class="lab" style="--lc:#eef0f2"><i></i> LIVE</b> <span>…</span></div>
+  </div>`).join('');
+
+const arrow = (deg) => `<svg viewBox="0 0 30 30" aria-hidden="true"><g transform="rotate(${deg} 15 15)"><path d="M4 15h18M16 8l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>`;
+function thermo(a) {
+  const k = Math.max(0, Math.min(1, posOf(a)));
+  const vertical = matchMedia('(min-width:861px)').matches;
+  const place = vertical ? `bottom:${(k * 100).toFixed(1)}%` : `left:${(Math.max(0.2, Math.min(0.8, k)) * 100).toFixed(1)}%`;
+  return `<div class="thermo" aria-label="Price position between 2-year low and record">
+    ${vertical ? `<div><span class="lab" style="--lc:var(--rose)">Record</span><br><b>${money(a.ath)}</b></div>` : `<div><span class="lab" style="--lc:#b8a3e0">2-yr low</span><br><b>${money(a.low2y)}</b></div>`}
+    <div class="tube"><div class="pm" style="${place}"><span style="background:${posCol(k)};color:${posInk(k)}">${money(a.price)}</span></div></div>
+    ${vertical ? `<div><span class="lab" style="--lc:#b8a3e0">2-yr low</span><br><b>${money(a.low2y)}</b></div>` : `<div><span class="lab" style="--lc:var(--rose)">Record</span><br><b>${money(a.ath)}</b></div>`}
+  </div>`;
+}
+function tiles(a) {
+  const tr = a.trend.split(' (')[0], deg = tr === 'Uptrend' ? -40 : tr === 'Downtrend' ? 40 : 0;
+  const f = a.support_d[0], c = a.resist_d[0];
+  const lo = f || Math.min(...a.spark), hi = c || Math.max(...a.spark);
+  const pos = Math.max(4, Math.min(96, (a.price - lo) / (hi - lo) * 100));
+  const rec = Math.max(2, Math.min(100, a.price / a.ath * 100));
+  return `<div class="tiles">
+    <div class="tile"><div class="k">Daily Close</div><div class="v"><span class="ppill" style="background:${posCol(posOf(a))};color:${posInk(posOf(a))};${money(a.price).length > 9 ? 'font-size:.72em' : ''}">${money(a.price)}</span></div>
+      <div class="s"><span class="lab">30 days</span> <b style="color:${a.chg30 < 0 ? 'var(--dn)' : 'var(--up)'}">${a.chg30 < 0 ? '▼' : '▲'} ${Math.abs(a.chg30 * 100).toFixed(1)}%</b></div>
+      <div class="live" data-live="${a.tick}" hidden style="margin-top:6px"><b class="lab" style="--lc:#eef0f2"><i></i> LIVE</b> <span>…</span></div></div>
+    <div class="tile"><div class="k">Trend${info('trend')}</div><div class="v" style="font-size:clamp(20px,2.2vw,28px);white-space:nowrap;color:${tr === 'Uptrend' ? 'var(--up)' : tr === 'Downtrend' ? 'var(--dn)' : 'inherit'}">${arrow(deg)}${esc(tr)}</div>
+      <div class="s" style="text-transform:uppercase;font-weight:700;letter-spacing:.03em">${hl(a.trend.includes('(') ? a.trend.split('(')[1].replace(')', '') : '')}</div></div>
+    <div class="tile wide"><div class="k">${hl('Support')} (Floor) &amp; ${hl('Resistance')} (Ceiling) · Daily${info('range')}</div>
+      <div class="range"><div class="mk" style="left:${pos}%"><span>${money(a.price)}</span><i></i></div></div>
+      <div class="rlab"><span class="f">Support ${f ? money(f) : 'none nearby'}</span><span class="c">Resistance ${c ? money(c) : 'none nearby'}</span></div>
+      <div class="s"><span class="lab">Weekly</span> ${hl('support')} ${lv(a.support_w, 'none, near 2-year lows')} · ${hl('resistance')} ${lv(a.resist_w)}</div></div>
+    <div class="tile wide"><div class="k">RSI · 14 Days${info('rsi')}</div>
+      ${scale(a.rsi, [[30,'#6f9fd0'],[40,'#b5bcc4'],[30,'#d98c5f']], [0, 30, 50, 70, 100], a.rsi.toFixed(0) + ' · ' + a.rsi_word)}
+      <div class="zones"><span style="color:#6f9fd0;font-weight:700">Oversold</span><span>Neutral</span><span style="color:#d98c5f;font-weight:700">Overbought</span></div></div>
+
+    <div class="tile"><div class="k">From Its Record</div><div class="v" style="color:var(--rose)">${pct(a.from_ath)}</div>
+      <div class="s"><span class="lab" style="--lc:var(--rose)">Record</span> <b>${money(a.ath)}</b></div></div>
+    ${a.realized ? `<div class="tile"><div class="k">Average-Cost Line${info('cost')}</div><div class="v">${money(a.realized)}</div>
+      <div class="s"><span class="lab">Price</span> is <b>${Math.abs((a.price / a.realized - 1) * 100).toFixed(0)}% ${a.price >= a.realized ? 'above' : 'below'}</b> it</div></div>`
+      : `<div class="tile"><div class="k">${hl('50-day vs 200-day')} Average</div><div class="v" style="font-size:22px">${hl(a.cross)}</div></div>`}
+  </div>`;
+}
+const EXPL = {
+  trend: 'Compares today\'s price with its 50-day and 200-day averages. Above both = uptrend; below both = downtrend. The 200-day is the most watched long-term line.',
+  range: 'Support is a price level where buyers have stepped in before (a floor). Resistance is where sellers have stepped in (a ceiling). Breaking either one often starts a bigger move.',
+  rsi: 'RSI measures how fast price has moved over 14 days, from 0 to 100. Below 30 = oversold (sold hard, often near a bounce). Above 70 = overbought (bought hard, often near a pullback).',
+  cost: 'The average price at which every coin last changed hands: roughly what holders paid on average. Price below it means most holders are at a loss, which in the past happened near major bottoms.',
+  rangebar: 'Shows today\'s price between the lowest close of the last two years and the all-time record.'
+};
+const info = (k) => `<button class="info" type="button" aria-label="What is this?" data-x="${k}">i</button>`;
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.info'); if (!b) return;
+  const tile = b.closest('.tile'); let ex = tile.querySelector('.expl');
+  if (ex) { ex.remove(); return; }
+  ex = document.createElement('div'); ex.className = 'expl'; ex.innerHTML = hl(EXPL[b.dataset.x]); tile.append(ex);
+});
+const lv = (arr, none) => arr.length ? arr.map(money).join(' · ') : (none || '—');
+document.getElementById('cards').innerHTML = D.assets.map((a, i) => {
+  const s1 = a.support_d[0], r1 = a.resist_d[0];
+  const watch = `<div class="wl"><em class="p">Positive sign</em><span>${r1 ? `a daily close above ${hl('resistance')} at <b>${money(r1)}</b>` : hl('price is near recent highs; no resistance above')}</span></div>` +
+    `<div class="wl"><em class="n">Negative sign</em><span>${s1 ? `a daily close below ${hl('support')} at <b>${money(s1)}</b>` : hl('no support below in the last six months')}</span></div>`;
+  return `
+  <article class="card" id="${esc(a.tick.toLowerCase())}">
+    ${thermo(a)}
+    <div>
+      <h2 class="disp">${coin(a.tick)}<span class="nm" style="color:${ACOL[a.tick]}">${esc(a.name)}</span> ${a.light ? `<span class="tag" style="background:${PCOL[a.phase]}">${esc(ACT[a.phase] + ': ' + NAME[a.phase])}</span>` : `<span class="tag" style="background:#c9ced4">Not rated: levels only</span>`}</h2>
+      <p>${a.light ? hl(moneyText(a.sentence)) + ` Since ${esc(day(a.since))}.` : hl('Not rated: Solana swings too wildly for our light. In our 2021–2026 test, simply holding it beat the signals by far, so we show only its price, trend, support and resistance.')}</p>
+${tiles(a)}
+    </div>
+    <div>
+      <div class="fig" data-i="${i}"><svg></svg><button class="big-btn" type="button" data-big="${i}">⤢ Enlarge</button></div>
+      <div class="lg"><span style="color:var(--up);font-weight:600"><i style="border-color:var(--up)"></i>Price above 50-day avg (uptrend)</span><span style="color:var(--dn);font-weight:600"><i style="border-color:var(--dn)"></i>Price below 50-day avg (downtrend)</span><span style="color:var(--ma50);font-weight:600"><i style="border-color:var(--ma50);border-top-style:dotted"></i>50-day avg (50d)</span><span style="color:var(--ma200);font-weight:600"><i style="border-color:var(--ma200);border-top-style:dashed"></i>200-day avg (200d)</span></div>
+      <div class="watch">${watch}</div>
+      ${a.light ? `<div class="bt"><span class="lab">Backtest ${a.bt_period}</span> ${hl(`After possible-bottom days, price was higher 90 days later ${Math.round(a.bt_bottom_up90 * 100)}% of the time (all days ${Math.round(a.bt_all_up90 * 100)}%).`)}</div>` : ''}
+    </div>
+  </article>`;
+}).join('');
+
+function drawSpark(box) {
+  const a = D.assets[+box.dataset.i], s = box.querySelector('svg');
+  const W = box.clientWidth, H = box.clientHeight, m = {t: 14, r: Math.max(138, Math.min(160, Math.round(W * 0.38))), b: 44, l: 58};
+  const v = a.spark, lines = [...a.resist_d.slice(0, 1).map((y) => ['R', y]), ...a.support_d.slice(0, 1).map((y) => ['S', y])];
+  const all = v.concat(lines.map((l) => l[1]));
+  const lo = Math.min(...all), hi = Math.max(...all), pad = (hi - lo) * 0.06;
+  const X = (i) => m.l + i * (W - m.l - m.r) / (v.length - 1), Y = (y) => m.t + (hi + pad - y) * (H - m.t - m.b) / (hi - lo + 2 * pad);
+  const segs = v.slice(1).map((y, i) => {
+    const up = v[i + 1] >= a.avg50[i + 1];
+    return `<path d="M${X(i).toFixed(1)} ${Y(v[i]).toFixed(1)}L${X(i + 1).toFixed(1)} ${Y(y).toFixed(1)}" stroke="${up ? 'var(--up)' : 'var(--dn)'}" stroke-width="2.5" stroke-linecap="round" fill="none"/>`;
+  }).join('');
+  const inR = (arr) => arr.every((y) => y >= lo - pad && y <= hi + pad);
+  const a200 = inR(a.avg200) ? a.avg200.map((y, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(y).toFixed(1)).join('') : '';
+  const avg = a.avg50.filter((y) => y >= lo - pad && y <= hi + pad).length === a.avg50.length ? a.avg50.map((y, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(y).toFixed(1)).join('') : '';
+  const col = a.light ? PCOL[a.phase] : 'var(--mute)';
+  let lastY = -99; const ly = lines.map(([k, y]) => { let yy = Y(y) + 4; if (Math.abs(yy - lastY) < 24) yy = lastY + 24; lastY = yy; return yy; });
+  const step = (() => { const raw = (hi - lo) * FX.rate / 4, p = Math.pow(10, Math.floor(Math.log10(raw))); const n = raw / p; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p; })();
+  const yt = []; for (let y = Math.ceil((lo - pad) * FX.rate / step) * step; y <= (hi + pad) * FX.rate; y += step) yt.push(y / FX.rate);
+  const axis = yt.map((y) => `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(y)}" y2="${Y(y)}" stroke="var(--line)" stroke-width="1"/><text x="${m.l - 6}" y="${Y(y) + 4}" text-anchor="end" font-size="12" fill="var(--mute)">${moneyAxis(y)}</text>`).join('');
+  s.innerHTML = axis + lines.map(([k, y], j) => `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(y)}" y2="${Y(y)}" stroke="none" stroke-width="0"/><line x1="${m.l}" x2="${W - m.r}" y1="${Y(y)}" y2="${Y(y)}" stroke="${k === 'S' ? 'var(--flr)' : 'var(--cel)'}" stroke-width="2.5" stroke-dasharray="7 4"/>
+      <rect x="${W - m.r + 4}" y="${ly[j] - 15}" width="${m.r - 6}" height="21" rx="5" fill="${k === 'S' ? 'var(--flr-bg)' : 'var(--cel-bg)'}" stroke="${k === 'S' ? 'var(--flr)' : 'var(--cel)'}"/><text x="${W - m.r + 10}" y="${ly[j]}" font-size="13" font-weight="700" ${W < 600 ? `textLength="${m.r - 16}" lengthAdjust="spacingAndGlyphs"` : ''} fill="${k === 'S' ? 'var(--flr)' : 'var(--cel)'}">${k === 'S' ? 'SUPPORT ' : 'RESISTANCE '}${money(y).length > 9 ? moneyAxis(y) : money(y)}</text>`).join('') +
+    (avg ? `<path d="${avg}" fill="none" stroke="var(--ma50)" stroke-width="2" stroke-dasharray="2 4" stroke-linecap="round"/><text x="${X(v.length - 1) + 4}" y="${Y(a.avg50[a.avg50.length - 1]) + 4}" font-size="12" font-weight="700" fill="var(--ma50)">50D</text>` : '') + (a200 ? `<path d="${a200}" fill="none" stroke="var(--ma200)" stroke-width="2" stroke-dasharray="10 5"/><text x="${X(v.length - 1) + 4}" y="${Y(a.avg200[a.avg200.length - 1]) + 4}" font-size="12" font-weight="700" fill="var(--ma200)">200D</text>` : '') + segs + `
+     <circle cx="${X(v.length - 1)}" cy="${Y(v[v.length - 1])}" r="6" fill="${posCol(posOf(a))}" stroke="var(--ink)" stroke-width="1.5"/>
+     ${(() => { let lastX = -99; return a.spark_dates.map((d, i) => { if (!i || d.slice(5, 7) === a.spark_dates[i - 1].slice(5, 7)) return ''; const tick = `<line x1="${X(i)}" x2="${X(i)}" y1="${m.t}" y2="${H - m.b + 5}" stroke="var(--line)" stroke-width="1"/>`; if (X(i) - lastX < 38) return tick; lastX = X(i); return tick + `<text x="${X(i) + 3}" y="${H - m.b + 17}" font-size="${W < 600 ? 11 : 13}" font-weight="700" fill="var(--ink)">${'JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC'.split(' ')[+d.slice(5, 7) - 1]}${d.slice(5, 7) === '01' ? ' ' + d.slice(0, 4) : ''}</text>`; }).join(''); })()}<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b + 5}" y2="${H - m.b + 5}" stroke="var(--mute)" stroke-width="1"/>
+     <text x="${m.l}" y="${H - 4}" font-size="12" font-weight="700" fill="var(--mute)">${W < 600 ? 'LAST 120 DAYS · TAP FOR VALUES' : 'LAST 120 DAYS · POINT OR TAP FOR VALUES'}</text>
+     <line class="cx" y1="${m.t}" y2="${H - m.b}" stroke="var(--mute)" stroke-width="1" visibility="hidden"/>
+     <rect x="${m.l}" y="0" width="${W - m.l - m.r}" height="${H - m.b}" fill="transparent" class="hit"/>`;
+}
+document.addEventListener('pointermove', (e) => {
+  const hit = e.target.closest && e.target.closest('.hit');
+  document.querySelectorAll('.fig').forEach((f) => { if (!hit || !f.contains(hit)) { const tp = f.querySelector('.ctip'); if (tp) tp.remove(); const cx = f.querySelector('.cx'); if (cx) cx.setAttribute('visibility', 'hidden'); } });
+  if (!hit) return;
+  const f = hit.closest('.fig'), a = D.assets[+f.dataset.i], r = f.getBoundingClientRect();
+  const W = f.clientWidth, mr = Math.max(138, Math.min(160, Math.round(W * 0.38))), ml = 58, x = e.clientX - r.left;
+  const i = Math.max(0, Math.min(a.spark.length - 1, Math.round((x - ml) / (W - ml - mr) * (a.spark.length - 1))));
+  const cx = f.querySelector('.cx'), px = ml + i * (W - ml - mr) / (a.spark.length - 1);
+  cx.setAttribute('x1', px); cx.setAttribute('x2', px); cx.setAttribute('visibility', 'visible');
+  let tp = f.querySelector('.ctip'); if (!tp) { tp = document.createElement('div'); tp.className = 'ctip'; f.append(tp); }
+  const pc = a.spark[i] >= a.avg50[i] ? 'var(--up)' : 'var(--dn)';
+  tp.replaceChildren(...[[day(a.spark_dates[i]), ''], ['PRICE ' + money(a.spark[i]), pc], ['50-DAY AVG ' + money(a.avg50[i]), 'var(--ma50)'], ['200-DAY AVG ' + money(a.avg200[i]), 'var(--ma200)']].map(([s, c], j) => { const d = document.createElement('div'); d.textContent = s; if (c) { d.style.color = c; d.style.fontWeight = '700'; } return d; }));
+  tp.style.left = Math.min(px + 10, W - tp.offsetWidth - 4) + 'px'; tp.style.top = '4px';
+});
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-big]');
+  if (b) {
+    const i = +b.dataset.big, a = D.assets[i];
+    const m = document.createElement('div'); m.className = 'modal';
+    m.innerHTML = `<div class="box" role="dialog" aria-label="Enlarged chart"><button class="x" type="button">✕ Close</button><h4>${hl(a.name)}: Last 120 Days</h4><div class="fig" data-i="${i}"><svg></svg></div>${document.querySelector('#' + a.tick.toLowerCase() + ' .lg').outerHTML}</div>`;
+    document.body.append(m);
+    const f = m.querySelector('.fig'); ro.observe(f);
+    const close = () => { ro.unobserve(f); m.remove(); document.removeEventListener('keydown', esc_); };
+    const esc_ = (ev) => { if (ev.key === 'Escape') close(); };
+    document.addEventListener('keydown', esc_);
+    m.addEventListener('click', (ev) => { if (ev.target === m || ev.target.closest('.x')) close(); });
+  }
+});
+const PRODUCT = {BTC: 'BTC-USD', ETH: 'ETH-USD', PAXG: 'PAXG-USD', SOL: 'SOL-USD'};
+async function liveTick() {
+  const hm = new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+  await Promise.all(D.assets.map(async (a) => {
+    const els = document.querySelectorAll(`[data-live="${a.tick}"]`);
+    try {
+      const r = await fetch(`https://api.exchange.coinbase.com/products/${PRODUCT[a.tick]}/ticker`, {cache: 'no-store'});
+      if (!r.ok) throw new Error(r.status);
+      const p = +(await r.json()).price; if (!(p > 0)) throw new Error('bad');
+      const ch = p / a.price - 1;
+      const k = Math.max(0, Math.min(1, (p - a.low2y) / (a.ath - a.low2y)));
+      els.forEach((el) => { el.hidden = false; el.classList.add('on'); el.querySelector('span').innerHTML = `<span class="ppill sm" style="background:${posCol(k)};color:${posInk(k)}">${esc(money(p))}</span> <b style="color:${ch < 0 ? 'var(--dn)' : 'var(--up)'}">${ch < 0 ? '▼' : '▲'} ${Math.abs(ch * 100).toFixed(1)}%</b> since close · ${hm}`; });
+    } catch (e) {
+      els.forEach((el) => { el.classList.remove('on'); el.hidden = true; });  // no live feed: hide the line rather than show a dead one
+    }
+  }));
+}
+liveTick(); setInterval(() => { if (!document.hidden) liveTick(); }, 15000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) liveTick(); });
+const ro = new ResizeObserver((es) => es.forEach((e) => drawSpark(e.target)));
+document.querySelectorAll('.fig').forEach((f) => ro.observe(f));
+
+
+}
+</script>
+</body>
+</html>
