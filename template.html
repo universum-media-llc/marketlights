@@ -182,6 +182,18 @@ footer p{max-width:80ch;margin:0 0 10px}
 @media(max-width:860px){.card{grid-template-columns:minmax(0,1fr)}.thermo{flex-direction:row;align-items:center}.thermo .tube{min-height:14px;height:14px;width:auto;background:linear-gradient(90deg,#e4dcf2,#5b2a8c)}.thermo .pm{top:50%;transform:translate(-50%,-50%)}.legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.tile .v{font-size:24px}.tile .v svg{width:24px;height:24px}.strip{grid-template-columns:minmax(0,1fr)}.row{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:28px}.sig .ph{font-size:22px}}
 
+/* every item in its own box; parts inside a box separated by a thin line */
+.sec{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.side{display:grid;gap:20px;align-content:start}
+.side .tile{padding:16px 18px}
+.side .watch{background:none!important;padding:0!important;margin:0!important;display:grid;gap:12px}
+.side .wl{margin:0}
+.thermo{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:14px 6px}
+.left{display:grid;gap:20px;align-content:start}
+.left h2{margin:0!important}
+.sumbox p{margin:0!important}
+.tile .v{margin:4px 0}
+@media(max-width:600px){.tiles{grid-template-columns:minmax(0,1fr)!important}}
 /* breathing room: more space between boxes, slightly smaller content */
 .band{padding:clamp(32px,5vw,72px) max(5vw,16px)}
 .box{padding:16px 20px}
@@ -462,22 +474,22 @@ function tiles(a) {
   const rec = Math.max(2, Math.min(100, a.price / a.ath * 100));
   return `<div class="tiles">
     <div class="tile"><div class="k">Daily Close</div><div class="v"><span class="ppill" style="background:${posCol(posOf(a))};color:${posInk(posOf(a))};${money(a.price).length > 9 ? 'font-size:.72em' : ''}">${money(a.price)}</span></div>
-      <div class="s"><span class="lab">30 days</span> <b style="color:${a.chg30 < 0 ? 'var(--dn)' : 'var(--up)'}">${a.chg30 < 0 ? '▼' : '▲'} ${Math.abs(a.chg30 * 100).toFixed(1)}%</b></div>
-      <div class="live" data-live="${a.tick}" hidden style="margin-top:6px"><b class="lab" style="--lc:#eef0f2"><i></i> LIVE</b> <span>…</span></div></div>
+      <div class="s sec"><span class="lab">30 days</span> <b style="color:${a.chg30 < 0 ? 'var(--dn)' : 'var(--up)'}">${a.chg30 < 0 ? '▼' : '▲'} ${Math.abs(a.chg30 * 100).toFixed(1)}%</b></div>
+      <div class="live sec" data-live="${a.tick}" hidden style="justify-content:flex-start"><b class="lab" style="--lc:#eef0f2"><i></i> LIVE</b> <span>…</span></div></div>
     <div class="tile"><div class="k">Trend${info('trend')}</div><div class="v" style="font-size:clamp(20px,2.2vw,28px);white-space:nowrap;color:${tr === 'Uptrend' ? 'var(--up)' : tr === 'Downtrend' ? 'var(--dn)' : 'inherit'}">${arrow(deg)}${esc(tr)}</div>
-      <div class="s" style="text-transform:uppercase;font-weight:700;letter-spacing:.03em">${hl(a.trend.includes('(') ? a.trend.split('(')[1].replace(')', '') : '')}</div></div>
+      <div class="s sec" style="text-transform:uppercase;font-weight:700;letter-spacing:.03em">${hl(a.trend.includes('(') ? a.trend.split('(')[1].replace(')', '') : '')}</div></div>
     <div class="tile wide"><div class="k">${hl('Support')} (Floor) &amp; ${hl('Resistance')} (Ceiling) · Daily${info('range')}</div>
       <div class="range"><div class="mk" style="left:${pos}%"><span>${money(a.price)}</span><i></i></div></div>
       <div class="rlab"><span class="f">Support ${f ? money(f) : 'none nearby'}</span><span class="c">Resistance ${c ? money(c) : 'none nearby'}</span></div>
-      <div class="s"><span class="lab">Weekly</span> ${hl('support')} ${lv(a.support_w, 'none, near 2-year lows')} · ${hl('resistance')} ${lv(a.resist_w)}</div></div>
+      <div class="s sec"><span class="lab">Weekly</span> ${hl('support')} ${lv(a.support_w, 'none, near 2-year lows')} · ${hl('resistance')} ${lv(a.resist_w)}</div></div>
     <div class="tile wide"><div class="k">RSI · 14 Days${info('rsi')}</div>
       ${scale(a.rsi, [[30,'#6f9fd0'],[40,'#b5bcc4'],[30,'#d98c5f']], [0, 30, 50, 70, 100], a.rsi.toFixed(0) + ' · ' + a.rsi_word)}
       <div class="zones"><span style="color:#6f9fd0;font-weight:700">Oversold</span><span>Neutral</span><span style="color:#d98c5f;font-weight:700">Overbought</span></div></div>
 
     <div class="tile"><div class="k">From Its Record</div><div class="v" style="color:var(--rose)">${pct(a.from_ath)}</div>
-      <div class="s"><span class="lab" style="--lc:var(--rose)">Record</span> <b>${money(a.ath)}</b></div></div>
+      <div class="s sec"><span class="lab" style="--lc:var(--rose)">Record</span> <b>${money(a.ath)}</b></div></div>
     ${a.realized ? `<div class="tile"><div class="k">Average-Cost Line${info('cost')}</div><div class="v">${money(a.realized)}</div>
-      <div class="s"><span class="lab">Price</span> is <b>${Math.abs((a.price / a.realized - 1) * 100).toFixed(0)}% ${a.price >= a.realized ? 'above' : 'below'}</b> it</div></div>`
+      <div class="s sec"><span class="lab">Price</span> is <b>${Math.abs((a.price / a.realized - 1) * 100).toFixed(0)}% ${a.price >= a.realized ? 'above' : 'below'}</b> it</div></div>`
       : `<div class="tile"><div class="k">${hl('50-day vs 200-day')} Average</div><div class="v" style="font-size:22px">${hl(a.cross)}</div></div>`}
   </div>`;
 }
@@ -503,16 +515,16 @@ document.getElementById('cards').innerHTML = D.assets.map((a, i) => {
   return `
   <article class="card" id="${esc(a.tick.toLowerCase())}">
     ${thermo(a)}
-    <div>
+    <div class="left">
       <h2 class="disp">${coin(a.tick)}<span class="nm" style="color:${ACOL[a.tick]}">${esc(a.name)}</span> ${a.light ? `<span class="tag" style="background:${PCOL[a.phase]}">${esc(ACT[a.phase] + ': ' + NAME[a.phase])}</span>` : `<span class="tag" style="background:#c9ced4">Not rated: levels only</span>`}</h2>
-      <p>${a.light ? hl(moneyText(a.sentence)) + ` Since ${esc(day(a.since))}.` : hl('Not rated: Solana swings too wildly for our light. In our 2021–2026 test, simply holding it beat the signals by far, so we show only its price, trend, support and resistance.')}</p>
+      <div class="tile sumbox"><div class="k">Summary</div><p>${a.light ? hl(moneyText(a.sentence)) + ` Since ${esc(day(a.since))}.` : hl('Not rated: Solana swings too wildly for our light. In our 2021–2026 test, simply holding it beat the signals by far, so we show only its price, trend, support and resistance.')}</p></div>
 ${tiles(a)}
     </div>
-    <div>
-      <div class="fig" data-i="${i}"><svg></svg><button class="big-btn" type="button" data-big="${i}">⤢ Enlarge</button></div>
-      <div class="lg"><span style="color:var(--up);font-weight:600"><i style="border-color:var(--up)"></i>Price above 50-day avg (uptrend)</span><span style="color:var(--dn);font-weight:600"><i style="border-color:var(--dn)"></i>Price below 50-day avg (downtrend)</span><span style="color:var(--ma50);font-weight:600"><i style="border-color:var(--ma50);border-top-style:dotted"></i>50-day avg (50d)</span><span style="color:var(--ma200);font-weight:600"><i style="border-color:var(--ma200);border-top-style:dashed"></i>200-day avg (200d)</span></div>
-      <div class="watch">${watch}</div>
-      ${a.light ? `<div class="bt"><span class="lab">Backtest ${a.bt_period}</span> ${hl(`After possible-bottom days, price was higher 90 days later ${Math.round(a.bt_bottom_up90 * 100)}% of the time (all days ${Math.round(a.bt_all_up90 * 100)}%).`)}</div>` : ''}
+    <div class="side">
+      <div class="tile"><div class="k">Price Chart · Last 120 Days</div><div class="fig" data-i="${i}"><svg></svg><button class="big-btn" type="button" data-big="${i}">⤢ Enlarge</button></div>
+      <div class="lg sec"><span style="color:var(--up);font-weight:600"><i style="border-color:var(--up)"></i>Price above 50-day avg (uptrend)</span><span style="color:var(--dn);font-weight:600"><i style="border-color:var(--dn)"></i>Price below 50-day avg (downtrend)</span><span style="color:var(--ma50);font-weight:600"><i style="border-color:var(--ma50);border-top-style:dotted"></i>50-day avg (50d)</span><span style="color:var(--ma200);font-weight:600"><i style="border-color:var(--ma200);border-top-style:dashed"></i>200-day avg (200d)</span></div></div>
+      <div class="tile"><div class="k">What To Watch</div><div class="watch">${watch}</div></div>
+      ${a.light ? `<div class="tile"><div class="k">Backtest ${a.bt_period}</div><div class="bt" style="margin:0">${hl(`After possible-bottom days, price was higher 90 days later ${Math.round(a.bt_bottom_up90 * 100)}% of the time (all days ${Math.round(a.bt_all_up90 * 100)}%).`)}</div></div>` : ''}
     </div>
   </article>`;
 }).join('');
