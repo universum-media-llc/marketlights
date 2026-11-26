@@ -308,8 +308,8 @@ h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
 .res span{font:800 11px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .res div.src{border-color:var(--cc)}
 .val{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
-.val div{border:2px solid var(--c-gold);border-radius:10px;background:color-mix(in srgb,var(--c-gold) 10%,var(--panel));padding:12px 14px}
-.val b{display:block;font:700 26px "Barlow Semi Condensed",Inter,sans-serif;color:var(--c-gold)}
+.val div{border:2px solid var(--cc,var(--c-gold));border-radius:10px;background:color-mix(in srgb,var(--cc,var(--c-gold)) 10%,var(--panel));padding:12px 14px}
+.val b{display:block;font:700 26px "Barlow Semi Condensed",Inter,sans-serif;color:var(--cc,var(--c-gold))}
 .val span{font:800 11px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .note2{font-size:13px;color:var(--mute);margin:0}
 .r3g{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end}
@@ -411,23 +411,25 @@ const G = {
 };
 const toC = {c: (v) => v, f: (v) => (v - 32) * 5 / 9, k: (v) => v - 273.15};
 const fromC = {c: (v) => v, f: (v) => v * 9 / 5 + 32, k: (v) => v + 273.15};
-const PUR = [['9999', '24K · 99.99%', 0.9999], ['965', 'Thai 96.5%', 0.965], ['916', '22K · 91.67%', 0.9167], ['750', '18K · 75%', 0.75], ['585', '14K · 58.5%', 0.585]];
+const PURS = {gold: [['9999', '24K · 99.99%', 0.9999], ['965', 'Thai 96.5%', 0.965], ['916', '22K · 91.67%', 0.9167], ['750', '18K · 75%', 0.75], ['585', '14K · 58.5%', 0.585]],
+  silver: [['999', 'Fine · 99.9%', 0.999], ['958', 'Britannia · 95.8%', 0.958], ['925', 'Sterling · 92.5%', 0.925], ['900', 'Coin · 90%', 0.9], ['800', '80%', 0.8]]};
+let metal = 'gold'; const PUR = () => PURS[metal];
 const CURS = [['USD','US dollar'],['EUR','Euro'],['GBP','British pound'],['THB','Thai baht'],['JPY','Japanese yen'],['KRW','Korean won'],['CNY','Chinese yuan'],['INR','Indian rupee'],['RUB','Russian ruble'],['BRL','Brazilian real'],['MXN','Mexican peso'],['CAD','Canadian dollar'],['AUD','Australian dollar'],['CHF','Swiss franc'],['SGD','Singapore dollar']];
 const rates = Object.assign({USD: 1}, D.fx || {});
 let cur = 'USD'; try { cur = localStorage.getItem('ml_cur') || 'USD'; } catch (e) {}
-let goldOz = D.gold_close, goldSrc = 'daily close ' + D.gold_date;
+let goldOz = D.gold_close, goldSrc = 'daily close ' + D.gold_date, silverOz = null, silverSrc = 'loading…';
 const money = (usd) => { const c = rates[cur] ? cur : 'USD', x = usd * (rates[c] || 1);
   try { return new Intl.NumberFormat('en-US', {style: 'currency', currency: c, currencyDisplay: 'narrowSymbol', maximumFractionDigits: x >= 100 ? 0 : 2}).format(x); } catch (e) { return c + ' ' + x.toFixed(2); } };
 
 document.getElementById('conv').innerHTML = Object.entries(G).map(([k, g]) => `
   <section class="cv${g.wide ? ' wide' : ''}" style="--cc:${g.cc}" id="cv-${k}">
-    <header class="chead"><h2 class="disp" style="color:${g.cc}">${g.title}</h2></header>
+    <header class="chead"><h2 class="disp" style="color:var(--cc)">${g.title}</h2></header>
     <div class="cvin"><input type="number" inputmode="decimal" value="1" step="any" aria-label="${g.title} amount" data-k="${k}">
       <select aria-label="${g.title} unit" data-k="${k}">${g.units.map((u) => `<option value="${u[0]}">${u[1]}</option>`).join('')}</select>
-      ${k === 'gold' ? `<select aria-label="Gold purity" id="pur">${PUR.map((p) => `<option value="${p[0]}">${p[1]}</option>`).join('')}</select>` : ''}</div>
+      ${k === 'gold' ? `<select aria-label="Purity" id="pur">${PUR().map((p) => `<option value="${p[0]}">${p[1]}</option>`).join('')}</select><span class="seg" role="group" aria-label="Metal"><button type="button" class="on" data-metal="gold">Gold</button><button type="button" data-metal="silver">Silver</button></span>` : ''}</div>
     <div class="res" id="res-${k}"></div>
-    ${k === 'gold' ? `<div class="bh" style="margin:6px 0 0">Gold Value <span class="note2" style="text-transform:none;letter-spacing:0;font-weight:500">at this weight and purity</span></div><div class="val" id="val"></div>
-    <p class="note2">Thai baht gold weight = 15.244 g (bullion); jewellery baht = 15.16 g. Silver uses the same weights. Precious metals are always weighed in troy ounces (31.10 g), never the regular ounce (28.35 g). Value is for pure-gold content only, before shop premiums, making charges and taxes. Information only, not an offer to buy or sell.</p>` : ''}
+    ${k === 'gold' ? `<div class="bh" style="margin:6px 0 0"><span id="metname">Gold</span> Value <span class="note2" style="text-transform:none;letter-spacing:0;font-weight:500">at this weight and purity</span></div><div class="val" id="val"></div>
+    <p class="note2">Thai baht gold weight = 15.244 g (bullion); jewellery baht = 15.16 g. Silver uses the same weights. Precious metals are always weighed in troy ounces (31.10 g), never the regular ounce (28.35 g). Value is for the pure-metal content only, before shop premiums, making charges and taxes. Information only, not an offer to buy or sell.</p>` : ''}
   </section>`).join('');
 
 function update(k) {
@@ -437,11 +439,14 @@ function update(k) {
   else { const base = v * g.units.find((x) => x[0] === u)[2]; rows = g.units.map((x) => [x, base / x[2]]); }
   document.getElementById('res-' + k).innerHTML = rows.map(([x, r]) => `<div class="${x[0] === u ? 'src' : ''}"><b>${isNaN(v) ? '—' : fmt(r)}</b><span>${esc(x[1])}</span></div>`).join('');
   if (k === 'gold') {
-    const grams = v * g.units.find((x) => x[0] === u)[2], pur = PUR.find((p) => p[0] === document.getElementById('pur').value)[2];
-    const usd = grams / 31.1034768 * goldOz * pur;
-    document.getElementById('val').innerHTML = isNaN(v) || !goldOz ? '<div><b>—</b><span>Gold price unavailable</span></div>' :
-      `<div><b>${money(usd)}</b><span>Value · ${esc(cur)}</span></div><div><b>${money(goldOz)}</b><span>Gold per troy ounce</span></div><div><b>${money(goldOz / 31.1034768 * 15.244 * 0.965)}</b><span>Thai baht weight · 96.5%</span></div>`;
-    document.getElementById('goldsrc').textContent = `Gold price: ${goldSrc}` + (cur !== 'USD' && rates[cur] ? ` · 1 USD = ${rates[cur] >= 100 ? rates[cur].toFixed(0) : rates[cur].toFixed(4)} ${cur}` : '');
+    const grams = v * g.units.find((x) => x[0] === u)[2], pur = (PUR().find((p) => p[0] === document.getElementById('pur').value) || PUR()[0])[2];
+    const oz = metal === 'gold' ? goldOz : silverOz, name = metal === 'gold' ? 'Gold' : 'Silver';
+    const usd = grams / 31.1034768 * oz * pur;
+    document.getElementById('metname').textContent = name;
+    document.getElementById('val').innerHTML = isNaN(v) || !oz ? `<div><b>—</b><span>${name} price unavailable right now</span></div>` :
+      `<div><b>${money(usd)}</b><span>Value · ${esc(cur)}</span></div><div><b>${money(oz)}</b><span>${name} per troy ounce</span></div>` +
+      (metal === 'gold' ? `<div><b>${money(oz / 31.1034768 * 15.244 * 0.965)}</b><span>Thai baht weight · 96.5%</span></div>` : `<div><b>${money(oz / 31.1034768 * 1000)}</b><span>Silver per kilogram · pure</span></div>`);
+    document.getElementById('goldsrc').textContent = `Gold price: ${goldSrc} · Silver price: ${silverSrc}` + (cur !== 'USD' && rates[cur] ? ` · 1 USD = ${rates[cur] >= 100 ? rates[cur].toFixed(0) : rates[cur].toFixed(4)} ${cur}` : '');
   }
 }
 document.getElementById('conv').addEventListener('input', (e) => { const k = e.target.dataset.k || (e.target.id === 'pur' ? 'gold' : null); if (k) update(k); });
@@ -456,6 +461,16 @@ fetch('https://api.coinbase.com/v2/exchange-rates?currency=USD', {cache: 'no-sto
 const live = () => fetch('https://api.exchange.coinbase.com/products/PAXG-USD/ticker', {cache: 'no-store'}).then((r) => r.ok ? r.json() : Promise.reject()).then((j) => {
   const p = +j.price; if (p > 0) { goldOz = p; goldSrc = 'LIVE ' + new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}) + ' (Coinbase, PAX Gold)'; update('gold'); } }).catch(() => {});
 live(); setInterval(() => { if (!document.hidden) live(); }, 30000);
+const silver = () => fetch('https://api.gold-api.com/price/XAG', {cache: 'no-store'}).then((r) => r.ok ? r.json() : Promise.reject()).then((j) => {
+  const p = +j.price; if (p > 0) { silverOz = p; silverSrc = 'LIVE ' + new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}) + ' (Gold-API)'; update('gold'); } }).catch(() => { silverSrc = 'unavailable'; update('gold'); });
+silver(); setInterval(() => { if (!document.hidden) silver(); }, 60000);
+document.getElementById('cv-gold').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-metal]'); if (!b) return;
+  metal = b.dataset.metal; document.querySelectorAll('[data-metal]').forEach((x) => x.classList.toggle('on', x === b));
+  document.getElementById('pur').innerHTML = PUR().map((p) => `<option value="${p[0]}">${p[1]}</option>`).join('');
+  document.getElementById('cv-gold').style.setProperty('--cc', metal === 'gold' ? 'var(--c-gold)' : '#c0c7d2');
+  update('gold');
+});
 
 // ---- currency exchange
 const fxSel = (id, def) => { const el = document.getElementById(id); el.innerHTML = CURS.filter(([c]) => rates[c]).map(([c, n]) => `<option value="${c}"${c === def ? ' selected' : ''}>${c} · ${n}</option>`).join(''); return el; };
