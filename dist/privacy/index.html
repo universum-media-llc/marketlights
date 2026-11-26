@@ -252,7 +252,10 @@ footer p{max-width:80ch;margin:0 0 10px}
 /* breathing room: more space between boxes, slightly smaller content */
 .band{padding:clamp(32px,5vw,72px) max(5vw,16px)}
 .box{padding:16px 20px}
-.brand{font-size:34px!important}
+.brand{font-size:clamp(36px,5vw,56px)!important;gap:18px!important}
+.brand i{gap:9px!important;padding:11px 14px!important;border-radius:16px!important;background:#0c0d0f!important;border:3px solid transparent!important;background-image:linear-gradient(#0c0d0f,#0c0d0f),linear-gradient(135deg,#f7e08a,#c99a2e 35%,#fff3c4 55%,#a87a1e 80%,#e8c96a)!important;background-origin:border-box!important;background-clip:padding-box,border-box!important;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 18px rgba(212,175,55,.35)!important}
+.brand i b{width:clamp(16px,2vw,22px)!important;height:clamp(16px,2vw,22px)!important}
+@media(max-width:600px){.brand{font-size:34px!important;gap:12px!important}.brand i{padding:8px 10px!important;gap:6px!important}}
 h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
 .note{font-size:16px!important}
 .infobar{gap:24px!important;margin-top:28px!important}
@@ -309,6 +312,15 @@ h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
 .val b{display:block;font:700 26px "Barlow Semi Condensed",Inter,sans-serif;color:var(--c-gold)}
 .val span{font:800 11px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .note2{font-size:13px;color:var(--mute);margin:0}
+.r3g{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end}
+.r3g span{font-weight:800;font-size:20px;padding-bottom:10px;color:var(--amb)}
+.r3g label{display:grid;gap:4px;font:800 12px Inter,sans-serif;letter-spacing:.06em;color:var(--mute)}
+.r3g input,.pl input{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.r3g output{display:block;font:700 24px "Barlow Semi Condensed",Inter,sans-serif;border:2px solid var(--amb);border-radius:10px;padding:7px 12px;background:color-mix(in srgb,var(--amb) 10%,var(--panel));color:var(--amb)}
+.pl{display:grid;grid-template-columns:auto 90px auto 90px auto minmax(80px,1fr);gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:14px;font-weight:600}
+.pl:first-of-type{border-top:0}
+.pl b{font:700 22px "Barlow Semi Condensed",Inter,sans-serif;color:var(--c-crypto);text-align:right}
+@media(max-width:600px){.pl{grid-template-columns:auto 1fr auto 1fr}.pl b{grid-column:1/-1;text-align:left}.pl span:nth-of-type(3){display:none}}
 </style>
 </head>
 <body>
