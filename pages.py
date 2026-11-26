@@ -47,6 +47,15 @@ EXTRA_CSS = """
 .val b{display:block;font:700 26px "Barlow Semi Condensed",Inter,sans-serif;color:var(--c-gold)}
 .val span{font:800 11px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .note2{font-size:13px;color:var(--mute);margin:0}
+.r3g{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end}
+.r3g span{font-weight:800;font-size:20px;padding-bottom:10px;color:var(--amb)}
+.r3g label{display:grid;gap:4px;font:800 12px Inter,sans-serif;letter-spacing:.06em;color:var(--mute)}
+.r3g input,.pl input{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.r3g output{display:block;font:700 24px "Barlow Semi Condensed",Inter,sans-serif;border:2px solid var(--amb);border-radius:10px;padding:7px 12px;background:color-mix(in srgb,var(--amb) 10%,var(--panel));color:var(--amb)}
+.pl{display:grid;grid-template-columns:auto 90px auto 90px auto minmax(80px,1fr);gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:14px;font-weight:600}
+.pl:first-of-type{border-top:0}
+.pl b{font:700 22px "Barlow Semi Condensed",Inter,sans-serif;color:var(--c-crypto);text-align:right}
+@media(max-width:600px){.pl{grid-template-columns:auto 1fr auto 1fr}.pl b{grid-column:1/-1;text-align:left}.pl span:nth-of-type(3){display:none}}
 """
 
 
@@ -106,7 +115,7 @@ def box(title, inner, color="var(--line)"):
 CONV_BODY = """
 <div class="prose" style="max-width:none">
   <h1 class="disp">Unit Converter</h1>
-  <p style="margin:0;color:var(--mute)">Gold &amp; silver weights, length, area, weight, volume and temperature in one place. Type a number: every other unit updates at once.</p>
+  <p style="margin:0;color:var(--mute)">Gold &amp; silver weights, length, area, weight, volume, temperature, currency exchange, rule of three and percentages in one place. Type a number: every result updates at once.</p>
 </div>
 <div class="box" style="margin-top:22px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;border-color:var(--usd)">
   <div class="bh" style="margin:0">Your Currency</div>
@@ -114,6 +123,33 @@ CONV_BODY = """
   <span id="goldsrc" class="note2"></span>
 </div>
 <div class="convgrid" id="conv"></div>
+<div class="convgrid">
+  <section class="cv wide" style="--cc:var(--usd)" id="fxbox">
+    <header class="chead"><h2 class="disp" style="color:var(--usd)">Currency Exchange</h2></header>
+    <div class="cvin"><input type="number" inputmode="decimal" value="100" step="any" id="fxamt" aria-label="Amount">
+      <select id="fxfrom" aria-label="From currency"></select><span style="font-weight:800">→</span><select id="fxto" aria-label="To currency"></select></div>
+    <div class="val" id="fxmain"></div>
+    <div class="bh" style="margin:4px 0 0">In Other Currencies</div>
+    <div class="res" id="fxall"></div>
+    <p class="note2" id="fxnote"></p>
+  </section>
+  <section class="cv" style="--cc:var(--amb)" id="r3">
+    <header class="chead"><h2 class="disp" style="color:var(--amb)">Rule of Three</h2></header>
+    <p class="note2" style="font-size:14px">If <b>A</b> gives <b>B</b>, how much does <b>C</b> give? Example: 2 kg cost 300 baht, so 5 kg cost 750 baht.</p>
+    <div class="r3g">
+      <label>A<input type="number" step="any" value="2" id="r3a"></label><span>→</span><label>B<input type="number" step="any" value="300" id="r3b"></label>
+      <label>C<input type="number" step="any" value="5" id="r3c"></label><span>→</span><label>X<output id="r3x">—</output></label>
+    </div>
+    <div class="seg" role="group" aria-label="Proportion type" style="width:fit-content"><button type="button" class="on" data-r3="d">Direct</button><button type="button" data-r3="i">Inverse</button></div>
+    <p class="note2" id="r3n"></p>
+  </section>
+  <section class="cv" style="--cc:var(--c-crypto)" id="pct">
+    <header class="chead"><h2 class="disp" style="color:var(--c-crypto)">Percentage</h2></header>
+    <div class="pl"><span>What is</span><input type="number" step="any" value="15" id="p1a"><span>% of</span><input type="number" step="any" value="200" id="p1b"><span>=</span><b id="p1x">—</b></div>
+    <div class="pl"><span>Change from</span><input type="number" step="any" value="80" id="p2a"><span>to</span><input type="number" step="any" value="100" id="p2b"><span>=</span><b id="p2x">—</b></div>
+    <div class="pl"><span></span><input type="number" step="any" value="30" id="p3a"><span>is what % of</span><input type="number" step="any" value="120" id="p3b"><span>=</span><b id="p3x">—</b></div>
+  </section>
+</div>
 """
 
 CONV_JS = r"""<script>
@@ -126,7 +162,7 @@ const fmt = (x) => { if (!isFinite(x)) return '—'; const a = Math.abs(x); cons
 const G = {
   gold: {title: 'Gold &amp; Silver Weight', cc: 'var(--c-gold)', base: 'g', wide: true, units: [
     ['ozt', 'Troy ounce', 31.1034768], ['g', 'Gram', 1], ['kg', 'Kilogram', 1000],
-    ['baht', 'Thai baht (gold)', 15.244], ['tola', 'Tola (India)', 11.6638038], ['tael', 'Tael (Hong Kong)', 37.429], ['oz', 'Ounce (regular)', 28.349523125]]},
+    ['baht', 'Thai baht (gold)', 15.244], ['tola', 'Tola (India)', 11.6638038], ['tael', 'Tael (Hong Kong)', 37.429]]},
   length: {title: 'Length', cc: '#6f9fd0', units: [
     ['m', 'Metre', 1], ['cm', 'Centimetre', 0.01], ['mm', 'Millimetre', 0.001], ['km', 'Kilometre', 1000],
     ['in', 'Inch', 0.0254], ['ft', 'Foot', 0.3048], ['yd', 'Yard', 0.9144], ['mi', 'Mile', 1609.344], ['wah', 'Thai wah', 2]]},
@@ -160,7 +196,7 @@ document.getElementById('conv').innerHTML = Object.entries(G).map(([k, g]) => `
       ${k === 'gold' ? `<select aria-label="Gold purity" id="pur">${PUR.map((p) => `<option value="${p[0]}">${p[1]}</option>`).join('')}</select>` : ''}</div>
     <div class="res" id="res-${k}"></div>
     ${k === 'gold' ? `<div class="bh" style="margin:6px 0 0">Gold Value <span class="note2" style="text-transform:none;letter-spacing:0;font-weight:500">at this weight and purity</span></div><div class="val" id="val"></div>
-    <p class="note2">Thai baht gold weight = 15.244 g (bullion); jewellery baht = 15.16 g. Silver uses the same weights. Value is for pure-gold content only, before shop premiums, making charges and taxes. Information only, not an offer to buy or sell.</p>` : ''}
+    <p class="note2">Thai baht gold weight = 15.244 g (bullion); jewellery baht = 15.16 g. Silver uses the same weights. Precious metals are always weighed in troy ounces (31.10 g), never the regular ounce (28.35 g). Value is for pure-gold content only, before shop premiums, making charges and taxes. Information only, not an offer to buy or sell.</p>` : ''}
   </section>`).join('');
 
 function update(k) {
@@ -189,6 +225,47 @@ fetch('https://api.coinbase.com/v2/exchange-rates?currency=USD', {cache: 'no-sto
 const live = () => fetch('https://api.exchange.coinbase.com/products/PAXG-USD/ticker', {cache: 'no-store'}).then((r) => r.ok ? r.json() : Promise.reject()).then((j) => {
   const p = +j.price; if (p > 0) { goldOz = p; goldSrc = 'LIVE ' + new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}) + ' (Coinbase, PAX Gold)'; update('gold'); } }).catch(() => {});
 live(); setInterval(() => { if (!document.hidden) live(); }, 30000);
+
+// ---- currency exchange
+const fxSel = (id, def) => { const el = document.getElementById(id); el.innerHTML = CURS.filter(([c]) => rates[c]).map(([c, n]) => `<option value="${c}"${c === def ? ' selected' : ''}>${c} · ${n}</option>`).join(''); return el; };
+const fmtCur = (x, c) => { try { return new Intl.NumberFormat('en-US', {style: 'currency', currency: c, currencyDisplay: 'narrowSymbol', maximumFractionDigits: Math.abs(x) >= 1000 ? 0 : 2}).format(x); } catch (e) { return c + ' ' + x.toFixed(2); } };
+let fxF = 'USD', fxT = cur === 'USD' ? 'THB' : cur, fxSrc = D.fx_date ? 'Federal Reserve, ' + D.fx_date : '';
+function fxUpdate() {
+  const a = parseFloat(document.getElementById('fxamt').value), usd = a / rates[fxF];
+  document.getElementById('fxmain').innerHTML = isNaN(a) ? '' : `<div style="border-color:var(--usd);background:color-mix(in srgb,var(--usd) 10%,var(--panel))"><b style="color:var(--usd)">${fmtCur(usd * rates[fxT], fxT)}</b><span>${esc(fmtCur(a, fxF))} in ${fxT}</span></div><div style="border-color:var(--line);background:var(--panel)"><b style="color:var(--ink)">${fmt(rates[fxT] / rates[fxF])}</b><span>1 ${fxF} = ? ${fxT}</span></div><div style="border-color:var(--line);background:var(--panel)"><b style="color:var(--ink)">${fmt(rates[fxF] / rates[fxT])}</b><span>1 ${fxT} = ? ${fxF}</span></div>`;
+  document.getElementById('fxall').innerHTML = isNaN(a) ? '' : CURS.filter(([c]) => rates[c] && c !== fxF).map(([c, n]) => `<div class="${c === fxT ? 'src' : ''}"><b>${fmtCur(usd * rates[c], c)}</b><span>${n}</span></div>`).join('');
+  document.getElementById('fxnote').textContent = 'Rates: ' + fxSrc + '. Mid-market rates for information only; banks and exchange shops add a margin.';
+}
+const fxInit = () => { fxSel('fxfrom', fxF); fxSel('fxto', fxT); fxUpdate(); };
+fxInit();
+document.getElementById('fxbox').addEventListener('input', (e) => { if (e.target.id === 'fxfrom') fxF = e.target.value; if (e.target.id === 'fxto') fxT = e.target.value; fxUpdate(); });
+fetch('https://api.coinbase.com/v2/exchange-rates?currency=USD', {cache: 'no-store'}).then((r) => r.ok ? r.json() : Promise.reject()).then((j) => {
+  CURS.forEach(([c]) => { const x = +((j.data || {}).rates || {})[c]; if (x > 0) rates[c] = x; });
+  fxSrc = 'Coinbase, live ' + new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}); fxInit(); }).catch(() => {});
+
+// ---- rule of three
+let r3m = 'd';
+function r3() {
+  const [a, b, c] = ['r3a', 'r3b', 'r3c'].map((id) => parseFloat(document.getElementById(id).value));
+  const x = r3m === 'd' ? b * c / a : a * b / c, ok = isFinite(x) && !isNaN(x);
+  document.getElementById('r3x').textContent = ok ? fmt(x) : '—';
+  document.getElementById('r3n').textContent = !ok ? 'Fill in A, B and C (A and C cannot be 0).' : r3m === 'd'
+    ? `Direct: more C gives more X. X = B × C ÷ A = ${fmt(b)} × ${fmt(c)} ÷ ${fmt(a)}`
+    : `Inverse: more C gives less X (e.g. more workers, fewer days). X = A × B ÷ C = ${fmt(a)} × ${fmt(b)} ÷ ${fmt(c)}`;
+}
+document.getElementById('r3').addEventListener('input', r3);
+document.getElementById('r3').addEventListener('click', (e) => { const bt = e.target.closest('[data-r3]'); if (!bt) return; r3m = bt.dataset.r3; document.querySelectorAll('[data-r3]').forEach((x) => x.classList.toggle('on', x === bt)); r3(); });
+r3();
+
+// ---- percentage
+function pc() {
+  const g = (id) => parseFloat(document.getElementById(id).value);
+  const x1 = g('p1a') / 100 * g('p1b'), x2 = (g('p2b') - g('p2a')) / g('p2a') * 100, x3 = g('p3a') / g('p3b') * 100;
+  document.getElementById('p1x').textContent = isFinite(x1) ? fmt(x1) : '—';
+  document.getElementById('p2x').textContent = isFinite(x2) ? (x2 >= 0 ? '+' : '') + fmt(x2) + '%' : '—';
+  document.getElementById('p3x').textContent = isFinite(x3) ? fmt(x3) + '%' : '—';
+}
+document.getElementById('pct').addEventListener('input', pc); pc();
 }
 </script>"""
 
@@ -248,10 +325,10 @@ def write_all(here, data):
     tpl = open(os.path.join(here, "template.html")).read()
     dist = os.path.join(here, "dist")
     gold = next(a for a in data["assets"] if a["tick"] == "PAXG")
-    conv_data = {"fx": data.get("fx", {}), "gold_close": gold["price"], "gold_date": gold["date"]}
+    conv_data = {"fx": data.get("fx", {}), "fx_date": data.get("fx_date", ""), "gold_close": gold["price"], "gold_date": gold["date"]}
     pages = {
-        "convert": ("Unit Converter · Gold Baht, Troy Ounce, Square Metre, Rai & More · MarketLights",
-                    "Free unit converter: gold and silver weights (troy ounce, gram, Thai baht, tola, tael) with live gold value, plus length, area (rai, ngan, square wah), weight, volume and temperature.",
+        "convert": ("Unit Converter & Calculators · Gold Baht, Troy Ounce, Currency, Rule of Three · MarketLights",
+                    "Free tools: gold and silver weights (troy ounce, gram, Thai baht, tola, tael) with live gold value, currency exchange, rule of three, percentage, plus length, area (rai, ngan, square wah), weight, volume and temperature.",
                     CONV_BODY, CONV_JS, conv_data),
         "about": ("About · MarketLights", "What MarketLights is, how the daily traffic lights work and who publishes it.", ABOUT, "", None),
         "contact": ("Contact · MarketLights", "How to contact MarketLights and Universum Media LLC.", CONTACT, "", None),

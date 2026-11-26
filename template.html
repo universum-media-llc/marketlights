@@ -252,7 +252,10 @@ footer p{max-width:80ch;margin:0 0 10px}
 /* breathing room: more space between boxes, slightly smaller content */
 .band{padding:clamp(32px,5vw,72px) max(5vw,16px)}
 .box{padding:16px 20px}
-.brand{font-size:34px!important}
+.brand{font-size:clamp(36px,5vw,56px)!important;gap:18px!important}
+.brand i{gap:9px!important;padding:11px 14px!important;border-radius:16px!important;background:#0c0d0f!important;border:3px solid transparent!important;background-image:linear-gradient(#0c0d0f,#0c0d0f),linear-gradient(135deg,#f7e08a,#c99a2e 35%,#fff3c4 55%,#a87a1e 80%,#e8c96a)!important;background-origin:border-box!important;background-clip:padding-box,border-box!important;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 18px rgba(212,175,55,.35)!important}
+.brand i b{width:clamp(16px,2vw,22px)!important;height:clamp(16px,2vw,22px)!important}
+@media(max-width:600px){.brand{font-size:34px!important;gap:12px!important}.brand i{padding:8px 10px!important;gap:6px!important}}
 h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
 .note{font-size:16px!important}
 .infobar{gap:24px!important;margin-top:28px!important}
