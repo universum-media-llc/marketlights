@@ -182,6 +182,14 @@ footer p{max-width:80ch;margin:0 0 10px}
 @media(max-width:860px){.card{grid-template-columns:minmax(0,1fr)}.thermo{flex-direction:row;align-items:center}.thermo .tube{min-height:14px;height:14px;width:auto;background:linear-gradient(90deg,#e4dcf2,#5b2a8c)}.thermo .pm{top:50%;transform:translate(-50%,-50%)}.legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.tile .v{font-size:24px}.tile .v svg{width:24px;height:24px}.strip{grid-template-columns:minmax(0,1fr)}.row{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:28px}.sig .ph{font-size:22px}}
 
+/* one frame per coin, in the coin's colour */
+.sig{border:2px solid var(--cc);border-radius:16px;padding:20px 12px 18px;background:color-mix(in srgb,var(--cc) 7%,#121416);box-shadow:0 0 0 1px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.35)}
+.sig .nm{padding-bottom:12px;border-bottom:1px solid color-mix(in srgb,var(--cc) 45%,transparent)}
+.row{gap:clamp(16px,2.4vw,32px)!important}
+.card{border:3px solid var(--cc)!important;border-radius:18px!important;background:color-mix(in srgb,var(--cc) 4%,var(--bg));box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.card .left>h2{padding:12px 16px;border-radius:12px;background:color-mix(in srgb,var(--cc) 14%,var(--panel));border:1px solid color-mix(in srgb,var(--cc) 50%,transparent)}
+.cards{gap:56px!important}
+@media(max-width:600px){.sig .nm{font-size:19px!important;gap:6px}.sig .coin{width:26px!important;height:26px!important}.sig{padding:16px 8px}}
 /* every item in its own box; parts inside a box separated by a thin line */
 .sec{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
 .side{display:grid;gap:20px;align-content:start}
@@ -445,7 +453,7 @@ document.getElementById('moodval').innerHTML = hl(`${D.fng_word} ${D.fng}` + (D.
 }
 
 document.getElementById('row').innerHTML = D.assets.map((a) => `
-  <div class="sig">
+  <div class="sig" style="--cc:${ACOL[a.tick]}">
     <div class="nm disp">${coin(a.tick)}<span style="color:${ACOL[a.tick]}">${esc(a.name)}</span></div>
     ${signal(a.phase, a.light)}
     ${a.light ? `<div class="ph disp" style="color:${PCOL[a.phase]}">${esc(ACT[a.phase])}</div>
@@ -513,7 +521,7 @@ document.getElementById('cards').innerHTML = D.assets.map((a, i) => {
   const watch = `<div class="wl"><em class="p">Positive sign</em><span>${r1 ? `a daily close above ${hl('resistance')} at <b>${money(r1)}</b>` : hl('price is near recent highs; no resistance above')}</span></div>` +
     `<div class="wl"><em class="n">Negative sign</em><span>${s1 ? `a daily close below ${hl('support')} at <b>${money(s1)}</b>` : hl('no support below in the last six months')}</span></div>`;
   return `
-  <article class="card" id="${esc(a.tick.toLowerCase())}">
+  <article class="card" id="${esc(a.tick.toLowerCase())}" style="--cc:${ACOL[a.tick]}">
     ${thermo(a)}
     <div class="left">
       <h2 class="disp">${coin(a.tick)}<span class="nm" style="color:${ACOL[a.tick]}">${esc(a.name)}</span> ${a.light ? `<span class="tag" style="background:${PCOL[a.phase]}">${esc(ACT[a.phase] + ': ' + NAME[a.phase])}</span>` : `<span class="tag" style="background:#c9ced4">Not rated: levels only</span>`}</h2>

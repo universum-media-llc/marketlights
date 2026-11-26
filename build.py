@@ -126,12 +126,16 @@ def main():
         avg50 = [round(sum(c[i - 49:i + 1]) / 50, 4) for i in range(n - 120, n)]
         avg200 = [round(sum(c[i - 199:i + 1]) / 200, 4) for i in range(n - 120, n)]
         low2y = min(c[-730:])
+        wd = dates[::-1][::7][::-1]; wc = [price[d] for d in wd]; nw = len(wc)
+        wspark = [round(v, 4) for v in wc[-104:]]; wdates = wd[-104:]
+        wavg50 = [round(sum(wc[i - 49:i + 1]) / 50, 4) if i >= 49 else None for i in range(nw - 104, nw)]
+        wavg200 = [round(sum(wc[i - 199:i + 1]) / 200, 4) if i >= 199 else None for i in range(nw - 104, nw)]
         out.append({
             "name": name, "tick": tick, "light": light, "phase": r["latest"]["phase"], "since": since,
             "sentence": SENT[r["latest"]["phase"]], "price": p, "date": dates[-1], "rsi": rs, "rsi_word": rsi_word(rs),
             "trend": trend, "cross": cross, "sma50": s50, "sma200": s200, "ath": ath, "from_ath": p / ath - 1,
             "support_d": d_sup, "resist_d": d_res, "support_w": w_sup, "resist_w": w_res,
-            "low365": low365, "high365": hi365, "realized": rp, "spark": spark, "spark_dates": dates[-120:], "avg50": avg50, "avg200": avg200, "low2y": low2y,
+            "low365": low365, "high365": hi365, "realized": rp, "spark": spark, "spark_dates": dates[-120:], "avg50": avg50, "avg200": avg200, "wspark": wspark, "wdates": wdates, "wavg50": wavg50, "wavg200": wavg200, "low2y": low2y,
             "chg30": p / c[-31] - 1, "chg7": p / c[-8] - 1,
             "bt_period": per, "bt_bottom_up90": S["Bottoming"].get("up90"), "bt_all_up90": S["All days"].get("up90"),
             "bt_tool": st["tool_growth"], "bt_hold": st["hold_growth"], "bt_tool_dd": st["tool_drawdown"], "bt_hold_dd": st["hold_drawdown"],
