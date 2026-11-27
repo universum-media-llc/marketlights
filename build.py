@@ -165,7 +165,8 @@ def main():
     tpl = open(os.path.join(HERE, "template.html")).read()
     blob = json.dumps(data).replace("</", "<\\/")
     os.makedirs(os.path.join(HERE, "dist"), exist_ok=True)
-    open(os.path.join(HERE, "dist", "index.html"), "w").write(tpl.replace("/*DATA*/null", blob))
+    import pages as _pg
+    open(os.path.join(HERE, "dist", "index.html"), "w").write(tpl.replace("/*DATA*/null", blob).replace("</body>", _pg.CALC_WIDGET + "\n</body>"))
     json.dump(data, open(os.path.join(HERE, "dist", "data.json"), "w"), indent=1)
     import pages
     extra = pages.write_all(HERE, data)

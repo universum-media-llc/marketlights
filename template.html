@@ -210,6 +210,14 @@ footer p{max-width:80ch;margin:0 0 10px}
 .lv-dot{width:8px;height:8px;border-radius:50%;background:var(--grn);display:inline-block}
 @media(max-width:860px){.infobar{grid-template-columns:minmax(0,1fr)!important}}
 @media(max-width:600px){.minis{grid-template-columns:minmax(0,1fr)}.bigcal{width:78px;height:88px;grid-template-rows:20px 1fr 16px}.bigcal b{font-size:38px;line-height:52px}}
+/* LIVE badge: red, white, blinking dot, impossible to miss */
+.livetag{display:inline-flex;align-items:center;gap:6px;background:#e0302a;color:#fff!important;font:800 13px/1 Inter,sans-serif;letter-spacing:.08em;padding:5px 10px 5px 8px;border-radius:999px;box-shadow:0 0 0 0 rgba(224,48,42,.6)}
+.livetag i{width:9px!important;height:9px!important;border-radius:50%;background:#fff!important;display:inline-block;margin:0!important}
+@media (prefers-reduced-motion:no-preference){.live.on .livetag{animation:livering 1.8s ease-out infinite}.live.on .livetag i{animation:liveblink 1s steps(2,start) infinite}}
+@keyframes liveblink{to{visibility:hidden}}
+@keyframes livering{0%{box-shadow:0 0 0 0 rgba(224,48,42,.65)}70%{box-shadow:0 0 0 9px rgba(224,48,42,0)}100%{box-shadow:0 0 0 0 rgba(224,48,42,0)}}
+.live{gap:6px 8px!important;font-size:15px!important}
+.mini2 .lv-dot{background:#e0302a!important}
 /* coin card: header, chart box, four summary boxes */
 .chead{grid-column:1/-1;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 18px;border-radius:12px;background:color-mix(in srgb,var(--cc) 14%,var(--panel));border:1px solid color-mix(in srgb,var(--cc) 50%,transparent)}
 .chead h2{margin:0;font-size:clamp(26px,3vw,36px);line-height:1;text-transform:uppercase}
@@ -292,6 +300,17 @@ h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
 .gcard .gb{padding:8px 18px 14px!important}
 .gr{padding:9px 0!important}
 @media(max-width:600px){.tile .v{font-size:22px!important}.infobar,.strip,.key{gap:16px!important}.cards{gap:32px!important}.card{gap:28px!important}}
+
+/* ad spaces: reserved, fixed height (no jumping); hidden until ads are switched on; preview with ?ads=1 */
+.adslot{display:none;margin:0 auto;width:100%;max-width:970px;box-sizing:border-box;border-radius:14px;text-align:center}
+.adslot.lead{min-height:100px}.adslot.rect{min-height:280px;max-width:728px}
+.ads-on .adslot,.ads-preview .adslot{display:grid;place-items:center}
+.ads-preview .adslot{border:2px dashed #ffb000;background:repeating-linear-gradient(135deg,#1a1d20 0 14px,#16191c 14px 28px)}
+.ads-preview .adslot::before{content:"AD SPACE · " attr(data-size);font:800 15px Inter,sans-serif;letter-spacing:.08em;color:#ffb000}
+.adlbl{display:none;font:700 11px Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#8a9199;text-align:center;margin:0 0 6px}
+.ads-on .adlbl,.ads-preview .adlbl{display:block}
+.adwrap{margin:28px 0}
+@media(max-width:600px){.adslot.lead{min-height:100px;max-width:336px}.adslot.rect{min-height:280px;max-width:336px}}
 </style>
 </head>
 <body>
@@ -299,17 +318,17 @@ h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
   <div class="wrap">
     <div class="top">
       <div class="brand disp"><i><b style="background:var(--red);box-shadow:0 0 7px var(--red)"></b><b style="background:var(--amb);box-shadow:0 0 7px var(--amb)"></b><b style="background:var(--grn);box-shadow:0 0 7px var(--grn)"></b></i>MarketLights</div>
-      <nav class="topnav" aria-label="Main"><a href="/" class="on">Market Lights</a><a href="/convert/">Unit Converter</a><a href="/about/">About</a><a href="/contact/">Contact</a></nav>
+      <nav class="topnav" aria-label="Main"><a href="/" class="on">Market Lights</a><a href="/convert/">Unit Converter</a><a href="#calculator" data-opencalc>Calculator</a><a href="/about/">About</a><a href="/contact/">Contact</a></nav>
     </div>
     <div class="infobar">
       <div class="box updbox"><div class="bh">Updated</div>
         <div class="updrow">
           <div class="bigcal" aria-hidden="true"><span id="calm"></span><b id="cald"></b><i id="calw"></i></div>
-          <div class="upmain"><div class="update" id="upddate"></div><div class="uptime"><span id="updtime"></span> <select id="tz" aria-label="Time zone"><option value="">Your time zone</option><option value="UTC">UTC</option><option value="America/New_York">New York</option><option value="Europe/London">London</option><option value="Asia/Bangkok">Bangkok</option><option value="Asia/Tokyo">Tokyo</option></select></div></div>
+          <div class="upmain"><div class="update" id="upddate"></div><div class="uptime"><span id="updtime"></span> <select id="tz" aria-label="Time zone"><option value="">Your time zone</option><option value="UTC">UTC</option><option value="America/New_York">New York</option><option value="Europe/London">London</option><option value="America/Los_Angeles">Los Angeles</option><option value="America/Chicago">Chicago</option><option value="America/Sao_Paulo">São Paulo</option><option value="Europe/Paris">Paris · Berlin</option><option value="Asia/Dubai">Dubai</option><option value="Asia/Kolkata">India</option><option value="Asia/Singapore">Singapore</option><option value="Asia/Bangkok">Bangkok</option><option value="Asia/Tokyo">Tokyo</option><option value="Australia/Sydney">Sydney</option></select></div></div>
         </div>
         <div class="minis">
           <div class="mini2"><span>Lights &amp; charts</span><b><span id="closelbl">Daily close</span> · <span id="closeday"></span></b></div>
-          <div class="mini2"><span>Next update</span><b>Every day 09:20 Bangkok</b></div>
+          <div class="mini2"><span>Next update</span><b id="nextupd">Every day 02:20 UTC</b></div>
           <div class="mini2"><span><b class="lv-dot"></b>Live price</span><b>Every 15 seconds</b></div>
         </div>
       </div>
@@ -343,7 +362,9 @@ h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
 </section>
 
 <main class="band">
+  <div class="wrap"><div class="adwrap"><p class="adlbl">Advertisement</p><div class="adslot lead" data-ad="home-top" data-size="728×90 · phone 320×100"></div></div></div>
   <div class="wrap cards" id="cards"></div>
+  <div class="wrap" style="margin-top:44px"><div class="adwrap"><p class="adlbl">Advertisement</p><div class="adslot rect" data-ad="home-bottom" data-size="responsive · up to 728×280"></div></div></div>
 </main>
 
 
@@ -478,6 +499,8 @@ const hl = (s) => esc(s).replace(TERM_RE, (w) => {
     document.getElementById('calw').textContent = f({weekday: 'short'});
     document.getElementById('upddate').textContent = f({day: 'numeric', month: 'long', year: 'numeric'});
     document.getElementById('updtime').textContent = f({hour: '2-digit', minute: '2-digit', timeZoneName: 'short'});
+    const n = new Date(Date.UTC(2026, 0, 1, 2, 20));
+    document.getElementById('nextupd').textContent = 'Every day ' + n.toLocaleString('en-GB', Object.assign({hour: '2-digit', minute: '2-digit', timeZoneName: 'short'}, tz));
   };
   tzSel.addEventListener('change', () => { try { localStorage.setItem('ml_tz', tzSel.value); } catch (e) {} showUpd(); });
   showUpd();
@@ -536,7 +559,7 @@ document.getElementById('row').innerHTML = D.assets.map((a) => `
     <div class="act" style="color:${PCOL[a.phase]};font-weight:600">${esc(NAME[a.phase])}</div>` : `<div class="nr"><div class="ph disp">Not rated</div><div class="act" style="font-weight:600">Too volatile for a signal</div></div>`}
     <div class="px"><span class="lab" style="--lc:#eef0f2">Close</span> <span class="ppill sm" style="background:${posCol(posOf(a))};color:${posInk(posOf(a))}">${money(a.price)}</span></div>
     <div class="px"><span class="lab" style="--lc:#eef0f2">7 days</span> <b style="color:${a.chg7 < 0 ? 'var(--dn)' : 'var(--up)'}">${a.chg7 < 0 ? '▼' : '▲'} ${Math.abs(a.chg7 * 100).toFixed(1)}%</b></div>
-    <div class="live" data-live="${a.tick}" hidden><b class="lab" style="--lc:#eef0f2"><i></i> LIVE</b> <span>…</span></div>
+    <div class="live" data-live="${a.tick}" hidden><b class="livetag"><i></i>LIVE</b> <span>…</span></div>
   </div>`).join('');
 
 const arrow = (deg) => `<svg viewBox="0 0 30 30" aria-hidden="true"><g transform="rotate(${deg} 15 15)"><path d="M4 15h18M16 8l7 7-7 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>`;
@@ -559,7 +582,7 @@ function tiles(a) {
   return `<div class="tiles">
     <div class="tile"><div class="k">Daily Close</div><div class="v"><span class="ppill" style="background:${posCol(posOf(a))};color:${posInk(posOf(a))};${money(a.price).length > 9 ? 'font-size:.72em' : ''}">${money(a.price)}</span></div>
       <div class="s sec"><span class="lab">30 days</span> <b style="color:${a.chg30 < 0 ? 'var(--dn)' : 'var(--up)'}">${a.chg30 < 0 ? '▼' : '▲'} ${Math.abs(a.chg30 * 100).toFixed(1)}%</b></div>
-      <div class="live sec" data-live="${a.tick}" hidden style="justify-content:flex-start"><b class="lab" style="--lc:#eef0f2"><i></i> LIVE</b> <span>…</span></div></div>
+      <div class="live sec" data-live="${a.tick}" hidden style="justify-content:flex-start"><b class="livetag"><i></i>LIVE</b> <span>…</span></div></div>
     <div class="tile"><div class="k">Trend${info('trend')}</div><div class="v" style="font-size:clamp(20px,2.2vw,28px);white-space:nowrap;color:${tr === 'Uptrend' ? 'var(--up)' : tr === 'Downtrend' ? 'var(--dn)' : 'inherit'}">${arrow(deg)}${esc(tr)}</div>
       <div class="s sec" style="text-transform:uppercase;font-weight:700;letter-spacing:.03em">${hl(a.trend.includes('(') ? a.trend.split('(')[1].replace(')', '') : '')}</div></div>
     <div class="tile wide"><div class="k">RSI · 14 Days${info('rsi')}</div>
@@ -624,6 +647,8 @@ document.getElementById('cards').innerHTML = D.assets.map((a, i) => {
     </div>
   </article>`;
 }).join('');
+{ const cs = document.querySelectorAll('#cards > .card'), ad = (n) => `<div class="adwrap"><p class="adlbl">Advertisement</p><div class="adslot rect" data-ad="${n}" data-size="responsive · up to 728×280"></div></div>`;
+  [0, 2].forEach((j) => { if (cs[j]) cs[j].insertAdjacentHTML('afterend', ad('home-mid' + (j + 1))); }); }
 
 const SER = (a, w) => w
   ? {v: a.wspark, m50: a.wavg50, m200: a.wavg200, d: a.wdates, S: a.support_w, R: a.resist_w, span: 'LAST 2 YEARS · WEEKLY', l50: '50-WEEK AVG', l200: '200-WEEK AVG', s50: '50W', s200: '200W'}
@@ -733,6 +758,19 @@ const ro = new ResizeObserver((es) => es.forEach((e) => drawSpark(e.target)));
 document.querySelectorAll('.fig').forEach((f) => ro.observe(f));
 
 
+}
+</script>
+<script>
+/* ads: ADS_CLIENT stays empty until AdSense approves the site. Then each slot gets a real ad unit. */
+{ const ADS_CLIENT = '';
+  const prev = /[?&]ads=1\b/.test(location.search);
+  if (prev) document.documentElement.classList.add('ads-preview');
+  else if (ADS_CLIENT) {
+    document.documentElement.classList.add('ads-on');
+    const s = document.createElement('script'); s.async = true; s.crossOrigin = 'anonymous';
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADS_CLIENT; document.head.appendChild(s);
+    document.querySelectorAll('.adslot').forEach((el) => { el.innerHTML = `<ins class="adsbygoogle" style="display:block;width:100%" data-ad-client="${ADS_CLIENT}" data-ad-slot="${el.dataset.slot || ''}" data-ad-format="auto" data-full-width-responsive="true"></ins>`; (window.adsbygoogle = window.adsbygoogle || []).push({}); });
+  }
 }
 </script>
 </body>

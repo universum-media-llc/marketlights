@@ -10,7 +10,7 @@ ADDRESS = "30 N Gould St, STE R, Sheridan, WY 82801, USA"
 EMAIL = "contact@marketlights.net"
 UPDATED = "26 November 2026"
 
-NAV = [("/", "Market Lights"), ("/convert/", "Unit Converter"), ("/about/", "About"), ("/contact/", "Contact")]
+NAV = [("/", "Market Lights"), ("/convert/", "Unit Converter"), ("#calculator", "Calculator"), ("/about/", "About"), ("/contact/", "Contact")]
 
 EXTRA_CSS = """
 .topnav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -67,6 +67,93 @@ EXTRA_CSS = """
 @media(max-width:600px){.pl{grid-template-columns:auto 1fr auto 1fr}.pl b{grid-column:1/-1;text-align:left}.pl span:nth-of-type(3){display:none}}
 """
 
+CALC_WIDGET = """
+<style>
+.fcalc-btn{position:fixed;right:20px;bottom:20px;z-index:60;display:inline-flex;align-items:center;gap:10px;font:800 15px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#0b1020;background:#8fb3ff;border:0;border-radius:999px;padding:13px 20px 13px 16px;box-shadow:0 8px 24px rgba(0,0,0,.45),0 0 0 3px rgba(143,179,255,.25);cursor:pointer}
+.fcalc-btn svg{width:22px;height:22px}
+.fcalc-btn:hover{transform:translateY(-1px)}
+.fcalc{position:fixed;right:20px;bottom:84px;z-index:61;width:min(340px,calc(100vw - 24px));border:3px solid #8fb3ff;border-radius:18px;background:#15181c;padding:14px;display:grid;gap:10px;box-shadow:0 18px 50px rgba(0,0,0,.6)}
+.fcalc[hidden]{display:none}
+.fcalc header{display:flex;align-items:center;justify-content:space-between;cursor:move;user-select:none}
+.fcalc header b{font:700 22px "Barlow Semi Condensed",Inter,sans-serif;color:#8fb3ff;text-transform:uppercase;letter-spacing:.02em}
+.fcalc header button{background:none;border:1px solid #2a2e33;color:#eef0f2;border-radius:8px;font:700 14px Inter,sans-serif;padding:5px 10px;cursor:pointer}
+.fcalc .fdisp{border:2px solid #8fb3ff;border-radius:12px;background:#0f1113;padding:8px 12px;text-align:right;min-height:76px;display:grid;align-content:end}
+.fcalc .fexpr{font:600 14px Inter,sans-serif;color:#a3a9b0;min-height:18px;word-break:break-all}
+.fcalc .fout{font:700 34px/1.1 "Barlow Semi Condensed",Inter,sans-serif;color:#eef0f2;word-break:break-all}
+.fcalc .fkeys{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.fcalc .fkeys button{font:700 20px Inter,sans-serif;padding:12px 0;border-radius:10px;border:1px solid #2a2e33;background:#1a1d20;color:#eef0f2;cursor:pointer}
+.fcalc .fkeys button:hover{border-color:#8fb3ff}
+.fcalc .fkeys .fn{color:#a3a9b0}.fcalc .fkeys .op{color:#8fb3ff;background:#1e2533}
+.fcalc .fkeys .eq{background:#8fb3ff;color:#0b1020;border-color:#8fb3ff}
+.fcalc .fhint{font-size:12px;color:#a3a9b0;margin:0}
+@media(max-width:600px){.fcalc{right:12px;left:12px;width:auto;bottom:78px}.fcalc-btn{right:12px;bottom:12px;padding:12px 16px 12px 14px;font-size:14px}}
+.res div,.val div,.tile .v,.lv b,.kr b{cursor:copy}
+</style>
+<button type="button" class="fcalc-btn" id="fcalcBtn" aria-controls="fcalc" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="2.5" width="16" height="19" rx="3"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg>Calculator</button>
+<section class="fcalc" id="fcalc" hidden aria-label="Calculator">
+  <header id="fcalcHead"><b>Calculator</b><button type="button" id="fcalcX" aria-label="Close calculator">✕</button></header>
+  <div class="fdisp"><div class="fexpr" id="fexpr">&nbsp;</div><output class="fout" id="fout">0</output></div>
+  <div class="fkeys" id="fkeys">
+    <button data-k="C" class="fn">C</button><button data-k="B" class="fn" aria-label="Delete">⌫</button><button data-k="%" class="fn">%</button><button data-k="/" class="op">÷</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="*" class="op">×</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="-" class="op">−</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="+" class="op">+</button>
+    <button data-k="N" class="fn">±</button><button data-k="0">0</button><button data-k=".">.</button><button data-k="=" class="eq">=</button>
+  </div>
+  <p class="fhint">Tap any number on the page to bring it in. Keyboard works too: Enter = equals, Esc = clear.</p>
+</section>
+<script>
+{
+  const btn = document.getElementById('fcalcBtn'), box = document.getElementById('fcalc'), out = document.getElementById('fout'), exl = document.getElementById('fexpr');
+  let ex = '', last = '';
+  const open = (v) => { box.hidden = false; btn.setAttribute('aria-expanded', 'true'); if (v != null) { ex = v; exl.innerHTML = '&nbsp;'; show(); } };
+  const close = () => { box.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+  btn.addEventListener('click', () => box.hidden ? open() : close());
+  document.getElementById('fcalcX').addEventListener('click', close);
+  document.querySelectorAll('[data-opencalc]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); open(); }));
+  const show = () => { out.textContent = ex === '' ? (last || '0') : ex.replace(/\\*/g, '×').replace(/\\//g, '÷').replace(/-/g, '−'); };
+  const calc = (s) => {
+    const t = s.match(/\\d*\\.?\\d+(?:e[+-]?\\d+)?|[-+*/%()]/g) || []; let i = 0;
+    const peek = () => t[i], take = () => t[i++];
+    const prim = () => { const x = take(); if (x === '-') return -prim(); if (x === '+') return prim(); let v; if (x === '(') { v = add(); take(); } else v = parseFloat(x); if (peek() === '%') { take(); v /= 100; } return v; };
+    const mul = () => { let v = prim(); while (peek() === '*' || peek() === '/') { const o = take(), r = prim(); v = o === '*' ? v * r : v / r; } return v; };
+    const add = () => { let v = mul(); while (peek() === '+' || peek() === '-') { const o = take(), r = mul(); v = o === '+' ? v + r : v - r; } return v; };
+    const v = add(); return i === t.length ? v : NaN;
+  };
+  const nice = (v) => !isFinite(v) ? 'Error' : String(+v.toPrecision(12));
+  const press = (k) => {
+    if (k === 'C') { ex = ''; last = ''; exl.innerHTML = '&nbsp;'; }
+    else if (k === 'B') ex = ex.slice(0, -1);
+    else if (k === '=') { if (!ex) return; exl.textContent = ex.replace(/\\*/g, '×').replace(/\\//g, '÷') + ' ='; last = nice(calc(ex)); ex = ''; }
+    else if (k === 'N') { if (ex) ex = ex.startsWith('-') ? ex.slice(1) : '-' + ex; else if (last && last !== 'Error') ex = String(-parseFloat(last)); }
+    else { if (!ex && last && last !== 'Error' && /[-+*/%]/.test(k)) ex = last; if (!ex && /[*/%]/.test(k)) return; if (/[-+*/]$/.test(ex) && /[-+*/]/.test(k)) ex = ex.slice(0, -1); ex += k; }
+    show();
+  };
+  document.getElementById('fkeys').addEventListener('click', (e) => { const b = e.target.closest('[data-k]'); if (b) press(b.dataset.k); });
+  document.addEventListener('keydown', (e) => {
+    if (box.hidden || e.target.closest('input,select,textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+    const m = {Enter: '=', '=': '=', Escape: 'C', Backspace: 'B', x: '*', X: '*', ',': '.'}; const k = m[e.key] || e.key;
+    if (/^[0-9.+\\-*/%]$/.test(k) || ['=', 'C', 'B'].includes(k)) { e.preventDefault(); press(k); }
+  });
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#fcalc, #fcalcBtn, button, a, select, input')) return;
+    const d = e.target.closest('.res div b, .val div b, .tile .v, .lv b, .kr b, .ppill, .res div, .val div'); if (!d) return;
+    const b = d.matches('.res div, .val div') ? d.querySelector('b') : d; if (!b) return;
+    const v = b.textContent.replace(/,/g, '').match(/-?\\d+(?:\\.\\d+)?/); if (v) open(v[0]);
+  });
+  // drag by the header (desktop)
+  const head = document.getElementById('fcalcHead'); let dx = 0, dy = 0, drag = false;
+  head.addEventListener('pointerdown', (e) => { if (e.target.closest('button') || innerWidth < 600) return; drag = true; const r = box.getBoundingClientRect(); dx = e.clientX - r.left; dy = e.clientY - r.top; head.setPointerCapture(e.pointerId); });
+  head.addEventListener('pointermove', (e) => { if (!drag) return; box.style.left = Math.max(4, Math.min(innerWidth - box.offsetWidth - 4, e.clientX - dx)) + 'px'; box.style.top = Math.max(4, Math.min(innerHeight - 60, e.clientY - dy)) + 'px'; box.style.right = 'auto'; box.style.bottom = 'auto'; });
+  head.addEventListener('pointerup', () => { drag = false; });
+}
+</script>
+"""
+
+
+def slot(name, kind, size):
+    return '<div class="adwrap"><p class="adlbl">Advertisement</p><div class="adslot {kind}" data-ad="{name}" data-size="{size}"></div></div>'.format(name=name, kind=kind, size=size)
+
 
 def shell(tpl, title, desc, path, body, script="", data=None):
     style = re.search(r"<style>.*?</style>", tpl, re.S).group(0).replace("</style>", EXTRA_CSS + "</style>")
@@ -77,7 +164,7 @@ def shell(tpl, title, desc, path, body, script="", data=None):
         'content="https://marketlights.net/"', f'content="https://marketlights.net{path}"')
     head = re.sub(r'<meta property="og:title" content=".*?">', f'<meta property="og:title" content="{title}">', head)
     head = head[: -len("<style>")]
-    nav = "".join(f'<a href="{h}"{" class=\"on\"" if h == path else ""}>{t}</a>' for h, t in NAV)
+    nav = "".join(f'<a href="{h}"{" class=\"on\"" if h == path else ""}{" data-opencalc" if h.startswith("#") else ""}>{t}</a>' for h, t in NAV)
     blob = "" if data is None else '<script id="data" type="application/json">' + json.dumps(data).replace("</", "<\\/") + "</script>"
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -95,18 +182,21 @@ def shell(tpl, title, desc, path, body, script="", data=None):
 <main class="band">
   <div class="wrap">
 {body}
+  <div style="margin-top:40px">{slot(path.strip('/').replace('/','-') + '-bottom' if path != '/' else 'bottom', 'rect', 'responsive · up to 728×280')}</div>
   </div>
 </main>
 {footer()}
 {blob}
 {script}
+{CALC_WIDGET}
+{tpl[tpl.index('<script>\n/* ads:'):tpl.index('</script>', tpl.index('/* ads:')) + 9]}
 </body>
 </html>
 """
 
 
 def footer():
-    links = "".join(f'<a href="{h}">{t}</a>' for h, t in NAV + [("/privacy/", "Privacy Policy"), ("/terms/", "Terms &amp; Disclaimer")])
+    links = "".join(f'<a href="{h}">{t}</a>' for h, t in [x for x in NAV if not x[0].startswith("#")] + [("/privacy/", "Privacy Policy"), ("/terms/", "Terms &amp; Disclaimer")])
     return f"""<footer class="band">
   <div class="wrap">
     <nav class="flinks" aria-label="Footer">{links}</nav>
@@ -131,7 +221,9 @@ CONV_BODY = """
   <select id="cur" aria-label="Currency" style="font:700 15px Inter,sans-serif;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px"></select>
   <span id="goldsrc" class="note2"></span>
 </div>
+""" + slot("conv-top", "lead", "728×90 · phone 320×100") + """
 <div class="convgrid" id="conv"></div>
+""" + slot("conv-mid", "rect", "responsive · up to 728×280") + """
 <div class="convgrid">
   <section class="cv wide" style="--cc:var(--usd)" id="fxbox">
     <header class="chead"><h2 class="disp" style="color:var(--usd)">Currency Exchange</h2></header>
@@ -142,22 +234,10 @@ CONV_BODY = """
     <div class="res" id="fxall"></div>
     <p class="note2" id="fxnote"></p>
   </section>
-  <section class="cv" style="--cc:#8fb3ff;align-self:start" id="calc">
-    <header class="chead"><h2 class="disp" style="color:var(--cc)">Calculator</h2></header>
-    <div class="cdisp"><div id="cexpr" class="cexpr">&nbsp;</div><output id="cout" class="cout">0</output></div>
-    <div class="ckeys" id="ckeys">
-      <button data-k="C" class="cfn">C</button><button data-k="B" class="cfn">⌫</button><button data-k="%" class="cfn">%</button><button data-k="/" class="cop">÷</button>
-      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="*" class="cop">×</button>
-      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="-" class="cop">−</button>
-      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="+" class="cop">+</button>
-      <button data-k="N" class="cfn">±</button><button data-k="0">0</button><button data-k=".">.</button><button data-k="=" class="ceq">=</button>
-    </div>
-    <p class="note2">You can also type on your keyboard: numbers, + − × ÷, Enter for =, Esc to clear. Click a result anywhere on this page to copy it into the calculator.</p>
-  </section>
   <div style="display:grid;gap:22px;align-content:start">
   <section class="cv" style="--cc:var(--amb)" id="r3">
     <header class="chead"><h2 class="disp" style="color:var(--amb)">Rule of Three</h2></header>
-    <p class="note2" style="font-size:14px">If <b>A</b> gives <b>B</b>, how much does <b>C</b> give? Example: 2 kg cost 300 baht, so 5 kg cost 750 baht.</p>
+    <p class="note2" style="font-size:14px">If <b>A</b> gives <b>B</b>, how much does <b>C</b> give? Example: 2 kg cost $300, so 5 kg cost $750.</p>
     <div class="r3g">
       <label>A<input type="number" step="any" value="2" id="r3a"></label><span>→</span><label>B<input type="number" step="any" value="300" id="r3b"></label>
       <label>C<input type="number" step="any" value="5" id="r3c"></label><span>→</span><label>X<output id="r3x">—</output></label>
@@ -280,40 +360,6 @@ document.getElementById('fxbox').addEventListener('input', (e) => { if (e.target
 fetch('https://api.coinbase.com/v2/exchange-rates?currency=USD', {cache: 'no-store'}).then((r) => r.ok ? r.json() : Promise.reject()).then((j) => {
   CURS.forEach(([c]) => { const x = +((j.data || {}).rates || {})[c]; if (x > 0) rates[c] = x; });
   fxSrc = 'Coinbase, live ' + new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}); fxInit(); }).catch(() => {});
-
-// ---- basic calculator (own parser, no eval)
-{
-  let ex = '', last = '';
-  const out = document.getElementById('cout'), exl = document.getElementById('cexpr');
-  const show = () => { out.textContent = ex === '' ? (last || '0') : ex.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−'); };
-  const calc = (s) => {
-    const t = s.match(/\d*\.?\d+(?:e[+-]?\d+)?|[-+*/%()]/g) || []; let i = 0;
-    const peek = () => t[i], take = () => t[i++];
-    const prim = () => { let v; const x = take(); if (x === '-') return -prim(); if (x === '+') return prim(); if (x === '(') { v = add(); take(); } else v = parseFloat(x);
-      if (peek() === '%') { take(); v = v / 100; } return v; };
-    const mul = () => { let v = prim(); while (peek() === '*' || peek() === '/') { const o = take(), r = prim(); v = o === '*' ? v * r : v / r; } return v; };
-    const add = () => { let v = mul(); while (peek() === '+' || peek() === '-') { const o = take(), r = mul(); v = o === '+' ? v + r : v - r; } return v; };
-    const v = add(); return i === t.length ? v : NaN;
-  };
-  const nice = (v) => !isFinite(v) ? 'Error' : String(+v.toPrecision(12));
-  const press = (k) => {
-    if (k === 'C') { ex = ''; last = ''; exl.innerHTML = '&nbsp;'; }
-    else if (k === 'B') ex = ex.slice(0, -1);
-    else if (k === '=') { if (!ex) return; const v = calc(ex); exl.textContent = ex.replace(/\*/g, '×').replace(/\//g, '÷') + ' ='; last = nice(v); ex = ''; }
-    else if (k === 'N') { if (ex) ex = /^-/.test(ex) ? ex.slice(1) : '-' + ex; else if (last && last !== 'Error') { ex = String(-parseFloat(last)); } }
-    else { if (!ex && last && last !== 'Error' && /[-+*/%]/.test(k)) ex = last; if (!ex && /[*/%]/.test(k)) return; if (/[-+*/]$/.test(ex) && /[-+*/]/.test(k)) ex = ex.slice(0, -1); ex += k; }
-    show();
-  };
-  document.getElementById('ckeys').addEventListener('click', (e) => { const b = e.target.closest('[data-k]'); if (b) press(b.dataset.k); });
-  document.addEventListener('keydown', (e) => {
-    if (e.target.closest('input,select,textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
-    const r = document.getElementById('calc').getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
-    const m = {Enter: '=', '=': '=', Escape: 'C', Backspace: 'B', x: '*', X: '*'}; const k = m[e.key] || e.key;
-    if (/^[0-9.+\-*/%]$/.test(k) || ['=', 'C', 'B'].includes(k)) { e.preventDefault(); press(k); }
-  });
-  document.addEventListener('click', (e) => { const d = e.target.closest('.res div, .val div'); if (!d) return; const b = d.querySelector('b'); if (!b) return;
-    const v = b.textContent.replace(/[^0-9.\-]/g, ''); if (v && isFinite(+v)) { ex = v; show(); } });
-}
 
 // ---- rule of three
 let r3m = 'd';
