@@ -10,7 +10,7 @@ ADDRESS = "30 N Gould St, STE R, Sheridan, WY 82801, USA"
 EMAIL = "contact@marketlights.net"
 UPDATED = "26 November 2026"
 
-TOOL_LINKS = [("/gold-price-per-gram/", "Gold Price per Gram")]
+TOOL_LINKS = [("/gold-price-per-gram/", "Gold Price per Gram"), ("/silver-price-per-gram/", "Silver Price per Gram"), ("/troy-ounce-to-grams/", "Troy Ounce to Grams"), ("/bitcoin-signal-today/", "Bitcoin Signal Today"), ("/currency-converter/", "Currency Converter"), ("/percentage-calculator/", "Percentage Calculator"), ("/rule-of-three-calculator/", "Rule of Three"), ("/kg-to-lbs/", "Kg to Lbs")]
 NAV = [("/", "Market Lights"), ("/convert/", "Unit Converter"), ("#calculator", "Calculator"), ("/about/", "About"), ("/contact/", "Contact")]
 
 EXTRA_CSS = """
@@ -456,7 +456,7 @@ def write_all(here, data):
         "terms": ("Terms & Disclaimer · MarketLights", "Terms of use and financial disclaimer for MarketLights.", TERMS, "", None),
     }
     import tools
-    pages.update(tools.all_pages(conv_data, slot))
+    pages.update(tools.all_pages(dict(conv_data, _full=data), slot))
     for slug, (title, desc, body, js, d) in pages.items():
         os.makedirs(os.path.join(dist, slug), exist_ok=True)
         open(os.path.join(dist, slug, "index.html"), "w").write(shell(tpl, title, desc, f"/{slug}/", body, js, d))

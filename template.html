@@ -301,6 +301,12 @@ h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
 .gr{padding:9px 0!important}
 @media(max-width:600px){.tile .v{font-size:22px!important}.infobar,.strip,.key{gap:16px!important}.cards{gap:32px!important}.card{gap:28px!important}}
 
+
+/* every inner box gets a thin line in its coin's colour */
+.card .tile,.card .thermo{border:1.5px solid color-mix(in srgb,var(--cc) 60%,transparent)!important}
+.card .tile .sec,.card .tile .kr,.card .tile .lv{border-color:color-mix(in srgb,var(--cc) 25%,transparent)!important}
+.cv .res div{border:1.5px solid color-mix(in srgb,var(--cc) 50%,transparent)}
+.cv .res div.src{border-color:var(--cc)}
 /* ad spaces: reserved, fixed height (no jumping); hidden until ads are switched on; preview with ?ads=1 */
 .adslot{display:none;margin:0 auto;width:100%;max-width:970px;box-sizing:border-box;border-radius:14px;text-align:center}
 .adslot.lead{min-height:100px}.adslot.rect{min-height:280px;max-width:728px}
@@ -409,7 +415,7 @@ h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
   <div class="wrap" data-hl>
     <p><strong>Information and education only, not financial advice.</strong> The lights describe market conditions from public price data; they are not instructions to buy, sell or hold. Past results, including our backtests, do not guarantee future results. Crypto and gold prices can fall sharply. Make your own decisions and, if needed, speak to a licensed adviser.</p>
     <p>Data: Coin Metrics community data (prices, average-cost line), Alternative.me (crypto fear &amp; greed), Federal Reserve Bank of St. Louis FRED (US dollar index). Prices are in US dollars and converted to your chosen currency at the latest exchange rate (Coinbase, or Federal Reserve FRED as a backup); history is converted at today's rate. GOLD is tracked through the PAXG token, backed by physical bullion. Updated once a day.</p>
-    <p class="flinks"><a href="/">Market Lights</a><a href="/convert/">Unit Converter</a><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/gold-price-per-gram/">Gold Price per Gram</a><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms &amp; Disclaimer</a></p>
+    <p class="flinks"><a href="/">Market Lights</a><a href="/convert/">Unit Converter</a><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/gold-price-per-gram/">Gold Price per Gram</a><a href="/silver-price-per-gram/">Silver Price per Gram</a><a href="/troy-ounce-to-grams/">Troy Ounce to Grams</a><a href="/bitcoin-signal-today/">Bitcoin Signal Today</a><a href="/currency-converter/">Currency Converter</a><a href="/percentage-calculator/">Percentage Calculator</a><a href="/rule-of-three-calculator/">Rule of Three</a><a href="/kg-to-lbs/">Kg to Lbs</a><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms &amp; Disclaimer</a></p>
     <p>© MarketLights · Universum Media LLC</p>
   </div>
 </footer>
