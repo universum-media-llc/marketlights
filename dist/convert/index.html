@@ -56,7 +56,7 @@ h1{font-size:clamp(34px,5vw,52px);line-height:1.05;margin:18px 0 10px;text-wrap:
 .sig .ph{font-size:26px;line-height:1.1}
 .sig .px{font-variant-numeric:tabular-nums;color:#c9ced4;font-size:15px}
 .cards{display:grid;gap:20px}
-.card{border:1px solid var(--line);border-radius:14px;padding:clamp(16px,2.5vw,28px);display:grid;grid-template-columns:86px minmax(0,1.1fr) minmax(0,1fr);gap:24px}
+.card{border:1px solid var(--gl);border-radius:14px;padding:clamp(16px,2.5vw,28px);display:grid;grid-template-columns:86px minmax(0,1.1fr) minmax(0,1fr);gap:24px}
 .thermo{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--mute);text-align:center}
 .thermo .tube{position:relative;flex:1;width:14px;min-height:260px;border-radius:7px;background:linear-gradient(0deg,#e4dcf2,#5b2a8c)}
 .thermo .pm{position:absolute;left:50%;transform:translate(-50%,50%);white-space:nowrap}
@@ -64,18 +64,18 @@ h1{font-size:clamp(34px,5vw,52px);line-height:1.05;margin:18px 0 10px;text-wrap:
 .thermo b{color:var(--ink);font-size:13px}
 .ppill{padding:0 10px;border-radius:8px;line-height:1.25}
 .guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-.gcard{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--panel)}
+.gcard{border:1px solid var(--gl);border-radius:12px;padding:14px 16px;background:var(--panel)}
 .gcard{padding:0;overflow:hidden}
 .gcard .gb{padding:4px 16px 12px}
 .gcard h4{margin:0;padding:12px 16px 10px;font:700 24px "Barlow Semi Condensed",Inter,sans-serif;display:flex;align-items:center;gap:10px;border-bottom:4px solid;border-image:var(--gh) 1;background:color-mix(in srgb,var(--ink) 5%,transparent)}
 .gcard h4 i{display:inline-flex;gap:3px}
 .gcard h4 i b{width:12px;height:12px;border-radius:50%;display:block}
-.ghead{display:block;background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:12px 18px 10px;border-bottom-width:5px;font-size:clamp(30px,4vw,40px);margin:0 0 6px;padding-bottom:6px;border-bottom:5px solid;border-image:linear-gradient(90deg,var(--grn),var(--amb),var(--red),var(--up),var(--dn),#8a63d2) 1}
+.ghead{display:block;background:var(--panel);border:2px solid var(--gl);border-radius:12px;padding:12px 18px 10px;border-bottom-width:5px;font-size:clamp(30px,4vw,40px);margin:0 0 6px;padding-bottom:6px;border-bottom:5px solid;border-image:linear-gradient(90deg,var(--grn),var(--amb),var(--red),var(--up),var(--dn),#8a63d2) 1}
 .stampbox{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;font-size:14px;color:var(--mute);text-align:right}
-.stampbox .cal{display:inline-grid;grid-template-rows:12px 1fr;width:44px;height:46px;border:1px solid var(--line);border-radius:8px;overflow:hidden;text-align:center;flex:none}
+.stampbox .cal{display:inline-grid;grid-template-rows:12px 1fr;width:44px;height:46px;border:1px solid var(--gl);border-radius:8px;overflow:hidden;text-align:center;flex:none}
 .stampbox .cal span:first-child{background:var(--red);color:#fff;font:700 9px/12px Inter;text-transform:uppercase}
 .stampbox .cal span:last-child{font:700 20px/32px "Barlow Semi Condensed",Inter;color:var(--ink)}
-.stampbox select{font:500 14px Inter;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+.stampbox select{font:500 14px Inter;background:var(--panel);color:var(--ink);border:1px solid var(--gl);border-radius:6px;padding:4px 6px}
 .stampbox b{color:var(--ink)}
 .curbox{margin-top:6px;display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;padding:6px 10px;border:2px solid var(--usd);border-radius:10px;color:var(--ink);font-weight:600}
 .curbox select{font-weight:700}
@@ -92,16 +92,16 @@ h1{font-size:clamp(34px,5vw,52px);line-height:1.05;margin:18px 0 10px;text-wrap:
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 .live b{font-weight:700}.live .lab i{width:7px;height:7px;margin-right:2px;vertical-align:1px}.sig .px{margin-top:3px}
 .sig .live{color:#eef0f2;margin-top:4px}
-.big-btn{position:absolute;top:6px;right:6px;z-index:2;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;font:600 13px Inter,sans-serif;padding:6px 10px;cursor:pointer}
+.big-btn{position:absolute;top:6px;right:6px;z-index:2;border:1px solid var(--gl);background:var(--bg);color:var(--ink);border-radius:8px;font:600 13px Inter,sans-serif;padding:6px 10px;cursor:pointer}
 .modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.65);display:grid;place-items:center;padding:16px}
 .modal .box{background:var(--bg);border-radius:14px;width:min(1200px,100%);padding:18px;position:relative}
 .modal .fig{min-height:min(70vh,640px)}
-.modal .x{position:absolute;top:10px;right:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;font:600 14px Inter;padding:6px 12px;cursor:pointer}
+.modal .x{position:absolute;top:10px;right:10px;border:1px solid var(--gl);background:var(--panel);color:var(--ink);border-radius:8px;font:600 14px Inter;padding:6px 12px;cursor:pointer}
 .modal h4{margin:0 0 8px;font:700 22px "Barlow Semi Condensed",Inter,sans-serif}
 .lg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--mute);margin-top:6px}
 .lg span{display:flex;align-items:center;gap:6px}
 .lg i{display:inline-block;width:22px;height:0;border-top:3px solid}
-.ctip{position:absolute;pointer-events:none;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:13px;line-height:1.4;box-shadow:0 4px 14px rgba(0,0,0,.25);white-space:nowrap;font-variant-numeric:tabular-nums}
+.ctip{position:absolute;pointer-events:none;background:var(--bg);border:1px solid var(--gl);border-radius:8px;padding:6px 9px;font-size:13px;line-height:1.4;box-shadow:0 4px 14px rgba(0,0,0,.25);white-space:nowrap;font-variant-numeric:tabular-nums}
 .card h2{font-size:30px;margin:0;line-height:1.1;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .tag{font-size:15px;font-family:Inter,sans-serif;font-weight:600;padding:3px 10px;border-radius:20px;color:#111}
 .card p{margin:8px 0 14px}
@@ -113,7 +113,7 @@ h1{font-size:clamp(34px,5vw,52px);line-height:1.05;margin:18px 0 10px;text-wrap:
 .meter b{position:absolute;top:-4px;width:4px;height:16px;background:var(--ink);border-radius:2px;transform:translateX(-2px)}
 .fig{position:relative;min-height:330px}@media(max-width:860px){.fig{min-height:240px}}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.tile{background:var(--panel);border:1px solid var(--gl);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
 .tile.wide{grid-column:1/-1}
 .tile .k{font-size:13px;color:var(--mute);font-weight:500}
 .tile .v{font-family:"Barlow Semi Condensed",Inter,sans-serif;font-size:30px;line-height:1.05;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -127,9 +127,9 @@ h1{font-size:clamp(34px,5vw,52px);line-height:1.05;margin:18px 0 10px;text-wrap:
 .rlab span{padding:2px 9px;border-radius:6px}.rlab .f{background:var(--flr-bg);color:var(--flr);border:1px solid var(--flr)}.rlab .c{background:var(--cel-bg);color:var(--cel);border:1px solid var(--cel)}
 .coin{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;font:700 22px/1 Inter,sans-serif;color:#fff;flex:none}
 .sig .coin{width:clamp(30px,3.4vw,42px);height:clamp(30px,3.4vw,42px);font-size:22px}
-.info{border:1px solid var(--line);background:none;color:var(--mute);border-radius:50%;width:22px;height:22px;font:600 13px/1 Inter;cursor:pointer;margin-left:6px;vertical-align:middle;padding:0}
+.info{border:1px solid var(--gl);background:none;color:var(--mute);border-radius:50%;width:22px;height:22px;font:600 13px/1 Inter;cursor:pointer;margin-left:6px;vertical-align:middle;padding:0}
 .info:focus-visible{outline:2px solid var(--ink)}
-.expl{font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:6px}
+.expl{font-size:14px;color:var(--ink);background:var(--bg);border:1px solid var(--gl);border-radius:8px;padding:8px 10px;margin-top:6px}
 .wl{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin:4px 0}
 .wl em{font-style:normal;font-weight:700;font-size:13px;padding:3px 9px;border-radius:6px;white-space:nowrap}
 .wl .p{background:var(--up);color:#1d1600}.wl .n{background:var(--dn);color:#0b1020}
@@ -159,7 +159,7 @@ h1{font-size:clamp(34px,5vw,52px);line-height:1.05;margin:18px 0 10px;text-wrap:
 .term{text-transform:uppercase;font-weight:700;letter-spacing:.03em;font-size:.92em}
 :root{--c-btc:#f7931a;--c-eth:#aeb8e8;--c-gold:#d4af37;--c-sol:#b98aff;--c-crypto:#22b5a8;--c-usd:#85bb65}
 /* one box style for every panel; one title style for every box */
-.box{border:2px solid var(--line);border-radius:12px;background:var(--panel);padding:12px 16px}
+.box{border:2px solid var(--gl);border-radius:12px;background:var(--panel);padding:12px 16px}
 .bh,.tile .k,.mood .lbl,.chip .lbl.bh{font-size:13px!important;font-weight:800!important;text-transform:uppercase;letter-spacing:.07em;color:var(--ink)!important;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
 .tile .s{color:light-dark(#3d4349,#c9ced4)!important;font-size:14px!important}
 .lab{display:inline-block;padding:0 7px;border-radius:6px;border:1px solid var(--lc,#6b7178);background:color-mix(in srgb,var(--lc,#8a9099) 16%,transparent);color:var(--lc,var(--ink));font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:12px;line-height:20px;white-space:nowrap;vertical-align:middle}
@@ -172,7 +172,7 @@ h1{font-size:clamp(34px,5vw,52px);line-height:1.05;margin:18px 0 10px;text-wrap:
 .infobar .box{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--mute)}
 .infobar .box b{color:var(--ink)}
 .infobar .row1{display:flex;align-items:center;gap:12px}
-.infobar select{font:700 14px Inter,sans-serif;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px;max-width:100%}
+.infobar select{font:700 14px Inter,sans-serif;background:var(--bg);color:var(--ink);border:1px solid var(--gl);border-radius:6px;padding:5px 8px;max-width:100%}
 .notebox{margin-top:4px;max-width:none}
 .tile .v,.tag,.sig .ph,.sig .act,.rlab,.lg,.wl em,.zones,.ends,.scale .mk span,.thermo>div,.kb strong,.gr b,.sig .nm,.card h2 .nm{text-transform:uppercase}
 .tile .v{letter-spacing:.01em}
@@ -192,19 +192,19 @@ footer p{max-width:80ch;margin:0 0 10px}
 
 
 .topnav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.topnav a{font:800 13px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding:8px 14px;border:2px solid var(--line);border-radius:10px;background:var(--panel)}
+.topnav a{font:800 13px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding:8px 14px;border:2px solid var(--gl);border-radius:10px;background:var(--panel)}
 .topnav a:hover{border-color:var(--amb)}.topnav a.on{border-color:var(--amb);color:var(--amb)}
 .top{align-items:center!important}
 .infobar{grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important}
 .updrow{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.bigcal{display:grid;grid-template-rows:22px 1fr 18px;width:92px;height:100px;border:2px solid var(--line);border-radius:14px;overflow:hidden;text-align:center;background:var(--bg);flex:none;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.bigcal{display:grid;grid-template-rows:22px 1fr 18px;width:92px;height:100px;border:2px solid var(--gl);border-radius:14px;overflow:hidden;text-align:center;background:var(--bg);flex:none;box-shadow:0 4px 14px rgba(0,0,0,.35)}
 .bigcal span{background:#b8352f;color:#fff;font:800 13px/22px Inter,sans-serif;text-transform:uppercase;letter-spacing:.08em}
 .bigcal b{font:700 44px/58px "Barlow Semi Condensed",Inter,sans-serif;color:var(--ink)!important}
 .bigcal i{font:800 12.5px/15px Inter,sans-serif;font-style:normal;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
 .update{font:700 clamp(28px,3.4vw,40px)/1.05 "Barlow Semi Condensed",Inter,sans-serif;color:var(--ink)}
 .uptime{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px;font:700 clamp(20px,2.2vw,26px) "Barlow Semi Condensed",Inter,sans-serif;color:var(--amb)}
 .minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
-.mini2{border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:9px 12px;display:grid;gap:3px}
+.mini2{border:1px solid var(--gl);border-radius:10px;background:var(--bg);padding:9px 12px;display:grid;gap:3px}
 .mini2>span{font:800 12.5px Inter,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;gap:6px}
 .mini2>b{font-size:14px;color:var(--ink)}
 .lv-dot{width:8px;height:8px;border-radius:50%;background:var(--grn);display:inline-block}
@@ -239,7 +239,7 @@ footer p{max-width:80ch;margin:0 0 10px}
 .kr>span:last-child{text-align:right}.kr b{font-size:16px}.kr .dist{display:block;margin:0}
 .ol{margin:0;font-size:15px}
 .ctop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg{display:inline-flex;border:1px solid var(--gl);border-radius:8px;overflow:hidden}
 .seg button{font:800 12px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;background:none;color:var(--mute);border:0;padding:6px 12px;cursor:pointer}
 .seg button.on{background:var(--ink);color:var(--bg)}
 .lgv{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 10px}
@@ -247,7 +247,7 @@ footer p{max-width:80ch;margin:0 0 10px}
 .chartbox .fig{min-height:360px}
 
 .nav{display:flex;gap:8px;flex-wrap:wrap}
-.nav a{font:800 13px Inter,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);text-decoration:none;padding:8px 14px;border:1px solid var(--line);border-radius:999px}
+.nav a{font:800 13px Inter,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);text-decoration:none;padding:8px 14px;border:1px solid var(--gl);border-radius:999px}
 .nav a:hover{color:var(--ink);border-color:var(--mute)}
 .nav a.on{color:var(--bg);background:var(--ink);border-color:var(--ink)}
 .top{align-items:center!important}
@@ -266,7 +266,7 @@ footer p{max-width:80ch;margin:0 0 10px}
 .side .tile{padding:16px 18px}
 .side .watch{background:none!important;padding:0!important;margin:0!important;display:grid;gap:12px}
 .side .wl{margin:0}
-.thermo{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:14px 6px}
+.thermo{border:1px solid var(--gl);border-radius:12px;background:var(--panel);padding:14px 6px}
 .left{display:grid;gap:20px;align-content:start}
 .left h2{margin:0!important}
 .sumbox p{margin:0!important}
@@ -351,8 +351,14 @@ footer.band{padding-bottom:90px!important}
 .adwrap{margin:28px 0}
 @media(max-width:600px){.adslot.lead{min-height:100px;max-width:336px}.adslot.rect{min-height:280px;max-width:336px}}
 
+/* fine golden line on every box (agreed rule) */
+:root{--gl:color-mix(in srgb,var(--c-gold) 55%,transparent)}
+.box,.toolbar,.mood,.gcard,.mini2,.bigcal,.tile,.thermo,.stampbox .cal{border-color:var(--gl)}
+.topnav a{border-color:var(--gl)}
+.topnav a.on,.topnav a:hover{border-color:var(--amb)}
+
 .topnav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.topnav a{font:800 13px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding:8px 14px;border:2px solid var(--line);border-radius:10px;background:var(--panel)}
+.topnav a{font:800 13px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding:8px 14px;border:2px solid var(--gl);border-radius:10px;background:var(--panel)}
 .topnav a:hover{border-color:var(--amb)}
 .topnav a.on{border-color:var(--amb);color:var(--amb)}
 .top{align-items:center!important}
@@ -372,11 +378,11 @@ footer.band{padding-bottom:90px!important}
 .cv.wide{grid-column:1/-1}
 .cv .chead h2{font-size:clamp(22px,2.4vw,30px)}
 .cvin{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.cvin input,.cvin select{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:10px 12px}
+.cvin input,.cvin select{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--gl);border-radius:10px;padding:10px 12px}
 .cvin input{width:170px}
 .cvin input:focus,.cvin select:focus{outline:none;border-color:var(--cc)}
 .res{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.res div{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:10px 12px}
+.res div{border:1px solid var(--gl);border-radius:10px;background:var(--panel);padding:10px 12px}
 .res b{display:block;font:700 22px "Barlow Semi Condensed",Inter,sans-serif;font-variant-numeric:tabular-nums;word-break:break-all}
 .res span{font:800 12.5px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .res div.src{border-color:var(--cc)}
@@ -389,7 +395,7 @@ footer.band{padding-bottom:90px!important}
 .cexpr{font:600 15px Inter,sans-serif;color:var(--mute);min-height:20px;word-break:break-all}
 .cout{display:block;font:700 38px/1.1 "Barlow Semi Condensed",Inter,sans-serif;color:var(--ink);word-break:break-all}
 .ckeys{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.ckeys button{font:700 22px Inter,sans-serif;padding:14px 0;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.ckeys button{font:700 22px Inter,sans-serif;padding:14px 0;border-radius:10px;border:1px solid var(--gl);background:var(--panel);color:var(--ink);cursor:pointer}
 .ckeys button:hover{border-color:var(--cc)}
 .ckeys .cfn{color:var(--mute)}.ckeys .cop{color:var(--cc);background:color-mix(in srgb,var(--cc) 12%,var(--panel))}
 .ckeys .ceq{background:var(--cc);color:#0b1020;border-color:var(--cc)}
@@ -397,7 +403,7 @@ footer.band{padding-bottom:90px!important}
 .r3g{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end}
 .r3g span{font-weight:800;font-size:20px;padding-bottom:10px;color:var(--amb)}
 .r3g label{display:grid;gap:4px;font:800 12px Inter,sans-serif;letter-spacing:.06em;color:var(--mute)}
-.r3g input,.pl input{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.r3g input,.pl input{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--gl);border-radius:10px;padding:10px 12px;width:100%}
 .r3g output{display:block;font:700 24px "Barlow Semi Condensed",Inter,sans-serif;border:2px solid var(--amb);border-radius:10px;padding:7px 12px;background:color-mix(in srgb,var(--amb) 10%,var(--panel));color:var(--amb)}
 .pl{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:14px 0;border-top:1px solid var(--line);font-size:15px;font-weight:700}
 .pl:first-of-type{border-top:0}
@@ -415,7 +421,7 @@ footer.band{padding-bottom:90px!important}
       <nav class="topnav" aria-label="Main"><a href="/">Market Lights</a><a href="/bitcoin-rainbow-chart/">Rainbow</a><a href="/compare/">Compare</a><a href="/convert/" class="on">Unit Converter</a><a href="#calculator" data-opencalc>Calculator</a><a href="/about/">About</a><a href="/contact/">Contact</a></nav>
     </div>
     <style>
-.toolbar{display:grid;gap:9px;margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.toolbar{display:grid;gap:9px;margin-top:16px;padding:12px 14px;border:1px solid var(--gl,var(--line));border-radius:12px;background:var(--panel)}
 .toolbar .tgrp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .toolbar .tgrp>span{font:800 11px Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--tc);min-width:118px}
 .toolbar .tgrp a{font:700 13px Inter,sans-serif;color:var(--ink);text-decoration:none;padding:6px 11px;border:1px solid color-mix(in srgb,var(--tc) 45%,var(--line));border-radius:999px;background:color-mix(in srgb,var(--tc) 8%,transparent);white-space:nowrap}
@@ -433,7 +439,7 @@ footer.band{padding-bottom:90px!important}
 </div>
 <div class="box" style="margin-top:22px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;border-color:var(--usd)">
   <div class="bh" style="margin:0">Your Currency</div>
-  <select id="cur" aria-label="Currency" style="font:700 15px Inter,sans-serif;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px"></select>
+  <select id="cur" aria-label="Currency" style="font:700 15px Inter,sans-serif;background:var(--bg);color:var(--ink);border:1px solid var(--gl);border-radius:8px;padding:7px 10px"></select>
   <span id="goldsrc" class="note2"></span>
 </div>
 <div class="adwrap"><p class="adlbl">Advertisement</p><div class="adslot lead" data-ad="conv-top" data-size="728×90 · phone 320×100"></div></div>
@@ -575,7 +581,7 @@ const fmtCur = (x, c) => { try { return new Intl.NumberFormat('en-US', {style: '
 let fxF = 'USD', fxT = cur === 'USD' ? 'THB' : cur, fxSrc = D.fx_date ? 'Federal Reserve, ' + D.fx_date : '';
 function fxUpdate() {
   const a = parseFloat(document.getElementById('fxamt').value), usd = a / rates[fxF];
-  document.getElementById('fxmain').innerHTML = isNaN(a) ? '' : `<div style="border-color:var(--usd);background:color-mix(in srgb,var(--usd) 10%,var(--panel))"><b style="color:var(--usd)">${fmtCur(usd * rates[fxT], fxT)}</b><span>${esc(fmtCur(a, fxF))} in ${fxT}</span></div><div style="border-color:var(--line);background:var(--panel)"><b style="color:var(--ink)">${fmt(rates[fxT] / rates[fxF])}</b><span>1 ${fxF} = ? ${fxT}</span></div><div style="border-color:var(--line);background:var(--panel)"><b style="color:var(--ink)">${fmt(rates[fxF] / rates[fxT])}</b><span>1 ${fxT} = ? ${fxF}</span></div>`;
+  document.getElementById('fxmain').innerHTML = isNaN(a) ? '' : `<div style="border-color:var(--usd);background:color-mix(in srgb,var(--usd) 10%,var(--panel))"><b style="color:var(--usd)">${fmtCur(usd * rates[fxT], fxT)}</b><span>${esc(fmtCur(a, fxF))} in ${fxT}</span></div><div style="border-color:var(--gl);background:var(--panel)"><b style="color:var(--ink)">${fmt(rates[fxT] / rates[fxF])}</b><span>1 ${fxF} = ? ${fxT}</span></div><div style="border-color:var(--gl);background:var(--panel)"><b style="color:var(--ink)">${fmt(rates[fxF] / rates[fxT])}</b><span>1 ${fxT} = ? ${fxF}</span></div>`;
   document.getElementById('fxall').innerHTML = isNaN(a) ? '' : CURS.filter(([c]) => rates[c] && c !== fxF).map(([c, n]) => `<div class="${c === fxT ? 'src' : ''}"><b>${fmtCur(usd * rates[c], c)}</b><span>${n}</span></div>`).join('');
   document.getElementById('fxnote').textContent = 'Rates: ' + fxSrc + '. Mid-market rates for information only; banks and exchange shops add a margin.';
 }
