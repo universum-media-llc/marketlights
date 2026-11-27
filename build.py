@@ -156,9 +156,15 @@ def main():
     import base64, csv as _csv
     lp = os.path.join(HERE, "logos.json")  # coin icons supplied by the owner, as data URIs
     logos = json.load(open(lp)) if os.path.exists(lp) else {}
-    dol = [float(r["DTWEXBGS"]) for r in _csv.DictReader(open(B.D + "dollar.csv")) if r.get("DTWEXBGS") not in (None, "", ".")]
+    drows = [(r["observation_date"], float(r["DTWEXBGS"])) for r in _csv.DictReader(open(B.D + "dollar.csv")) if r.get("DTWEXBGS") not in (None, "", ".")]
+    dol = [v for _, v in drows]
     dollar_val, dollar_avg = dol[-1], sum(dol[-200:]) / 200
-    data = {"logos": logos, "dollar_val": dollar_val, "dollar_avg": dollar_avg, "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "data_date": out[0]["date"],
+    n = 520  # about two years of trading days
+    def _ma(k, i): return round(sum(dol[i - k + 1:i + 1]) / k, 3) if i >= k - 1 else None
+    st = max(0, len(dol) - n)
+    dollar_series = {"dates": [d for d, _ in drows[st:]], "vals": [round(v, 3) for v in dol[st:]],
+                     "ma50": [_ma(50, i) for i in range(st, len(dol))], "ma200": [_ma(200, i) for i in range(st, len(dol))]}
+    data = {"logos": logos, "dollar_series": dollar_series, "dollar_val": dollar_val, "dollar_avg": dollar_avg, "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "data_date": out[0]["date"],
             "fng": fng_now, "fng_word": fng_word(fng_now), "fng_week": fng_week, "dollar_strong": dollar_strong,
             "lead": lead, "note": note, "assets": out}
     data["fx"], data["fx_date"] = fx_rates()

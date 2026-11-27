@@ -307,6 +307,21 @@ h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
 .card .tile .sec,.card .tile .kr,.card .tile .lv{border-color:color-mix(in srgb,var(--cc) 25%,transparent)!important}
 .cv .res div{border:1.5px solid color-mix(in srgb,var(--cc) 50%,transparent)}
 .cv .res div.src{border-color:var(--cc)}
+
+.goldsrc{grid-column:1/-1;margin:-26px 0 -14px;font-size:14px;color:var(--mute);border-left:3px solid var(--c-gold);padding:4px 0 4px 12px}
+.goldsrc b{color:var(--c-gold)}
+span.coin{color:#2b1d00;font-weight:800}
+#dollarbox{cursor:pointer;position:relative;transition:transform .15s,box-shadow .15s}
+#dollarbox:hover{transform:translateY(-2px);box-shadow:0 0 0 3px color-mix(in srgb,var(--usd) 35%,transparent)}
+.dchart-btn{display:inline-flex;align-items:center;gap:8px;margin-top:10px;font:800 13px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#0f2a12;background:var(--usd);border:0;border-radius:999px;padding:8px 14px;cursor:pointer}
+.dchart-btn svg{width:18px;height:18px}
+.dmodal .box{border:3px solid var(--usd);max-height:calc(100vh - 24px);overflow:auto}
+.dmodal h4{padding-right:100px}
+body:has(.modal) .fcalc-btn{display:none}
+.dmodal svg text{font-family:Inter,sans-serif}
+.dleg{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:8px;font:700 13px Inter,sans-serif;text-transform:uppercase;letter-spacing:.04em}
+.dleg i{display:inline-block;width:22px;border-top:3px solid;vertical-align:middle;margin-right:6px}
+.dnote{font-size:14px;color:var(--mute);margin:10px 0 0;line-height:1.55}
 footer.band{padding-bottom:90px!important}
 .kw,.asset{font-size:max(.86em,12.5px)!important}.term{font-size:max(.92em,12.5px)!important}.dist{font-size:12.5px!important}
 /* ad spaces: reserved, fixed height (no jumping); hidden until ads are switched on; preview with ?ads=1 */
@@ -352,7 +367,7 @@ footer.band{padding-bottom:90px!important}
         <div id="mood"></div>
         <div class="ends"><span style="color:#cc6a52;font-weight:700">Extreme fear</span><span id="moodval" class="val"></span><span style="color:#4a926a;font-weight:700">Extreme greed</span></div>
       </div>
-      <div class="chip" id="dollarbox"><div class="lbl bh" data-hl>US DOLLAR Index</div><div class="dv" id="dollar"></div><div class="lbl" id="dollarsub"></div></div>
+      <div class="chip" id="dollarbox"><div class="lbl bh" data-hl>US DOLLAR Index</div><div class="dv" id="dollar"></div><div class="lbl" id="dollarsub"></div><button type="button" class="dchart-btn" id="dchart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 6-7"/></svg>Open Dollar Chart</button></div>
     </div>
   </div>
 </header>
@@ -429,8 +444,8 @@ const D = JSON.parse(document.getElementById('data').textContent);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const LAMPS = {Falling:['r'], Bottoming:['a'], Consolidating:['a'], Rising:['g'], Overheated:['r']};
 const NAME = {Falling:'Falling', Bottoming:'Possible bottom', Consolidating:'Sideways', Rising:'Rising', Overheated:'Overheated'};
-const COIN = {BTC:['₿','#f7931a'], ETH:['Ξ','#627eea'], PAXG:['Au','#c9a227'], SOL:['◎','#7b52e0']};
-const coin = (t) => D.logos && D.logos[t] ? `<img class="coin" alt="" src="${D.logos[t]}">` : `<span class="coin" aria-hidden="true" style="background:${COIN[t][1]}">${COIN[t][0]}</span>`;
+const COIN = {BTC:['₿','#f7931a'], ETH:['Ξ','#627eea'], PAXG:['Au','linear-gradient(135deg,#f3d77a,#c9a227 55%,#8f6d12)'], SOL:['◎','#7b52e0']};
+const coin = (t) => t !== 'PAXG' && D.logos && D.logos[t] ? `<img class="coin" alt="" src="${D.logos[t]}">` : `<span class="coin" aria-hidden="true" style="background:${COIN[t][1]}">${COIN[t][0]}</span>`;
 const ACT = {Falling:'Danger', Overheated:'Danger', Bottoming:'Caution', Consolidating:'Caution', Rising:'Favourable'};
 const PCOL = {Falling:'var(--red)', Bottoming:'var(--amb)', Consolidating:'var(--amb)', Rising:'var(--grn)', Overheated:'var(--red)'};
 const CURS = [['USD','US dollar'],['EUR','Euro'],['GBP','British pound'],['THB','Thai baht'],['JPY','Japanese yen'],['KRW','Korean won'],['CNY','Chinese yuan'],['INR','Indian rupee'],['RUB','Russian ruble'],['BRL','Brazilian real'],['MXN','Mexican peso'],['CAD','Canadian dollar'],['AUD','Australian dollar'],['CHF','Swiss franc'],['SGD','Singapore dollar']];
@@ -630,6 +645,7 @@ document.getElementById('cards').innerHTML = D.assets.map((a, i) => {
   return `
   <article class="card" id="${esc(a.tick.toLowerCase())}" style="--cc:${ACOL[a.tick]}">
     <header class="chead">${coin(a.tick)}<h2 class="disp nm" style="color:${ACOL[a.tick]}">${esc(a.name)}</h2>${badge}</header>
+    ${a.tick === 'PAXG' ? '<p class="goldsrc">Real gold, priced per troy ounce. Live price via <b>PAX Gold (PAXG)</b>, a token backed 1:1 by a troy ounce of London gold, so it moves with the gold price.</p>' : ''}
     ${thermo(a)}
     <div class="left">${tiles(a)}</div>
     <div class="side">
@@ -743,6 +759,49 @@ document.addEventListener('click', (e) => {
     m.addEventListener('click', (ev) => { if (ev.target === m || ev.target.closest('.x')) close(); });
   }
 });
+
+{
+  const S = D.dollar_series; const box = document.getElementById('dollarbox');
+  if (!S) { document.getElementById('dchart').hidden = true; } else {
+  const draw = (svgHost, days) => {
+    const n = S.vals.length, st = Math.max(0, n - days), v = S.vals.slice(st), a50 = S.ma50.slice(st), a200 = S.ma200.slice(st), d = S.dates.slice(st);
+    const W = svgHost.clientWidth || 900, H = Math.max(300, Math.min(520, Math.round(W * 0.5))), m = {l: 54, r: 70, t: 14, b: 30};
+    const all = v.concat(a50, a200).filter((x) => x != null), lo = Math.min(...all), hi = Math.max(...all), pad = (hi - lo) * 0.06;
+    const X = (i) => m.l + i / (v.length - 1) * (W - m.l - m.r), Y = (y) => m.t + (1 - (y - lo + pad) / (hi - lo + 2 * pad)) * (H - m.t - m.b);
+    const path = (arr) => arr.map((y, i) => y == null ? '' : `${arr[i - 1] == null ? 'M' : 'L'}${X(i).toFixed(1)},${Y(y).toFixed(1)}`).join('');
+    let g = '';
+    for (let k = 0; k <= 4; k++) { const y = lo - pad + (hi - lo + 2 * pad) * k / 4; g += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(y)}" y2="${Y(y)}" stroke="#2a2e33"/><text x="${m.l - 8}" y="${Y(y) + 4}" text-anchor="end" font-size="12" fill="#a3a9b0">${y.toFixed(1)}</text>`; }
+    let lastM = '', lastX = -99; d.forEach((ds, i) => { const mo = ds.slice(0, 7); if (mo !== lastM && ds.slice(8) <= '07') { lastM = mo; if (X(i) - lastX < 46) return; lastX = X(i); const dt = new Date(ds + 'T00:00:00Z'); const lab = dt.getUTCMonth() === 0 ? dt.getUTCFullYear() : dt.toLocaleString('en-GB', {month: 'short', timeZone: 'UTC'}); g += `<text x="${X(i)}" y="${H - 8}" text-anchor="middle" font-size="12" font-weight="700" fill="#a3a9b0">${String(lab).toUpperCase()}</text>`; } });
+    // price line coloured: above 200-day = green (strong), below = blue (weak)
+    let seg = '';
+    for (let i = 1; i < v.length; i++) { const up = a200[i] != null && v[i] >= a200[i]; seg += `<line x1="${X(i - 1).toFixed(1)}" y1="${Y(v[i - 1]).toFixed(1)}" x2="${X(i).toFixed(1)}" y2="${Y(v[i]).toFixed(1)}" stroke="${up ? '#85bb65' : '#6f8fe0'}" stroke-width="2.4" stroke-linecap="round"/>`; }
+    const lx = X(v.length - 1), ly = Y(v[v.length - 1]);
+    svgHost.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="US dollar index chart">${g}
+      <path d="${path(a200)}" fill="none" stroke="#e6e6e6" stroke-width="2" stroke-dasharray="7 5"/><path d="${path(a50)}" fill="none" stroke="#e07ac0" stroke-width="2" stroke-dasharray="2 4"/>${seg}
+      <circle cx="${lx}" cy="${ly}" r="5" fill="#85bb65" stroke="#0f1113" stroke-width="2"/>
+      <rect x="${W - m.r + 4}" y="${ly - 12}" width="${m.r - 6}" height="22" rx="6" fill="#85bb65"/><text x="${W - m.r / 2 + 1}" y="${ly + 4}" text-anchor="middle" font-size="13" font-weight="800" fill="#0f2a12">${v[v.length - 1].toFixed(1)}</text></svg>`;
+  };
+  const open = () => {
+    const m = document.createElement('div'); m.className = 'modal dmodal';
+    m.innerHTML = `<div class="box" role="dialog" aria-label="US dollar index chart"><button class="x" type="button">✕ Close</button>
+      <h4>${hl('US DOLLAR')} Index: Chart</h4>
+      <div class="ctop" style="margin-bottom:6px"><span class="seg" role="group" aria-label="Chart period" style="margin-left:0"><button type="button" data-d="130">6 Months</button><button type="button" data-d="260" class="on">1 Year</button><button type="button" data-d="520">2 Years</button></span></div>
+      <div class="dfig"></div>
+      <div class="dleg"><span style="color:#85bb65"><i style="border-color:#85bb65"></i>Above 200-day average (strong)</span><span style="color:#6f8fe0"><i style="border-color:#6f8fe0"></i>Below 200-day average (weak)</span><span style="color:#e07ac0"><i style="border-color:#e07ac0;border-top-style:dotted"></i>50-day average</span><span><i style="border-color:#e6e6e6;border-top-style:dashed"></i>200-day average</span></div>
+      <p class="dnote">The broad US dollar index (Federal Reserve) measures the dollar against the currencies of America's main trading partners. A <b style="color:var(--usd)">strong dollar</b> (above its 200-day average) has usually been a headwind for ${hl('crypto')} and ${hl('gold')}; a weak dollar a tailwind. Updated daily, about one day behind.</p></div>`;
+    document.body.append(m);
+    const f = m.querySelector('.dfig'); let days = 260; const redraw = () => draw(f, days); redraw();
+    const ro2 = new ResizeObserver(redraw); ro2.observe(f);
+    m.querySelectorAll('[data-d]').forEach((b) => b.addEventListener('click', (ev) => { ev.stopPropagation(); days = +b.dataset.d; m.querySelectorAll('[data-d]').forEach((x) => x.classList.toggle('on', x === b)); redraw(); }));
+    const close = () => { ro2.disconnect(); m.remove(); document.removeEventListener('keydown', esc_); };
+    const esc_ = (ev) => { if (ev.key === 'Escape') close(); };
+    document.addEventListener('keydown', esc_);
+    m.addEventListener('click', (ev) => { if (ev.target === m || ev.target.closest('.x')) close(); });
+  };
+  box.addEventListener('click', open);
+  box.setAttribute('role', 'button'); box.tabIndex = 0; box.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+  }
+}
 const PRODUCT = {BTC: 'BTC-USD', ETH: 'ETH-USD', PAXG: 'PAXG-USD', SOL: 'SOL-USD'};
 async function liveTick() {
   const hm = new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
