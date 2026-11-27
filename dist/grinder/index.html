@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>The Grinder · Private</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+<style>
+:root{color-scheme:dark;--bg:#0f1113;--panel:#15181c;--panel2:#1a1d20;--line:#2a2e33;--ink:#eef0f2;--mute:#a3a9b0;--amb:#ffb000;--grn:#3fbf6f;--red:#e8625b;--blue:#6f8fe0;--pur:#b98aff;--teal:#22b5a8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:26px 20px 80px}
+h1,h2,h3{font-family:"Barlow Semi Condensed",Inter,sans-serif;margin:0;letter-spacing:.01em}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .mill{width:46px;height:46px;border-radius:12px;border:2px solid var(--amb);display:grid;place-items:center;background:color-mix(in srgb,var(--amb) 12%,var(--panel))}
+.brand h1{font-size:34px;text-transform:uppercase}
+.brand small{display:block;font:700 12.5px Inter;color:var(--mute);letter-spacing:.08em;text-transform:uppercase}
+.tabs{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.tabs button{font:800 13px Inter;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer}
+.tabs button.on{border-color:var(--amb);color:var(--amb)}
+.box{border:2px solid var(--line);border-radius:16px;background:var(--panel);padding:18px 20px;margin-bottom:18px}
+.box h2{font-size:24px;text-transform:uppercase;margin-bottom:4px;display:inline-block;padding-bottom:4px;border-bottom:3px solid;border-image:linear-gradient(90deg,var(--grn),var(--amb),var(--red)) 1}
+.hint{color:var(--mute);font-size:14.5px;margin:6px 0 12px}
+label.f{display:grid;gap:6px;font:800 12.5px Inter;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);margin-bottom:12px}
+input[type=text],input[type=password],input[type=url],textarea,select{font:600 16px Inter;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:11px 12px;width:100%}
+textarea{min-height:120px;resize:vertical;font-weight:500;line-height:1.5}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--amb)}
+.ways{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.way{border:1.5px solid color-mix(in srgb,var(--amb) 45%,transparent);border-radius:14px;padding:14px;background:var(--panel2)}
+.way h3{font-size:19px;text-transform:uppercase;color:var(--amb);margin-bottom:8px}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:18px;text-align:center;color:var(--mute);cursor:pointer;font-weight:700}
+.drop.over{border-color:var(--amb);color:var(--amb)}
+.btn{font:800 15px Inter;letter-spacing:.05em;text-transform:uppercase;border:0;border-radius:12px;padding:13px 20px;cursor:pointer;background:var(--amb);color:#1d1400}
+.btn.ghost{background:var(--panel2);color:var(--ink);border:2px solid var(--line)}
+.btn.sm{font-size:12.5px;padding:8px 12px;border-radius:9px}
+.btn:disabled{opacity:.5;cursor:wait}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.queue{display:grid;gap:8px;margin:12px 0}
+.qi{display:flex;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--panel2);font-weight:600}
+.qi b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qi .x{background:none;border:0;color:var(--mute);font-size:18px;cursor:pointer}
+.status{font-weight:700;color:var(--amb);min-height:24px}
+.status.err{color:var(--red)}
+.chip{display:inline-block;font:800 12.5px Inter;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:7px;color:#0b0b0b}
+.v-NEW{background:var(--grn)}.v-ADDS_TO{background:var(--teal)}.v-CONFLICTS{background:var(--red)}.v-ALREADY_HAVE{background:#8a9199}.v-WEAK{background:#5a6068;color:#eee}
+.src{border:2px solid var(--amb);border-radius:14px;padding:14px 16px;background:color-mix(in srgb,var(--amb) 8%,var(--panel));margin-bottom:14px}
+.src h3{font-size:24px;margin-bottom:4px}
+.src .meta{color:var(--mute);font-size:14px;font-weight:600}
+.ideas{display:grid;gap:12px}
+.idea{border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--panel2)}
+.idea.keep{border-color:color-mix(in srgb,var(--grn) 60%,transparent)}
+.idea.dropped{opacity:.55}
+.idea h4{margin:8px 0 6px;font:700 19px Inter}
+.idea p{margin:0 0 8px}
+.idea .act{border-left:3px solid var(--amb);padding-left:10px;color:var(--ink)}
+.idea .why{color:var(--mute);font-size:14.5px}
+.idea .tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{font:700 12.5px Inter;border:1.5px solid var(--line);border-radius:7px;padding:2px 8px;color:var(--mute)}
+.idea .rel{font-size:14px;color:var(--teal);font-weight:600}
+.keepbtn{margin-left:auto}
+.counts{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:700px){.filters{grid-template-columns:1fr}.brand h1{font-size:28px}.tabs{margin-left:0}}
+.lib .idea .srcl{font-size:13.5px;color:var(--mute);font-weight:600}
+.warn{border:2px solid var(--red);border-radius:12px;padding:12px 14px;background:color-mix(in srgb,var(--red) 10%,var(--panel));font-weight:600}
+.ok{color:var(--grn);font-weight:700}
+.big{font:700 40px "Barlow Semi Condensed",Inter;color:var(--amb)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><div class="mill"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffb000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/><circle cx="12" cy="12" r="3"/></svg></div>
+      <div><h1>The Grinder</h1><small>Private · Universum Media</small></div></div>
+    <nav class="tabs"><button data-tab="grind" class="on">Grind</button><button data-tab="lib">Library <span id="libn"></span></button><button data-tab="set">Settings</button></nav>
+  </header>
+
+  <!-- GRIND -->
+  <section id="t-grind">
+    <div class="warn" id="nokey" hidden>No key yet. Open <b>Settings</b> and paste your Claude API key first.</div>
+    <div class="box">
+      <h2>1 · Feed It</h2>
+      <p class="hint">Add one or more sources. Each one is read, ground down to its substance, and compared with your library.</p>
+      <div class="ways">
+        <div class="way"><h3>Link</h3>
+          <input type="url" id="url" placeholder="https://… web page, article or PDF link">
+          <div class="row" style="margin-top:8px"><button class="btn sm ghost" id="addurl">Add link</button></div>
+          <p class="hint" style="margin-bottom:0">YouTube, X and Facebook videos: use “Paste” with the transcript, or upload the audio. (Or send the YouTube link to Claude in chat.)</p></div>
+        <div class="way"><h3>File</h3>
+          <div class="drop" id="drop">Drop files here or tap to choose<br><span style="font-weight:600;font-size:13.5px">PDF · EPUB · DOCX · TXT · MD · HTML · audio (MP3, M4A, WAV) · short video</span></div>
+          <input type="file" id="file" multiple hidden accept=".pdf,.epub,.docx,.txt,.md,.html,.htm,.srt,.vtt,audio/*,video/*"></div>
+        <div class="way"><h3>Paste</h3>
+          <input type="text" id="ptitle" placeholder="Title (optional)" style="margin-bottom:8px">
+          <textarea id="ptext" placeholder="Paste a transcript, notes, an article…"></textarea>
+          <div class="row" style="margin-top:8px"><button class="btn sm ghost" id="addtext">Add text</button></div></div>
+      </div>
+      <div class="queue" id="queue"></div>
+      <div class="row"><button class="btn" id="go">Grind it</button><span class="status" id="status"></span></div>
+    </div>
+    <div class="box" id="resbox" hidden>
+      <h2>2 · The Substance</h2>
+      <p class="hint">Green border = kept. Tap <b>Keep</b> / <b>Drop</b> to change, then save. NEW, ADDS TO and CONFLICTS are kept by default.</p>
+      <div id="results"></div>
+      <div class="row" style="margin-top:14px"><button class="btn" id="save">Save kept ideas to library</button><button class="btn ghost" id="copyres">Copy as text</button><span class="status" id="savest"></span></div>
+    </div>
+  </section>
+
+  <!-- LIBRARY -->
+  <section id="t-lib" hidden>
+    <div class="box lib">
+      <h2>Your Library</h2>
+      <p class="hint">Every kept idea, with its source. This is what new material is compared against.</p>
+      <div class="filters"><input type="text" id="q" placeholder="Search ideas…"><select id="ftopic"><option value="">All topics</option></select><select id="fsrc"><option value="">All sources</option></select></div>
+      <div class="row" style="margin-bottom:12px"><button class="btn sm ghost" id="expmd">Export for Claude (Markdown)</button><button class="btn sm ghost" id="expjson">Backup (JSON)</button><button class="btn sm ghost" id="impjson">Restore backup</button><input type="file" id="impfile" accept=".json" hidden><span class="status" id="libst"></span></div>
+      <div class="ideas" id="liblist"></div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="t-set" hidden>
+    <div class="box">
+      <h2>Keys</h2>
+      <p class="hint">Keys are stored only in this browser on this device. They are sent only to Anthropic (and OpenAI for audio), never to MarketLights or anyone else.</p>
+      <label class="f">Claude API key (starts with sk-ant-)<input type="password" id="k_ant" autocomplete="off" placeholder="sk-ant-…"></label>
+      <label class="f">Optional: OpenAI key, only for transcribing audio and video<input type="password" id="k_oai" autocomplete="off" placeholder="sk-…"></label>
+      <div class="row"><button class="btn" id="savekeys">Save keys</button><button class="btn ghost" id="testkey">Test Claude key</button><span class="status" id="keyst"></span></div>
+    </div>
+    <div class="box">
+      <h2>Your Focus</h2>
+      <p class="hint">Tell the Grinder what you care about, so it judges what is useful to you. Example: “The Mental Architect: mindset, psychology, persuasion, YouTube growth. Universum Media: utility websites, SEO, AdSense, AI tools.”</p>
+      <textarea id="focus"></textarea>
+      <label class="f" style="margin-top:12px">Model<select id="model"><option value="claude-sonnet-5-5">Sonnet 5.5 · fast and economical (recommended)</option><option value="claude-opus-5-5">Opus 5.5 · deeper, costs more</option><option value="claude-haiku-5-5">Haiku 5.5 · cheapest</option></select></label>
+      <label class="f">Language of results<select id="lang"><option>English</option><option>Spanish</option></select></label>
+      <div class="row"><button class="btn" id="savefocus">Save</button><span class="status" id="focst"></span></div>
+    </div>
+    <div class="box">
+      <h2>Usage</h2>
+      <p class="hint">Approximate cost of grinding so far on this device (from Anthropic's token counts).</p>
+      <div class="big" id="cost">$0.00</div>
+    </div>
+  </section>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem('grinder_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('grinder_' + k, JSON.stringify(v)); return true; } catch (e) { alert('Browser storage is full. Export a backup and remove old items.'); return false; } },
+};
+let lib = LS.get('lib', []);           // [{id, title, idea, action, type, topic, source, sourceType, url, date}]
+let queue = [];                        // [{kind:'url'|'file'|'text', name, url?, file?, text?}]
+let current = null;                    // last results
+
+// ---------- tabs
+document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-tab]').forEach((x) => x.classList.toggle('on', x === b));
+  ['grind', 'lib', 'set'].forEach((t) => $('t-' + t).hidden = t !== b.dataset.tab);
+  if (b.dataset.tab === 'lib') renderLib();
+}));
+
+// ---------- settings
+const cfg = () => ({ant: LS.get('k_ant', ''), oai: LS.get('k_oai', ''), focus: LS.get('focus', ''), model: LS.get('model', 'claude-sonnet-5-5'), lang: LS.get('lang', 'English')});
+function loadSettings() { const c = cfg(); $('k_ant').value = c.ant; $('k_oai').value = c.oai; $('focus').value = c.focus; $('model').value = c.model; $('lang').value = c.lang; $('nokey').hidden = !!c.ant; $('cost').textContent = '$' + LS.get('cost', 0).toFixed(2); $('libn').textContent = lib.length ? '(' + lib.length + ')' : ''; }
+$('savekeys').addEventListener('click', () => { LS.set('k_ant', $('k_ant').value.trim()); LS.set('k_oai', $('k_oai').value.trim()); $('keyst').className = 'status ok'; $('keyst').textContent = 'Saved on this device.'; loadSettings(); });
+$('savefocus').addEventListener('click', () => { LS.set('focus', $('focus').value.trim()); LS.set('model', $('model').value); LS.set('lang', $('lang').value); $('focst').className = 'status ok'; $('focst').textContent = 'Saved.'; });
+$('testkey').addEventListener('click', async () => {
+  $('keyst').className = 'status'; $('keyst').textContent = 'Testing…';
+  try { const r = await claude([{role: 'user', content: 'Reply with the single word: ready'}], {max: 20}); $('keyst').className = 'status ok'; $('keyst').textContent = 'Key works ✓'; }
+  catch (e) { $('keyst').className = 'status err'; $('keyst').textContent = e.message; }
+});
+
+// ---------- queue
+function renderQueue() {
+  $('queue').innerHTML = queue.map((q, i) => `<div class="qi"><span class="chip" style="background:var(--amb)">${q.kind}</span><b>${esc(q.name)}</b><button class="x" data-i="${i}" aria-label="Remove">✕</button></div>`).join('');
+  $('queue').querySelectorAll('.x').forEach((b) => b.addEventListener('click', () => { queue.splice(+b.dataset.i, 1); renderQueue(); }));
+}
+$('addurl').addEventListener('click', () => { const u = $('url').value.trim(); if (!/^https?:\/\//i.test(u)) { setStatus('Paste a full link starting with https://', true); return; } queue.push({kind: 'link', name: u, url: u}); $('url').value = ''; renderQueue(); setStatus(''); });
+$('addtext').addEventListener('click', () => { const t = $('ptext').value.trim(); if (t.length < 200) { setStatus('Paste at least a few paragraphs.', true); return; } queue.push({kind: 'text', name: $('ptitle').value.trim() || t.slice(0, 60) + '…', text: t}); $('ptext').value = ''; $('ptitle').value = ''; renderQueue(); setStatus(''); });
+const addFiles = (files) => { [...files].forEach((f) => queue.push({kind: 'file', name: f.name, file: f})); renderQueue(); };
+$('drop').addEventListener('click', () => $('file').click());
+$('file').addEventListener('change', (e) => { addFiles(e.target.files); e.target.value = ''; });
+['dragenter', 'dragover'].forEach((ev) => $('drop').addEventListener(ev, (e) => { e.preventDefault(); $('drop').classList.add('over'); }));
+['dragleave', 'drop'].forEach((ev) => $('drop').addEventListener(ev, (e) => { e.preventDefault(); $('drop').classList.remove('over'); }));
+$('drop').addEventListener('drop', (e) => addFiles(e.dataTransfer.files));
+function setStatus(t, err) { $('status').className = 'status' + (err ? ' err' : ''); $('status').textContent = t; }
+
+// ---------- Claude API (direct from the browser; key stays on this device)
+const PRICE = {'claude-sonnet-5-5': [3, 15], 'claude-opus-5-5': [5, 25], 'claude-haiku-5-5': [1, 5]};  // USD per million tokens (in, out), approximate
+async function claude(messages, {max = 8000, tools, system} = {}) {
+  const c = cfg(); if (!c.ant) throw new Error('No Claude key. Open Settings and paste it.');
+  const body = {model: c.model, max_tokens: max, messages};
+  if (system) body.system = system; if (tools) body.tools = tools;
+  const r = await fetch('https://api.anthropic.com/v1/messages', {method: 'POST', headers: {'content-type': 'application/json', 'x-api-key': c.ant, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'}, body: JSON.stringify(body)});
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const m = j.error && j.error.message || r.statusText; throw new Error(r.status === 401 ? 'The Claude key was refused. Check it in Settings.' : r.status === 429 ? 'Too many requests right now. Wait a minute and try again.' : 'Claude error: ' + m); }
+  const u = j.usage || {}, p = PRICE[c.model] || [3, 15];
+  LS.set('cost', LS.get('cost', 0) + ((u.input_tokens || 0) + (u.cache_creation_input_tokens || 0)) / 1e6 * p[0] + (u.output_tokens || 0) / 1e6 * p[1]);
+  return {text: (j.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n'), stop: j.stop_reason, raw: j};
+}
+
+// ---------- reading sources
+const b64 = (buf) => { let s = ''; const a = new Uint8Array(buf); for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); };
+const strip = (html) => { const d = new DOMParser().parseFromString(html, 'text/html'); d.querySelectorAll('script,style,nav,footer').forEach((n) => n.remove()); return (d.body ? d.body.innerText || d.body.textContent : '').replace(/\n{3,}/g, '\n\n').trim(); };
+async function readFile(f) {
+  const n = f.name.toLowerCase();
+  if (n.endsWith('.pdf')) { if (f.size > 30e6) throw new Error(f.name + ' is over 30 MB. Split it or paste the text.'); return {pdf: b64(await f.arrayBuffer())}; }
+  if (n.endsWith('.epub') || n.endsWith('.docx')) {
+    if (!window.JSZip) throw new Error('The ebook reader did not load. Check your internet connection and reload.');
+    const z = await JSZip.loadAsync(f);
+    if (n.endsWith('.docx')) { const x = await z.file('word/document.xml').async('string'); return {text: x.replace(/<\/w:p>/g, '\n').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')}; }
+    const opf = Object.keys(z.files).find((k) => k.endsWith('.opf')); let order = Object.keys(z.files).filter((k) => /\.x?html?$/i.test(k)).sort();
+    if (opf) { const o = new DOMParser().parseFromString(await z.file(opf).async('string'), 'application/xml'), base = opf.includes('/') ? opf.slice(0, opf.lastIndexOf('/') + 1) : '';
+      const items = {}; o.querySelectorAll('manifest item').forEach((it) => items[it.getAttribute('id')] = base + decodeURIComponent(it.getAttribute('href')));
+      const sp = [...o.querySelectorAll('spine itemref')].map((r) => items[r.getAttribute('idref')]).filter((p) => p && z.file(p)); if (sp.length) order = sp; }
+    let t = ''; for (const p of order) t += strip(await z.file(p).async('string')) + '\n\n'; return {text: t};
+  }
+  if (/^(audio|video)\//.test(f.type) || /\.(mp3|m4a|wav|ogg|webm|mp4|mov|mpeg|mpga)$/.test(n)) return {text: await transcribe(f)};
+  const t = await f.text(); return {text: /\.html?$/.test(n) ? strip(t) : t.replace(/^\d+\s*$|^\d\d:\d\d:\d\d[.,]\d+ --> .*$/gm, '').replace(/^WEBVTT.*$/m, '')};
+}
+async function transcribe(f) {
+  const k = cfg().oai; if (!k) throw new Error('Audio and video need the optional OpenAI key in Settings (for transcription). Or paste a transcript instead.');
+  if (f.size > 25e6) throw new Error(f.name + ' is over 25 MB. Upload just the audio (MP3/M4A) or a shorter part.');
+  const fd = new FormData(); fd.append('file', f); fd.append('model', 'whisper-1');
+  const r = await fetch('https://api.openai.com/v1/audio/transcriptions', {method: 'POST', headers: {Authorization: 'Bearer ' + k}, body: fd});
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error('Transcription failed: ' + (j.error && j.error.message || r.statusText));
+  return j.text || '';
+}
+
+// ---------- the grind
+const libIndex = () => lib.slice(-600).map((x) => `${x.id} | ${x.topic} | ${x.title}: ${x.idea.slice(0, 140)}`).join('\n');
+function prompt(srcLabel) {
+  const c = cfg();
+  return `You are "The Grinder", a research assistant for one person. Your job is to extract the SUBSTANCE of a source: the ideas, principles, frameworks, tactics, claims and evidence that are actually worth keeping. Write every idea in your own words. Never copy sentences; a short quote of under 15 words is allowed only when the exact wording matters.
+
+The person's focus:
+${c.focus || '(not set: judge general usefulness)'}
+
+Their existing library (id | topic | idea) to compare against:
+${lib.length ? libIndex() : '(empty: everything is NEW)'}
+
+For the source "${srcLabel}", return ONLY a JSON object, no other text:
+{"source":{"title":"","author":"","type":"article|book|video|podcast|post|paper|other","summary":"3-5 sentences: what it is and its core message","quality":"high|medium|low","quality_note":"one sentence: how credible and useful is it"},
+ "ideas":[{"title":"short name of the idea","idea":"2-4 sentences in your own words","type":"principle|framework|tactic|claim|evidence|story|warning","topic":"1-3 word topic","action":"one concrete thing to do with it, or empty","verdict":"NEW|ADDS_TO|CONFLICTS|ALREADY_HAVE|WEAK","related_id":"library id or null","why":"one sentence explaining the verdict"}]}
+
+Rules: NEW = not in the library. ADDS_TO = complements or deepens a library item (give related_id). CONFLICTS = contradicts a library item (give related_id and say how). ALREADY_HAVE = the library already covers it. WEAK = vague, unsupported, generic or not useful for the focus. Give 5-25 ideas depending on how rich the source is; skip filler, ads and self-promotion. Write the result in ${c.lang}.`;
+}
+function parseJSON(t) {
+  const s = t.indexOf('{'), e = t.lastIndexOf('}'); if (s < 0 || e < 0) throw new Error('Claude did not return results. Try again.');
+  return JSON.parse(t.slice(s, e + 1));
+}
+const CHUNK = 350000; // characters per part (~90k tokens)
+async function grindOne(q, k, n) {
+  const say = (t) => setStatus(`(${k}/${n}) ${q.name.slice(0, 60)} · ${t}`);
+  if (q.kind === 'link') {
+    say('reading the link…');
+    const r = await claude([{role: 'user', content: `Use the web_fetch tool to read ${q.url}. Then complete this task on its full content.\n\n` + prompt(q.url)}], {max: 12000, tools: [{type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 3}]});
+    const out = parseJSON(r.text); out.source.url = q.url; return out;
+  }
+  let content;
+  if (q.kind === 'file') { say('reading the file…'); content = await readFile(q.file); } else content = {text: q.text};
+  if (content.pdf) { say('grinding…'); const r = await claude([{role: 'user', content: [{type: 'document', source: {type: 'base64', media_type: 'application/pdf', data: content.pdf}}, {type: 'text', text: prompt(q.name)}]}], {max: 12000}); return parseJSON(r.text); }
+  const text = (content.text || '').trim(); if (text.length < 200) throw new Error(q.name + ': no readable text found.');
+  const parts = []; for (let i = 0; i < text.length; i += CHUNK) parts.push(text.slice(i, i + CHUNK));
+  let merged = null;
+  for (let p = 0; p < parts.length; p++) {
+    say(parts.length > 1 ? `grinding part ${p + 1} of ${parts.length}…` : 'grinding…');
+    const label = parts.length > 1 ? `${q.name} (part ${p + 1} of ${parts.length})` : q.name;
+    const r = await claude([{role: 'user', content: `<source>\n${parts[p]}\n</source>\n\n` + prompt(label)}], {max: 12000});
+    const o = parseJSON(r.text);
+    if (!merged) merged = o; else merged.ideas.push(...o.ideas);
+  }
+  return merged;
+}
+$('go').addEventListener('click', async () => {
+  if (!cfg().ant) { setStatus('Paste your Claude key in Settings first.', true); return; }
+  if (!queue.length) { setStatus('Add a link, file or text first.', true); return; }
+  $('go').disabled = true; const results = [], fails = [];
+  for (let i = 0; i < queue.length; i++) {
+    try { const o = await grindOne(queue[i], i + 1, queue.length); o.source = o.source || {}; o.source.title = o.source.title || queue[i].name; o.ideas = (o.ideas || []).map((d) => Object.assign(d, {keep: ['NEW', 'ADDS_TO', 'CONFLICTS'].includes(d.verdict)})); results.push(o); }
+    catch (e) { fails.push(queue[i].name + ': ' + e.message); }
+  }
+  $('go').disabled = false; queue = []; renderQueue(); loadSettings();
+  if (results.length) { current = results; renderResults(); }
+  setStatus(fails.length ? 'Problems: ' + fails.join(' · ') : 'Done ✓', !!fails.length);
+});
+const VL = {NEW: 'New', ADDS_TO: 'Adds to', CONFLICTS: 'Conflicts', ALREADY_HAVE: 'Already have', WEAK: 'Weak'};
+function renderResults() {
+  $('resbox').hidden = false;
+  $('results').innerHTML = current.map((o, si) => {
+    const cnt = {}; o.ideas.forEach((d) => cnt[d.verdict] = (cnt[d.verdict] || 0) + 1);
+    const s = o.source;
+    return `<div class="src"><h3>${esc(s.title)}</h3><div class="meta">${esc([s.author, s.type, s.quality && 'quality: ' + s.quality].filter(Boolean).join(' · '))}${s.url ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener" style="color:var(--amb)">open</a>` : ''}</div><p style="margin:8px 0 4px">${esc(s.summary)}</p><p class="meta" style="margin:0">${esc(s.quality_note || '')}</p></div>
+    <div class="counts">${Object.keys(VL).filter((v) => cnt[v]).map((v) => `<span class="chip v-${v}">${cnt[v]} ${VL[v]}</span>`).join('')}</div>
+    <div class="ideas">${o.ideas.map((d, di) => ideaCard(d, `${si}:${di}`)).join('')}</div>`;
+  }).join('<hr style="border:0;border-top:2px solid var(--line);margin:22px 0">');
+  $('results').querySelectorAll('.keepbtn').forEach((b) => b.addEventListener('click', () => { const [si, di] = b.dataset.k.split(':').map(Number); const d = current[si].ideas[di]; d.keep = !d.keep; renderResults(); }));
+  $('resbox').scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+function ideaCard(d, key) {
+  const rel = d.related_id && lib.find((x) => x.id === d.related_id);
+  return `<article class="idea ${key ? (d.keep ? 'keep' : 'dropped') : ''}"><div class="tags"><span class="chip v-${esc(d.verdict)}">${VL[d.verdict] || esc(d.verdict)}</span><span class="tag">${esc(d.type)}</span><span class="tag">${esc(d.topic)}</span>${key ? `<button class="btn sm ${d.keep ? '' : 'ghost'} keepbtn" data-k="${key}">${d.keep ? 'Keep ✓' : 'Drop'}</button>` : ''}</div>
+    <h4>${esc(d.title)}</h4><p>${esc(d.idea)}</p>${d.action ? `<p class="act"><b>Do:</b> ${esc(d.action)}</p>` : ''}${d.why ? `<p class="why">${esc(d.why)}</p>` : ''}${rel ? `<p class="rel">↳ Related: ${esc(rel.title)}</p>` : ''}${d.source && !key ? `<p class="srcl">From: ${esc(d.source)}</p>` : ''}</article>`;
+}
+$('save').addEventListener('click', () => {
+  if (!current) return; let n = 0; const day = new Date().toISOString().slice(0, 10);
+  current.forEach((o) => o.ideas.filter((d) => d.keep).forEach((d) => { lib.push({id: 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), title: d.title, idea: d.idea, action: d.action || '', type: d.type, topic: d.topic, verdict: d.verdict, why: d.why || '', related_id: d.related_id || null, source: o.source.title, author: o.source.author || '', url: o.source.url || '', date: day}); n++; }));
+  if (LS.set('lib', lib)) { $('savest').className = 'status ok'; $('savest').textContent = `${n} ideas saved to your library ✓`; loadSettings(); current = null; $('results').innerHTML = ''; $('resbox').hidden = true; setStatus(`${n} ideas saved. Library now has ${lib.length}.`); }
+});
+const asText = (items) => items.map((d) => `## ${d.title}\n${d.idea}${d.action ? `\nDo: ${d.action}` : ''}\nTopic: ${d.topic} · ${d.type}${d.source ? ` · Source: ${d.source}${d.author ? ' (' + d.author + ')' : ''}` : ''}${d.url ? ' ' + d.url : ''}`).join('\n\n');
+$('copyres').addEventListener('click', async () => { if (!current) return; const t = current.map((o) => `# ${o.source.title}\n${o.source.summary}\n\n` + asText(o.ideas.filter((d) => d.keep))).join('\n\n'); try { await navigator.clipboard.writeText(t); $('savest').className = 'status ok'; $('savest').textContent = 'Copied.'; } catch (e) { $('savest').textContent = 'Copy failed.'; } });
+
+// ---------- library
+function renderLib() {
+  const topics = [...new Set(lib.map((x) => x.topic))].sort(), srcs = [...new Set(lib.map((x) => x.source))].sort();
+  const keepT = $('ftopic').value, keepS = $('fsrc').value;
+  $('ftopic').innerHTML = '<option value="">All topics</option>' + topics.map((t) => `<option${t === keepT ? ' selected' : ''}>${esc(t)}</option>`).join('');
+  $('fsrc').innerHTML = '<option value="">All sources</option>' + srcs.map((t) => `<option${t === keepS ? ' selected' : ''}>${esc(t)}</option>`).join('');
+  const q = $('q').value.toLowerCase();
+  const items = lib.filter((x) => (!keepT || x.topic === keepT) && (!keepS || x.source === keepS) && (!q || (x.title + ' ' + x.idea + ' ' + x.action).toLowerCase().includes(q))).slice().reverse();
+  $('liblist').innerHTML = items.length ? items.map((x) => ideaCard(x).replace('</article>', `<div class="row"><button class="btn sm ghost del" data-id="${x.id}">Remove</button><span class="srcl" style="margin-left:auto">${esc(x.date)}</span></div></article>`)).join('') : '<p class="hint">Nothing here yet. Grind your first source.</p>';
+  $('liblist').querySelectorAll('.del').forEach((b) => b.addEventListener('click', () => { if (!confirm('Remove this idea from the library?')) return; lib = lib.filter((x) => x.id !== b.dataset.id); LS.set('lib', lib); loadSettings(); renderLib(); }));
+}
+['q', 'ftopic', 'fsrc'].forEach((i) => $(i).addEventListener('input', renderLib));
+const dl = (name, text, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };
+$('expmd').addEventListener('click', () => { const byT = {}; lib.forEach((x) => (byT[x.topic] = byT[x.topic] || []).push(x)); dl('grinder-library.md', '# Grinder Library\n\n' + Object.keys(byT).sort().map((t) => `# ${t}\n\n` + asText(byT[t])).join('\n\n'), 'text/markdown'); });
+$('expjson').addEventListener('click', () => dl('grinder-backup-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify({lib, focus: cfg().focus}, null, 1), 'application/json'));
+$('impjson').addEventListener('click', () => $('impfile').click());
+$('impfile').addEventListener('change', async (e) => { try { const j = JSON.parse(await e.target.files[0].text()); const ids = new Set(lib.map((x) => x.id)); const add = (j.lib || []).filter((x) => x.id && !ids.has(x.id)); lib = lib.concat(add); LS.set('lib', lib); $('libst').className = 'status ok'; $('libst').textContent = add.length + ' ideas restored.'; loadSettings(); renderLib(); } catch (err) { $('libst').className = 'status err'; $('libst').textContent = 'That file is not a Grinder backup.'; } e.target.value = ''; });
+
+loadSettings();
+</script>
+</body>
+</html>
