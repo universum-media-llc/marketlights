@@ -183,6 +183,10 @@ def main():
     if os.path.exists(os.path.join(HERE, "grinder.html")):  # private tool: not linked, not indexed
         os.makedirs(os.path.join(HERE, "dist", "grinder"), exist_ok=True)
         open(os.path.join(HERE, "dist", "grinder", "index.html"), "w").write(open(os.path.join(HERE, "grinder.html")).read())
+        os.makedirs(os.path.join(HERE, "dist", "grinder", "lib"), exist_ok=True)
+        for f in ("jszip.min.js", "pdf.min.js", "pdf.worker.min.js"):
+            if os.path.exists(os.path.join(HERE, "grinder-" + f)):
+                open(os.path.join(HERE, "dist", "grinder", "lib", f), "w").write(open(os.path.join(HERE, "grinder-" + f)).read())
     urls = "".join(f'<url><loc>https://marketlights.net{u}</loc><lastmod>{out[0]["date"]}</lastmod><changefreq>{"daily" if u in ("/", "/convert/") else "monthly"}</changefreq></url>' for u in extra)
     open(os.path.join(HERE, "dist", "sitemap.xml"), "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls + '</urlset>\n')
     print(note)
