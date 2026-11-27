@@ -7,7 +7,8 @@
 <title>The Grinder · Private</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+<script src="lib/jszip.min.js" defer></script>
+<script src="lib/pdf.min.js" defer></script>
 <style>
 :root{color-scheme:dark;--bg:#0f1113;--panel:#15181c;--panel2:#1a1d20;--line:#2a2e33;--ink:#eef0f2;--mute:#a3a9b0;--amb:#ffb000;--grn:#3fbf6f;--red:#e8625b;--blue:#6f8fe0;--pur:#b98aff;--teal:#22b5a8}
 *{box-sizing:border-box}
@@ -85,12 +86,17 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--amb)}
     <div class="warn" id="nokey" hidden>No key yet. Open <b>Settings</b> and paste your Claude API key first.</div>
     <div class="box">
       <h2>1 · Feed It</h2>
-      <p class="hint">Add one or more sources. Each one is read, ground down to its substance, and compared with your library.</p>
+      <p class="hint">Add one or more sources. The Grinder gets the full transcript or text, saves it, and (unless you choose "transcript only") grinds it down to its substance and compares it with your library.</p>
+      <div class="row" style="margin-bottom:14px;gap:14px">
+        <label class="f" style="margin:0;min-width:240px">Project<select id="proj"></select></label>
+        <button class="btn sm ghost" id="addproj" style="align-self:end">+ New project</button>
+        <label class="f" style="margin:0;align-self:end;flex-direction:row;display:flex;gap:8px;align-items:center;cursor:pointer;text-transform:none;font-size:15px;color:var(--ink)"><input type="checkbox" id="tonly" style="width:20px;height:20px"> Transcript only (no analysis)</label>
+      </div>
       <div class="ways">
         <div class="way"><h3>Link</h3>
-          <input type="url" id="url" placeholder="https://… web page, article or PDF link">
+          <textarea id="url" rows="2" style="min-height:64px" placeholder="https://… YouTube, X, Facebook, TikTok, Instagram, article or PDF"></textarea>
           <div class="row" style="margin-top:8px"><button class="btn sm ghost" id="addurl">Add link</button></div>
-          <p class="hint" style="margin-bottom:0">YouTube, X and Facebook videos: use “Paste” with the transcript, or upload the audio. (Or send the YouTube link to Claude in chat.)</p></div>
+          <p class="hint" style="margin-bottom:0">Video links (YouTube, X, Facebook, TikTok, Instagram) are transcribed automatically. You can paste several links, one per line.</p></div>
         <div class="way"><h3>File</h3>
           <div class="drop" id="drop">Drop files here or tap to choose<br><span style="font-weight:600;font-size:13.5px">PDF · EPUB · DOCX · TXT · MD · HTML · audio (MP3, M4A, WAV) · short video</span></div>
           <input type="file" id="file" multiple hidden accept=".pdf,.epub,.docx,.txt,.md,.html,.htm,.srt,.vtt,audio/*,video/*"></div>
@@ -106,7 +112,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--amb)}
       <h2>2 · The Substance</h2>
       <p class="hint">Green border = kept. Tap <b>Keep</b> / <b>Drop</b> to change, then save. NEW, ADDS TO and CONFLICTS are kept by default.</p>
       <div id="results"></div>
-      <div class="row" style="margin-top:14px"><button class="btn" id="save">Save kept ideas to library</button><button class="btn ghost" id="copyres">Copy as text</button><span class="status" id="savest"></span></div>
+      <div class="row" style="margin-top:14px"><button class="btn" id="save">Save kept ideas to library</button><button class="btn ghost" id="copyres">Copy ideas as text</button><span class="status" id="savest"></span></div>
     </div>
   </section>
 
@@ -115,8 +121,17 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--amb)}
     <div class="box lib">
       <h2>Your Library</h2>
       <p class="hint">Every kept idea, with its source. This is what new material is compared against.</p>
-      <div class="filters"><input type="text" id="q" placeholder="Search ideas…"><select id="ftopic"><option value="">All topics</option></select><select id="fsrc"><option value="">All sources</option></select></div>
-      <div class="row" style="margin-bottom:12px"><button class="btn sm ghost" id="expmd">Export for Claude (Markdown)</button><button class="btn sm ghost" id="expjson">Backup (JSON)</button><button class="btn sm ghost" id="impjson">Restore backup</button><input type="file" id="impfile" accept=".json" hidden><span class="status" id="libst"></span></div>
+      <div class="row" style="margin-bottom:12px;gap:14px"><label class="f" style="margin:0;min-width:240px">Project<select id="lproj"></select></label></div>
+      <div class="box" style="background:var(--panel2);border-color:color-mix(in srgb,var(--amb) 50%,transparent)">
+        <h2 style="font-size:20px">Take It to Claude</h2>
+        <p class="hint">Downloads one file for the project above. In claude.ai, open that project, add the file to its Files (or Project knowledge), and every chat in that project can use it.</p>
+        <div class="row"><button class="btn" id="expproj">Export ideas + transcripts</button><button class="btn ghost" id="expideas">Export ideas only</button><span class="status" id="expst"></span></div>
+      </div>
+      <h2 style="font-size:20px;margin-top:6px">Sources &amp; Transcripts</h2>
+      <div class="ideas" id="srclist" style="margin:10px 0 22px"></div>
+      <h2 style="font-size:20px">Ideas</h2>
+      <div class="filters" style="margin-top:10px"><input type="text" id="q" placeholder="Search ideas…"><select id="ftopic"><option value="">All topics</option></select><select id="fsrc"><option value="">All sources</option></select></div>
+      <div class="row" style="margin-bottom:12px"><button class="btn sm ghost" id="expmd">Export all ideas (Markdown)</button><button class="btn sm ghost" id="expjson">Backup (JSON)</button><button class="btn sm ghost" id="impjson">Restore backup</button><input type="file" id="impfile" accept=".json" hidden><span class="status" id="libst"></span></div>
       <div class="ideas" id="liblist"></div>
     </div>
   </section>
@@ -125,10 +140,11 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--amb)}
   <section id="t-set" hidden>
     <div class="box">
       <h2>Keys</h2>
-      <p class="hint">Keys are stored only in this browser on this device. They are sent only to Anthropic (and OpenAI for audio), never to MarketLights or anyone else.</p>
+      <p class="hint">Keys are stored only in this browser on this device. Each is sent only to its own service (Anthropic, Supadata, OpenAI), never to MarketLights or anyone else.</p>
       <label class="f">Claude API key (starts with sk-ant-)<input type="password" id="k_ant" autocomplete="off" placeholder="sk-ant-…"></label>
-      <label class="f">Optional: OpenAI key, only for transcribing audio and video<input type="password" id="k_oai" autocomplete="off" placeholder="sk-…"></label>
-      <div class="row"><button class="btn" id="savekeys">Save keys</button><button class="btn ghost" id="testkey">Test Claude key</button><span class="status" id="keyst"></span></div>
+      <label class="f">Video transcripts key (Supadata) · for YouTube, X, Facebook, TikTok, Instagram links<input type="password" id="k_sup" autocomplete="off" placeholder="sd_…"></label>
+      <label class="f">Optional: OpenAI key, only for audio or video FILES from your computer<input type="password" id="k_oai" autocomplete="off" placeholder="sk-…"></label>
+      <div class="row"><button class="btn" id="savekeys">Save keys</button><button class="btn ghost" id="testkey">Test keys</button><span class="status" id="keyst"></span></div>
     </div>
     <div class="box">
       <h2>Your Focus</h2>
@@ -154,9 +170,20 @@ const LS = {
   get(k, d) { try { const v = localStorage.getItem('grinder_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem('grinder_' + k, JSON.stringify(v)); return true; } catch (e) { alert('Browser storage is full. Export a backup and remove old items.'); return false; } },
 };
-let lib = LS.get('lib', []);           // [{id, title, idea, action, type, topic, source, sourceType, url, date}]
-let queue = [];                        // [{kind:'url'|'file'|'text', name, url?, file?, text?}]
-let current = null;                    // last results
+// full texts live in IndexedDB (big), ideas + source list in localStorage (small)
+const DB = {
+  db: null,
+  open() { return this.db ? Promise.resolve(this.db) : new Promise((ok, no) => { const r = indexedDB.open('grinder', 1); r.onupgradeneeded = () => r.result.createObjectStore('texts'); r.onsuccess = () => ok(this.db = r.result); r.onerror = () => no(r.error); }); },
+  async put(k, v) { const d = await this.open(); return new Promise((ok, no) => { const t = d.transaction('texts', 'readwrite'); t.objectStore('texts').put(v, k); t.oncomplete = ok; t.onerror = () => no(t.error); }); },
+  async get(k) { const d = await this.open(); return new Promise((ok, no) => { const r = d.transaction('texts').objectStore('texts').get(k); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); }); },
+  async del(k) { const d = await this.open(); return new Promise((ok) => { const t = d.transaction('texts', 'readwrite'); t.objectStore('texts').delete(k); t.oncomplete = ok; }); },
+};
+let lib = LS.get('lib', []);        // ideas: {id, project, title, idea, action, type, topic, verdict, why, related_id, source, sourceId, author, url, date}
+let srcs = LS.get('srcs', []);      // sources: {id, project, title, author, url, kind, date, chars, summary, words}
+let projects = LS.get('projects', ['Mind Literacy', 'Nemo', 'MarketLights', 'General']);
+let queue = [], current = null;
+const uid = (p) => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const today = () => new Date().toISOString().slice(0, 10);
 
 // ---------- tabs
 document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => {
@@ -165,23 +192,43 @@ document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click
   if (b.dataset.tab === 'lib') renderLib();
 }));
 
+// ---------- projects
+function fillProjects() {
+  const cur = LS.get('proj', projects[0]);
+  $('proj').innerHTML = projects.map((p) => `<option${p === cur ? ' selected' : ''}>${esc(p)}</option>`).join('');
+  const lc = $('lproj').value || cur;
+  $('lproj').innerHTML = '<option value="">All projects</option>' + projects.map((p) => `<option${p === lc ? ' selected' : ''}>${esc(p)}</option>`).join('');
+}
+$('proj').addEventListener('change', () => LS.set('proj', $('proj').value));
+$('addproj').addEventListener('click', () => { const n = (prompt('Name of the new project:') || '').trim(); if (!n) return; if (!projects.includes(n)) { projects.push(n); LS.set('projects', projects); } LS.set('proj', n); fillProjects(); });
+$('lproj').addEventListener('change', renderLib);
+
 // ---------- settings
-const cfg = () => ({ant: LS.get('k_ant', ''), oai: LS.get('k_oai', ''), focus: LS.get('focus', ''), model: LS.get('model', 'claude-sonnet-5-5'), lang: LS.get('lang', 'English')});
-function loadSettings() { const c = cfg(); $('k_ant').value = c.ant; $('k_oai').value = c.oai; $('focus').value = c.focus; $('model').value = c.model; $('lang').value = c.lang; $('nokey').hidden = !!c.ant; $('cost').textContent = '$' + LS.get('cost', 0).toFixed(2); $('libn').textContent = lib.length ? '(' + lib.length + ')' : ''; }
-$('savekeys').addEventListener('click', () => { LS.set('k_ant', $('k_ant').value.trim()); LS.set('k_oai', $('k_oai').value.trim()); $('keyst').className = 'status ok'; $('keyst').textContent = 'Saved on this device.'; loadSettings(); });
+const cfg = () => ({ant: LS.get('k_ant', ''), sup: LS.get('k_sup', ''), oai: LS.get('k_oai', ''), focus: LS.get('focus', ''), model: LS.get('model', 'claude-sonnet-5-5'), lang: LS.get('lang', 'English')});
+function loadSettings() { const c = cfg(); $('k_ant').value = c.ant; $('k_sup').value = c.sup; $('k_oai').value = c.oai; $('focus').value = c.focus; $('model').value = c.model; $('lang').value = c.lang; $('nokey').hidden = !!c.ant; $('cost').textContent = '$' + LS.get('cost', 0).toFixed(2); $('libn').textContent = srcs.length ? '(' + srcs.length + ')' : ''; fillProjects(); }
+$('savekeys').addEventListener('click', () => { LS.set('k_ant', $('k_ant').value.trim()); LS.set('k_sup', $('k_sup').value.trim()); LS.set('k_oai', $('k_oai').value.trim()); $('keyst').className = 'status ok'; $('keyst').textContent = 'Saved on this device.'; loadSettings(); });
 $('savefocus').addEventListener('click', () => { LS.set('focus', $('focus').value.trim()); LS.set('model', $('model').value); LS.set('lang', $('lang').value); $('focst').className = 'status ok'; $('focst').textContent = 'Saved.'; });
 $('testkey').addEventListener('click', async () => {
+  const out = [];
   $('keyst').className = 'status'; $('keyst').textContent = 'Testing…';
-  try { const r = await claude([{role: 'user', content: 'Reply with the single word: ready'}], {max: 20}); $('keyst').className = 'status ok'; $('keyst').textContent = 'Key works ✓'; }
-  catch (e) { $('keyst').className = 'status err'; $('keyst').textContent = e.message; }
+  try { await claude([{role: 'user', content: 'Reply with the single word: ready'}], {max: 20}); out.push('Claude ✓'); } catch (e) { out.push('Claude ✗ ' + e.message); }
+  if (cfg().sup) { try { const r = await fetch('https://api.supadata.ai/v1/transcript?text=true&url=' + encodeURIComponent('https://www.youtube.com/watch?v=jNQXAC9IVRw'), {headers: {'x-api-key': cfg().sup}}); out.push(r.ok || r.status === 202 ? 'Video transcripts ✓' : r.status === 401 ? 'Video transcripts ✗ key refused' : 'Video transcripts ✗ error ' + r.status); } catch (e) { out.push('Video transcripts ✗ no connection'); } }
+  else out.push('Video transcripts: no key yet');
+  $('keyst').className = 'status' + (out.some((x) => x.includes('✗')) ? ' err' : ' ok'); $('keyst').textContent = out.join(' · ');
 });
 
 // ---------- queue
+const VIDEO = /^https?:\/\/([^\/]*\.)?(youtube\.com|youtu\.be|tiktok\.com|instagram\.com|x\.com|twitter\.com|facebook\.com|fb\.watch)(\/|$)/i;
 function renderQueue() {
-  $('queue').innerHTML = queue.map((q, i) => `<div class="qi"><span class="chip" style="background:var(--amb)">${q.kind}</span><b>${esc(q.name)}</b><button class="x" data-i="${i}" aria-label="Remove">✕</button></div>`).join('');
+  $('queue').innerHTML = queue.map((q, i) => `<div class="qi"><span class="chip" style="background:var(--amb)">${q.kind === 'link' && VIDEO.test(q.url) ? 'video' : q.kind}</span><b>${esc(q.name)}</b><button class="x" data-i="${i}" aria-label="Remove">✕</button></div>`).join('');
   $('queue').querySelectorAll('.x').forEach((b) => b.addEventListener('click', () => { queue.splice(+b.dataset.i, 1); renderQueue(); }));
 }
-$('addurl').addEventListener('click', () => { const u = $('url').value.trim(); if (!/^https?:\/\//i.test(u)) { setStatus('Paste a full link starting with https://', true); return; } queue.push({kind: 'link', name: u, url: u}); $('url').value = ''; renderQueue(); setStatus(''); });
+$('addurl').addEventListener('click', () => {
+  const us = $('url').value.split(/\s+/).map((x) => x.trim()).filter(Boolean);
+  const bad = us.filter((u) => !/^https?:\/\//i.test(u));
+  if (!us.length || bad.length) { setStatus('Paste full links starting with https:// (one per line).', true); return; }
+  us.forEach((u) => queue.push({kind: 'link', name: u, url: u})); $('url').value = ''; renderQueue(); setStatus('');
+});
 $('addtext').addEventListener('click', () => { const t = $('ptext').value.trim(); if (t.length < 200) { setStatus('Paste at least a few paragraphs.', true); return; } queue.push({kind: 'text', name: $('ptitle').value.trim() || t.slice(0, 60) + '…', text: t}); $('ptext').value = ''; $('ptitle').value = ''; renderQueue(); setStatus(''); });
 const addFiles = (files) => { [...files].forEach((f) => queue.push({kind: 'file', name: f.name, file: f})); renderQueue(); };
 $('drop').addEventListener('click', () => $('file').click());
@@ -192,7 +239,7 @@ $('drop').addEventListener('drop', (e) => addFiles(e.dataTransfer.files));
 function setStatus(t, err) { $('status').className = 'status' + (err ? ' err' : ''); $('status').textContent = t; }
 
 // ---------- Claude API (direct from the browser; key stays on this device)
-const PRICE = {'claude-sonnet-5-5': [3, 15], 'claude-opus-5-5': [5, 25], 'claude-haiku-5-5': [1, 5]};  // USD per million tokens (in, out), approximate
+const PRICE = {'claude-sonnet-5-5': [3, 15], 'claude-opus-5-5': [5, 25], 'claude-haiku-5-5': [1, 5]};
 async function claude(messages, {max = 8000, tools, system} = {}) {
   const c = cfg(); if (!c.ant) throw new Error('No Claude key. Open Settings and paste it.');
   const body = {model: c.model, max_tokens: max, messages};
@@ -205,12 +252,44 @@ async function claude(messages, {max = 8000, tools, system} = {}) {
   return {text: (j.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n'), stop: j.stop_reason, raw: j};
 }
 
-// ---------- reading sources
+// ---------- getting the full text out of every kind of source
+async function videoTranscript(url, say) {
+  const k = cfg().sup; if (!k) throw new Error('Video links need the video transcripts key (Supadata) in Settings.');
+  const H = {'x-api-key': k};
+  let r = await fetch('https://api.supadata.ai/v1/transcript?text=true&mode=auto&url=' + encodeURIComponent(url), {headers: H});
+  let j = await r.json().catch(() => ({}));
+  if (r.status === 202 && j.jobId) {
+    for (let t = 0; t < 900; t++) {            // long videos: wait up to ~30 minutes
+      await new Promise((ok) => setTimeout(ok, 2000)); say('transcribing a long video… ' + Math.round(t * 2 / 60) + ' min');
+      r = await fetch('https://api.supadata.ai/v1/transcript/' + j.jobId, {headers: H}); const s = await r.json().catch(() => ({}));
+      if (s.status === 'completed') { j = s.result || s; break; }
+      if (s.status === 'failed') throw new Error('Transcription failed: ' + (s.error && (s.error.message || s.error) || 'video not available'));
+    }
+  } else if (!r.ok) {
+    throw new Error(r.status === 401 ? 'The video transcripts key was refused. Check it in Settings.' : r.status === 429 ? 'Video transcripts: monthly free limit reached.' : 'Could not get this video (' + (j.message || j.details || r.status) + '). It may be private or removed.');
+  }
+  const c = j.content; const text = Array.isArray(c) ? c.map((x) => x.text).join(' ') : (c || '');
+  if (!text.trim()) throw new Error('This video has no speech to transcribe.');
+  return text;
+}
 const b64 = (buf) => { let s = ''; const a = new Uint8Array(buf); for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); };
 const strip = (html) => { const d = new DOMParser().parseFromString(html, 'text/html'); d.querySelectorAll('script,style,nav,footer').forEach((n) => n.remove()); return (d.body ? d.body.innerText || d.body.textContent : '').replace(/\n{3,}/g, '\n\n').trim(); };
-async function readFile(f) {
+async function pdfText(buf) {
+  if (!window.pdfjsLib) return '';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.min.js';
+  const doc = await pdfjsLib.getDocument({data: buf}).promise; let t = '';
+  for (let i = 1; i <= doc.numPages; i++) { const pg = await doc.getPage(i); const c = await pg.getTextContent(); t += c.items.map((x) => x.str + (x.hasEOL ? '\n' : ' ')).join('') + '\n\n'; }
+  return t.trim();
+}
+async function readFile(f, say) {
   const n = f.name.toLowerCase();
-  if (n.endsWith('.pdf')) { if (f.size > 30e6) throw new Error(f.name + ' is over 30 MB. Split it or paste the text.'); return {pdf: b64(await f.arrayBuffer())}; }
+  if (n.endsWith('.pdf')) {
+    const buf = await f.arrayBuffer(); say('reading the PDF…');
+    const t = await pdfText(buf.slice(0));
+    if (t.replace(/\s/g, '').length > 500) return {text: t};
+    if (f.size > 30e6) throw new Error(f.name + ' is a scanned PDF over 30 MB. Split it into smaller parts.');
+    return {pdf: b64(buf), scanned: true};
+  }
   if (n.endsWith('.epub') || n.endsWith('.docx')) {
     if (!window.JSZip) throw new Error('The ebook reader did not load. Check your internet connection and reload.');
     const z = await JSZip.loadAsync(f);
@@ -221,29 +300,38 @@ async function readFile(f) {
       const sp = [...o.querySelectorAll('spine itemref')].map((r) => items[r.getAttribute('idref')]).filter((p) => p && z.file(p)); if (sp.length) order = sp; }
     let t = ''; for (const p of order) t += strip(await z.file(p).async('string')) + '\n\n'; return {text: t};
   }
-  if (/^(audio|video)\//.test(f.type) || /\.(mp3|m4a|wav|ogg|webm|mp4|mov|mpeg|mpga)$/.test(n)) return {text: await transcribe(f)};
+  if (/^(audio|video)\//.test(f.type) || /\.(mp3|m4a|wav|ogg|webm|mp4|mov|mpeg|mpga)$/.test(n)) { say('transcribing the audio…'); return {text: await transcribeFile(f)}; }
   const t = await f.text(); return {text: /\.html?$/.test(n) ? strip(t) : t.replace(/^\d+\s*$|^\d\d:\d\d:\d\d[.,]\d+ --> .*$/gm, '').replace(/^WEBVTT.*$/m, '')};
 }
-async function transcribe(f) {
-  const k = cfg().oai; if (!k) throw new Error('Audio and video need the optional OpenAI key in Settings (for transcription). Or paste a transcript instead.');
+async function transcribeFile(f) {
+  const k = cfg().oai; if (!k) throw new Error('Audio or video files from your computer need the OpenAI key in Settings. (Video LINKS use the Supadata key.)');
   if (f.size > 25e6) throw new Error(f.name + ' is over 25 MB. Upload just the audio (MP3/M4A) or a shorter part.');
   const fd = new FormData(); fd.append('file', f); fd.append('model', 'whisper-1');
   const r = await fetch('https://api.openai.com/v1/audio/transcriptions', {method: 'POST', headers: {Authorization: 'Bearer ' + k}, body: fd});
   const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error('Transcription failed: ' + (j.error && j.error.message || r.statusText));
   return j.text || '';
 }
+async function webText(url, say) {
+  say('reading the page…');
+  const r = await claude([{role: 'user', content: `Use the web_fetch tool to read ${url}. Then output the COMPLETE main text of the page exactly as written (the article, chapter or document body), with its title on the first line. Leave out menus, ads, cookie notices and footers. No comments of your own.`}], {max: 32000, tools: [{type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 3}]});
+  if (r.text.trim().length < 200) throw new Error('Could not read this page. It may need a login. Open it, copy the text and use Paste.');
+  return r.text.trim();
+}
 
 // ---------- the grind
 const libIndex = () => lib.slice(-600).map((x) => `${x.id} | ${x.topic} | ${x.title}: ${x.idea.slice(0, 140)}`).join('\n');
-function prompt(srcLabel) {
+function prompt(srcLabel, project) {
   const c = cfg();
+  const pool = lib.filter((x) => !project || x.project === project);
+  const idx = pool.slice(-600).map((x) => `${x.id} | ${x.topic} | ${x.title}: ${x.idea.slice(0, 140)}`).join('\n');
   return `You are "The Grinder", a research assistant for one person. Your job is to extract the SUBSTANCE of a source: the ideas, principles, frameworks, tactics, claims and evidence that are actually worth keeping. Write every idea in your own words. Never copy sentences; a short quote of under 15 words is allowed only when the exact wording matters.
 
 The person's focus:
 ${c.focus || '(not set: judge general usefulness)'}
+This source is for the project: ${project}
 
-Their existing library (id | topic | idea) to compare against:
-${lib.length ? libIndex() : '(empty: everything is NEW)'}
+Their existing library for this project (id | topic | idea) to compare against:
+${idx || '(empty: everything is NEW)'}
 
 For the source "${srcLabel}", return ONLY a JSON object, no other text:
 {"source":{"title":"","author":"","type":"article|book|video|podcast|post|paper|other","summary":"3-5 sentences: what it is and its core message","quality":"high|medium|low","quality_note":"one sentence: how credible and useful is it"},
@@ -251,56 +339,81 @@ For the source "${srcLabel}", return ONLY a JSON object, no other text:
 
 Rules: NEW = not in the library. ADDS_TO = complements or deepens a library item (give related_id). CONFLICTS = contradicts a library item (give related_id and say how). ALREADY_HAVE = the library already covers it. WEAK = vague, unsupported, generic or not useful for the focus. Give 5-25 ideas depending on how rich the source is; skip filler, ads and self-promotion. Write the result in ${c.lang}.`;
 }
-function parseJSON(t) {
-  const s = t.indexOf('{'), e = t.lastIndexOf('}'); if (s < 0 || e < 0) throw new Error('Claude did not return results. Try again.');
-  return JSON.parse(t.slice(s, e + 1));
-}
-const CHUNK = 350000; // characters per part (~90k tokens)
-async function grindOne(q, k, n) {
-  const say = (t) => setStatus(`(${k}/${n}) ${q.name.slice(0, 60)} · ${t}`);
+function parseJSON(t) { const s = t.indexOf('{'), e = t.lastIndexOf('}'); if (s < 0 || e < 0) throw new Error('Claude did not return results. Try again.'); return JSON.parse(t.slice(s, e + 1)); }
+const CHUNK = 350000;
+async function getText(q, say) {
+  if (q.kind === 'text') return {text: q.text, kind: 'text'};
   if (q.kind === 'link') {
-    say('reading the link…');
-    const r = await claude([{role: 'user', content: `Use the web_fetch tool to read ${q.url}. Then complete this task on its full content.\n\n` + prompt(q.url)}], {max: 12000, tools: [{type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 3}]});
-    const out = parseJSON(r.text); out.source.url = q.url; return out;
+    if (VIDEO.test(q.url)) { say('getting the video transcript…'); return {text: await videoTranscript(q.url, say), kind: 'video'}; }
+    return {text: await webText(q.url, say), kind: /\.pdf(\?|$)/i.test(q.url) ? 'pdf' : 'web'};
   }
-  let content;
-  if (q.kind === 'file') { say('reading the file…'); content = await readFile(q.file); } else content = {text: q.text};
-  if (content.pdf) { say('grinding…'); const r = await claude([{role: 'user', content: [{type: 'document', source: {type: 'base64', media_type: 'application/pdf', data: content.pdf}}, {type: 'text', text: prompt(q.name)}]}], {max: 12000}); return parseJSON(r.text); }
-  const text = (content.text || '').trim(); if (text.length < 200) throw new Error(q.name + ': no readable text found.');
+  const c = await readFile(q.file, say); return Object.assign(c, {kind: 'file'});
+}
+async function grindOne(q, k, n, project, tonly) {
+  const say = (t) => setStatus(`(${k}/${n}) ${q.name.slice(0, 60)} · ${t}`);
+  const got = await getText(q, say);
+  const src = {id: uid('s'), project, title: q.name, author: '', url: q.url || '', kind: got.kind, date: today(), summary: ''};
+  let text = (got.text || '').trim();
+  if (got.pdf) {   // scanned PDF: let Claude read it, and keep Claude's transcription as the text
+    say('reading a scanned PDF…');
+    const r = await claude([{role: 'user', content: [{type: 'document', source: {type: 'base64', media_type: 'application/pdf', data: got.pdf}}, {type: 'text', text: 'Transcribe the full text of this document exactly, with headings. No comments.'}]}], {max: 32000});
+    text = r.text.trim();
+  }
+  if (text.length < 200) throw new Error(q.name + ': no readable text found.');
+  src.chars = text.length; src.words = Math.round(text.split(/\s+/).length);
+  await DB.put(src.id, text);
+  if (tonly) { src.title = guessTitle(q, text); return {source: src, ideas: [], tonly: true}; }
   const parts = []; for (let i = 0; i < text.length; i += CHUNK) parts.push(text.slice(i, i + CHUNK));
   let merged = null;
   for (let p = 0; p < parts.length; p++) {
     say(parts.length > 1 ? `grinding part ${p + 1} of ${parts.length}…` : 'grinding…');
     const label = parts.length > 1 ? `${q.name} (part ${p + 1} of ${parts.length})` : q.name;
-    const r = await claude([{role: 'user', content: `<source>\n${parts[p]}\n</source>\n\n` + prompt(label)}], {max: 12000});
+    const r = await claude([{role: 'user', content: `<source>\n${parts[p]}\n</source>\n\n` + prompt(label, project)}], {max: 12000});
     const o = parseJSON(r.text);
-    if (!merged) merged = o; else merged.ideas.push(...o.ideas);
+    if (!merged) merged = o; else merged.ideas.push(...(o.ideas || []));
   }
-  return merged;
+  const s = merged.source || {};
+  Object.assign(src, {title: s.title || guessTitle(q, text), author: s.author || '', type: s.type || '', summary: s.summary || '', quality: s.quality || '', quality_note: s.quality_note || ''});
+  return {source: src, ideas: (merged.ideas || []).map((d) => Object.assign(d, {keep: ['NEW', 'ADDS_TO', 'CONFLICTS'].includes(d.verdict)}))};
 }
+const guessTitle = (q, text) => q.kind === 'text' || q.kind === 'file' ? q.name : (text.split('\n')[0].slice(0, 90) || q.name);
 $('go').addEventListener('click', async () => {
-  if (!cfg().ant) { setStatus('Paste your Claude key in Settings first.', true); return; }
+  const tonly = $('tonly').checked, project = $('proj').value;
+  if (!tonly && !cfg().ant) { setStatus('Paste your Claude key in Settings first.', true); return; }
   if (!queue.length) { setStatus('Add a link, file or text first.', true); return; }
   $('go').disabled = true; const results = [], fails = [];
   for (let i = 0; i < queue.length; i++) {
-    try { const o = await grindOne(queue[i], i + 1, queue.length); o.source = o.source || {}; o.source.title = o.source.title || queue[i].name; o.ideas = (o.ideas || []).map((d) => Object.assign(d, {keep: ['NEW', 'ADDS_TO', 'CONFLICTS'].includes(d.verdict)})); results.push(o); }
-    catch (e) { fails.push(queue[i].name + ': ' + e.message); }
+    try { results.push(await grindOne(queue[i], i + 1, queue.length, project, tonly)); }
+    catch (e) { fails.push(queue[i].name.slice(0, 50) + ': ' + e.message); }
   }
+  // every source's full text is saved right away, analysed or not
+  results.forEach((r) => srcs.push(r.source)); LS.set('srcs', srcs);
   $('go').disabled = false; queue = []; renderQueue(); loadSettings();
   if (results.length) { current = results; renderResults(); }
-  setStatus(fails.length ? 'Problems: ' + fails.join(' · ') : 'Done ✓', !!fails.length);
+  setStatus(fails.length ? 'Problems: ' + fails.join(' · ') : `Done ✓ · ${results.length} source${results.length === 1 ? '' : 's'} saved to ${project}`, !!fails.length);
 });
 const VL = {NEW: 'New', ADDS_TO: 'Adds to', CONFLICTS: 'Conflicts', ALREADY_HAVE: 'Already have', WEAK: 'Weak'};
+function srcHead(s, withBtns) {
+  return `<div class="src"><h3>${esc(s.title)}</h3><div class="meta">${esc([s.project, s.author, s.type || s.kind, s.words ? s.words.toLocaleString() + ' words' : '', s.quality && 'quality: ' + s.quality, s.date].filter(Boolean).join(' · '))}${s.url ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener" style="color:var(--amb)">open original</a>` : ''}</div>${s.summary ? `<p style="margin:8px 0 4px">${esc(s.summary)}</p>` : ''}${s.quality_note ? `<p class="meta" style="margin:0">${esc(s.quality_note)}</p>` : ''}
+  ${withBtns ? `<div class="row" style="margin-top:10px"><button class="btn sm" data-copy="${s.id}">Copy full transcript</button><button class="btn sm ghost" data-dl="${s.id}">Download transcript</button>${withBtns === 'lib' ? `<button class="btn sm ghost" data-delsrc="${s.id}">Remove</button>` : ''}</div>` : ''}</div>`;
+}
+function wireSrcBtns(root) {
+  root.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', async () => { const t = await DB.get(b.dataset.copy); try { await navigator.clipboard.writeText(t || ''); b.textContent = 'Copied ✓'; } catch (e) { b.textContent = 'Copy failed'; } setTimeout(() => b.textContent = 'Copy full transcript', 2000); }));
+  root.querySelectorAll('[data-dl]').forEach((b) => b.addEventListener('click', async () => { const s = srcs.find((x) => x.id === b.dataset.dl) || (current || []).map((r) => r.source).find((x) => x.id === b.dataset.dl); const t = await DB.get(b.dataset.dl); dl(safe(s ? s.title : 'transcript') + '.txt', `${s ? s.title : ''}\n${s && s.url ? s.url + '\n' : ''}\n${t || ''}`, 'text/plain'); }));
+  root.querySelectorAll('[data-delsrc]').forEach((b) => b.addEventListener('click', async () => { if (!confirm('Remove this source, its transcript and its ideas?')) return; const id = b.dataset.delsrc; srcs = srcs.filter((x) => x.id !== id); lib = lib.filter((x) => x.sourceId !== id); LS.set('srcs', srcs); LS.set('lib', lib); await DB.del(id); loadSettings(); renderLib(); }));
+}
+const safe = (s) => String(s).replace(/[\\/:*?"<>|]+/g, ' ').slice(0, 80).trim() || 'transcript';
 function renderResults() {
   $('resbox').hidden = false;
+  const any = current.some((o) => o.ideas.length);
+  $('save').hidden = !any; $('copyres').hidden = !any;
   $('results').innerHTML = current.map((o, si) => {
     const cnt = {}; o.ideas.forEach((d) => cnt[d.verdict] = (cnt[d.verdict] || 0) + 1);
-    const s = o.source;
-    return `<div class="src"><h3>${esc(s.title)}</h3><div class="meta">${esc([s.author, s.type, s.quality && 'quality: ' + s.quality].filter(Boolean).join(' · '))}${s.url ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener" style="color:var(--amb)">open</a>` : ''}</div><p style="margin:8px 0 4px">${esc(s.summary)}</p><p class="meta" style="margin:0">${esc(s.quality_note || '')}</p></div>
-    <div class="counts">${Object.keys(VL).filter((v) => cnt[v]).map((v) => `<span class="chip v-${v}">${cnt[v]} ${VL[v]}</span>`).join('')}</div>
-    <div class="ideas">${o.ideas.map((d, di) => ideaCard(d, `${si}:${di}`)).join('')}</div>`;
+    return srcHead(o.source, true) + (o.tonly ? '<p class="hint">Transcript saved to the library. No analysis (transcript only).</p>' :
+      `<div class="counts">${Object.keys(VL).filter((v) => cnt[v]).map((v) => `<span class="chip v-${v}">${cnt[v]} ${VL[v]}</span>`).join('')}</div><div class="ideas">${o.ideas.map((d, di) => ideaCard(d, `${si}:${di}`)).join('')}</div>`);
   }).join('<hr style="border:0;border-top:2px solid var(--line);margin:22px 0">');
   $('results').querySelectorAll('.keepbtn').forEach((b) => b.addEventListener('click', () => { const [si, di] = b.dataset.k.split(':').map(Number); const d = current[si].ideas[di]; d.keep = !d.keep; renderResults(); }));
+  wireSrcBtns($('results'));
   $('resbox').scrollIntoView({behavior: 'smooth', block: 'start'});
 }
 function ideaCard(d, key) {
@@ -309,30 +422,53 @@ function ideaCard(d, key) {
     <h4>${esc(d.title)}</h4><p>${esc(d.idea)}</p>${d.action ? `<p class="act"><b>Do:</b> ${esc(d.action)}</p>` : ''}${d.why ? `<p class="why">${esc(d.why)}</p>` : ''}${rel ? `<p class="rel">↳ Related: ${esc(rel.title)}</p>` : ''}${d.source && !key ? `<p class="srcl">From: ${esc(d.source)}</p>` : ''}</article>`;
 }
 $('save').addEventListener('click', () => {
-  if (!current) return; let n = 0; const day = new Date().toISOString().slice(0, 10);
-  current.forEach((o) => o.ideas.filter((d) => d.keep).forEach((d) => { lib.push({id: 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), title: d.title, idea: d.idea, action: d.action || '', type: d.type, topic: d.topic, verdict: d.verdict, why: d.why || '', related_id: d.related_id || null, source: o.source.title, author: o.source.author || '', url: o.source.url || '', date: day}); n++; }));
-  if (LS.set('lib', lib)) { $('savest').className = 'status ok'; $('savest').textContent = `${n} ideas saved to your library ✓`; loadSettings(); current = null; $('results').innerHTML = ''; $('resbox').hidden = true; setStatus(`${n} ideas saved. Library now has ${lib.length}.`); }
+  if (!current) return; let n = 0;
+  current.forEach((o) => o.ideas.filter((d) => d.keep).forEach((d) => { lib.push({id: uid('i'), project: o.source.project, title: d.title, idea: d.idea, action: d.action || '', type: d.type, topic: d.topic, verdict: d.verdict, why: d.why || '', related_id: d.related_id || null, source: o.source.title, sourceId: o.source.id, author: o.source.author || '', url: o.source.url || '', date: today()}); n++; }));
+  if (LS.set('lib', lib)) { $('savest').className = 'status ok'; $('savest').textContent = `${n} ideas saved ✓`; loadSettings(); setStatus(`${n} ideas saved to ${current[0].source.project}.`); current.forEach((o) => o.ideas = []); renderResults(); }
 });
 const asText = (items) => items.map((d) => `## ${d.title}\n${d.idea}${d.action ? `\nDo: ${d.action}` : ''}\nTopic: ${d.topic} · ${d.type}${d.source ? ` · Source: ${d.source}${d.author ? ' (' + d.author + ')' : ''}` : ''}${d.url ? ' ' + d.url : ''}`).join('\n\n');
 $('copyres').addEventListener('click', async () => { if (!current) return; const t = current.map((o) => `# ${o.source.title}\n${o.source.summary}\n\n` + asText(o.ideas.filter((d) => d.keep))).join('\n\n'); try { await navigator.clipboard.writeText(t); $('savest').className = 'status ok'; $('savest').textContent = 'Copied.'; } catch (e) { $('savest').textContent = 'Copy failed.'; } });
 
 // ---------- library
 function renderLib() {
-  const topics = [...new Set(lib.map((x) => x.topic))].sort(), srcs = [...new Set(lib.map((x) => x.source))].sort();
+  const P = $('lproj').value;
+  const S = srcs.filter((s) => !P || s.project === P).slice().reverse();
+  $('srclist').innerHTML = S.length ? S.map((s) => srcHead(s, 'lib')).join('') : '<p class="hint">No sources yet for this project.</p>';
+  wireSrcBtns($('srclist'));
+  const L = lib.filter((x) => !P || x.project === P);
+  const topics = [...new Set(L.map((x) => x.topic))].sort(), sources = [...new Set(L.map((x) => x.source))].sort();
   const keepT = $('ftopic').value, keepS = $('fsrc').value;
   $('ftopic').innerHTML = '<option value="">All topics</option>' + topics.map((t) => `<option${t === keepT ? ' selected' : ''}>${esc(t)}</option>`).join('');
-  $('fsrc').innerHTML = '<option value="">All sources</option>' + srcs.map((t) => `<option${t === keepS ? ' selected' : ''}>${esc(t)}</option>`).join('');
+  $('fsrc').innerHTML = '<option value="">All sources</option>' + sources.map((t) => `<option${t === keepS ? ' selected' : ''}>${esc(t)}</option>`).join('');
   const q = $('q').value.toLowerCase();
-  const items = lib.filter((x) => (!keepT || x.topic === keepT) && (!keepS || x.source === keepS) && (!q || (x.title + ' ' + x.idea + ' ' + x.action).toLowerCase().includes(q))).slice().reverse();
-  $('liblist').innerHTML = items.length ? items.map((x) => ideaCard(x).replace('</article>', `<div class="row"><button class="btn sm ghost del" data-id="${x.id}">Remove</button><span class="srcl" style="margin-left:auto">${esc(x.date)}</span></div></article>`)).join('') : '<p class="hint">Nothing here yet. Grind your first source.</p>';
+  const items = L.filter((x) => (!keepT || x.topic === keepT) && (!keepS || x.source === keepS) && (!q || (x.title + ' ' + x.idea + ' ' + x.action).toLowerCase().includes(q))).slice().reverse();
+  $('liblist').innerHTML = items.length ? items.map((x) => ideaCard(x).replace('</article>', `<div class="row"><button class="btn sm ghost del" data-id="${x.id}">Remove</button><span class="srcl" style="margin-left:auto">${esc(x.project || '')} · ${esc(x.date)}</span></div></article>`)).join('') : '<p class="hint">No ideas yet for this project.</p>';
   $('liblist').querySelectorAll('.del').forEach((b) => b.addEventListener('click', () => { if (!confirm('Remove this idea from the library?')) return; lib = lib.filter((x) => x.id !== b.dataset.id); LS.set('lib', lib); loadSettings(); renderLib(); }));
 }
 ['q', 'ftopic', 'fsrc'].forEach((i) => $(i).addEventListener('input', renderLib));
-const dl = (name, text, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };
-$('expmd').addEventListener('click', () => { const byT = {}; lib.forEach((x) => (byT[x.topic] = byT[x.topic] || []).push(x)); dl('grinder-library.md', '# Grinder Library\n\n' + Object.keys(byT).sort().map((t) => `# ${t}\n\n` + asText(byT[t])).join('\n\n'), 'text/markdown'); });
-$('expjson').addEventListener('click', () => dl('grinder-backup-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify({lib, focus: cfg().focus}, null, 1), 'application/json'));
+const dl = (name, text, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); };
+async function exportProject(withTexts) {
+  const P = $('lproj').value, name = P || 'All projects';
+  const S = srcs.filter((s) => !P || s.project === P), L = lib.filter((x) => !P || x.project === P);
+  if (!S.length && !L.length) { $('expst').className = 'status err'; $('expst').textContent = 'Nothing in this project yet.'; return; }
+  let md = `# ${name}: Grinder Knowledge File\nExported ${today()} · ${S.length} sources · ${L.length} ideas\n\n`;
+  const byT = {}; L.forEach((x) => (byT[x.topic] = byT[x.topic] || []).push(x));
+  md += `# Part 1 · Key Ideas by Topic\n\n` + (Object.keys(byT).sort().map((t) => `## Topic: ${t}\n\n` + asText(byT[t]).replace(/^## /gm, '### ')).join('\n\n') || '(no ideas saved yet)') + '\n\n';
+  md += `# Part 2 · Sources\n\n`;
+  for (const s of S) {
+    md += `## ${s.title}\n${[s.author, s.type || s.kind, s.date, s.url].filter(Boolean).join(' · ')}\n${s.summary ? '\nSummary: ' + s.summary + '\n' : ''}`;
+    if (withTexts) { const t = await DB.get(s.id); md += `\n### Full transcript / text\n\n${t || '(not available on this device)'}\n`; }
+    md += '\n';
+  }
+  dl(safe('Grinder - ' + name + (withTexts ? '' : ' - ideas')) + '.md', md, 'text/markdown');
+  $('expst').className = 'status ok'; $('expst').textContent = 'Downloaded ✓ Now add the file to the project in claude.ai.';
+}
+$('expproj').addEventListener('click', () => exportProject(true));
+$('expideas').addEventListener('click', () => exportProject(false));
+$('expmd').addEventListener('click', () => { const byT = {}; lib.forEach((x) => (byT[x.topic] = byT[x.topic] || []).push(x)); dl('grinder-ideas.md', '# Grinder Ideas\n\n' + Object.keys(byT).sort().map((t) => `# ${t}\n\n` + asText(byT[t])).join('\n\n'), 'text/markdown'); });
+$('expjson').addEventListener('click', async () => { const texts = {}; for (const s of srcs) texts[s.id] = await DB.get(s.id); dl('grinder-backup-' + today() + '.json', JSON.stringify({lib, srcs, projects, texts, focus: cfg().focus}), 'application/json'); });
 $('impjson').addEventListener('click', () => $('impfile').click());
-$('impfile').addEventListener('change', async (e) => { try { const j = JSON.parse(await e.target.files[0].text()); const ids = new Set(lib.map((x) => x.id)); const add = (j.lib || []).filter((x) => x.id && !ids.has(x.id)); lib = lib.concat(add); LS.set('lib', lib); $('libst').className = 'status ok'; $('libst').textContent = add.length + ' ideas restored.'; loadSettings(); renderLib(); } catch (err) { $('libst').className = 'status err'; $('libst').textContent = 'That file is not a Grinder backup.'; } e.target.value = ''; });
+$('impfile').addEventListener('change', async (e) => { try { const j = JSON.parse(await e.target.files[0].text()); const ids = new Set(lib.map((x) => x.id)), sids = new Set(srcs.map((x) => x.id)); const add = (j.lib || []).filter((x) => x.id && !ids.has(x.id)), addS = (j.srcs || []).filter((x) => x.id && !sids.has(x.id)); lib = lib.concat(add); srcs = srcs.concat(addS); for (const s of addS) if (j.texts && j.texts[s.id]) await DB.put(s.id, j.texts[s.id]); (j.projects || []).forEach((p) => { if (!projects.includes(p)) projects.push(p); }); LS.set('lib', lib); LS.set('srcs', srcs); LS.set('projects', projects); $('libst').className = 'status ok'; $('libst').textContent = `${addS.length} sources and ${add.length} ideas restored.`; loadSettings(); renderLib(); } catch (err) { $('libst').className = 'status err'; $('libst').textContent = 'That file is not a Grinder backup.'; } e.target.value = ''; });
 
 loadSettings();
 </script>
