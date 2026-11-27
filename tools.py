@@ -592,8 +592,8 @@ DCA_FAQ = [
 
 # ---------------------------------------------------------------- compare / correlation
 CMP_NAMES = [("BTC", "Bitcoin", "#f7931a"), ("ETH", "Ethereum", "#aeb8e8"), ("SOL", "Solana", "#b98aff"), ("PAXG", "Gold", "#d4af37"),
-             ("USD", "US dollar index", "#85bb65"), ("SPY", "S&P 500 (SPY fund)", "#4fa3ff"), ("QQQ", "Nasdaq 100 (QQQ fund)", "#22b5a8"),
-             ("DIA", "Dow Jones (DIA fund)", "#9aa7b5"), ("NVDA", "Nvidia", "#76b900"), ("MSTR", "Strategy (MSTR)", "#ff6b6b"), ("TLT", "US long bonds (TLT fund)", "#e0a3ff")]
+             ("USD", "US dollar index", "#85bb65"), ("SPX", "S&P 500", "#4fa3ff"), ("NDQ", "Nasdaq", "#22b5a8"),
+             ("DJI", "Dow Jones", "#9aa7b5"), ("US10Y", "US 10-year yield", "#e0a3ff")]
 CMP_TOOL = """
 <section class="cv wide" style="--cc:var(--amb);margin-top:22px">
   <header class="chead"><h2 class="disp" style="color:var(--amb)">Compare Two Markets</h2></header>
@@ -619,11 +619,12 @@ const $ = (id) => document.getElementById(id);
 const opts = N.map(([k, n]) => `<option value="${k}">${n}</option>`).join('');
 $('ca').innerHTML = opts; $('cb').innerHTML = opts;
 const qs = new URLSearchParams(location.search);
-$('ca').value = NM[qs.get('a')] ? qs.get('a') : 'BTC'; $('cb').value = NM[qs.get('b')] ? qs.get('b') : (NM.QQQ ? 'QQQ' : 'PAXG');
-const QUICK = [['BTC', 'QQQ'], ['BTC', 'PAXG'], ['PAXG', 'USD'], ['BTC', 'SPY'], ['QQQ', 'PAXG'], ['BTC', 'MSTR'], ['PAXG', 'TLT'], ['BTC', 'ETH']].filter(([a, b]) => NM[a] && NM[b]);
+$('ca').value = NM[qs.get('a')] ? qs.get('a') : 'BTC'; $('cb').value = NM[qs.get('b')] ? qs.get('b') : (NM.NDQ ? 'NDQ' : 'PAXG');
+const QUICK = [['BTC', 'NDQ'], ['BTC', 'PAXG'], ['PAXG', 'USD'], ['BTC', 'SPX'], ['NDQ', 'PAXG'], ['PAXG', 'US10Y'], ['SPX', 'USD'], ['BTC', 'ETH']].filter(([a, b]) => NM[a] && NM[b]);
 $('quick').innerHTML = QUICK.map(([a, b]) => `<a href="#" data-a="${a}" data-b="${b}">${NM[a].n.split(' (')[0]} vs ${NM[b].n.split(' (')[0]}</a>`).join('');
 $('quick').querySelectorAll('a').forEach((x) => x.addEventListener('click', (e) => { e.preventDefault(); $('ca').value = x.dataset.a; $('cb').value = x.dataset.b; run(); }));
-const rets = (v, i0) => { const r = []; for (let i = i0 + 1; i < v.length; i++) r.push(v[i] != null && v[i - 1] != null && v[i - 1] > 0 ? v[i] / v[i - 1] - 1 : null); return r; };
+const rets = (v, i0, diff) => { const r = []; for (let i = i0 + 1; i < v.length; i++) r.push(v[i] != null && v[i - 1] != null && v[i - 1] > 0 ? (diff ? v[i] - v[i - 1] : v[i] / v[i - 1] - 1) : null); return r; };
+const RT = (k, i0) => rets(C.series[k], i0, k === 'US10Y');
 function corr(x, y) { let n = 0, sx = 0, sy = 0, sxx = 0, syy = 0, sxy = 0; for (let i = 0; i < x.length; i++) { const a = x[i], b = y[i]; if (a == null || b == null || (a === 0 && b === 0)) continue; n++; sx += a; sy += b; sxx += a * a; syy += b * b; sxy += a * b; } if (n < 15) return null; const c = (sxy - sx * sy / n) / Math.sqrt((sxx - sx * sx / n) * (syy - sy * sy / n)); return isFinite(c) ? c : null; }
 const word = (r) => r == null ? ['Not enough data', 'var(--mute)'] : r >= 0.7 ? ['Strongly move together', 'var(--grn)'] : r >= 0.4 ? ['Tend to move together', 'var(--grn)'] : r >= 0.2 ? ['Weak link, same direction', '#a3a9b0'] : r > -0.2 ? ['No real link', '#a3a9b0'] : r > -0.4 ? ['Weak link, opposite directions', '#a3a9b0'] : r > -0.7 ? ['Tend to move opposite', 'var(--red)'] : ['Strongly move opposite', 'var(--red)'];
 const fmtR = (r) => r == null ? '—' : (r > 0 ? '+' : '') + r.toFixed(2);
@@ -645,7 +646,7 @@ function run() {
   history.replaceState(null, '', `?a=${A}&b=${B}`);
   const va = C.series[A], vb = C.series[B], dates = C.dates.slice(i0);
   const base = (v) => { const b0 = v.slice(i0).find((x) => x != null); return v.slice(i0).map((x) => x == null ? null : x / b0 * 100); };
-  const ra = base(va), rb = base(vb), r = corr(rets(va, i0), rets(vb, i0)), [w, col] = word(r);
+  const ra = base(va), rb = base(vb), r = corr(RT(A, i0), RT(B, i0)), [w, col] = word(r);
   $('cr').textContent = fmtR(r); $('cr').style.color = col; $('cbig').style.borderColor = col;
   $('cwhy').textContent = `${NM[A].n} and ${NM[B].n}: ${w.toLowerCase()} (daily moves, last ${$('cp').selectedOptions[0].text}).`;
   const pct = (v) => { const e = v[v.length - 1]; return (e >= 100 ? '+' : '') + (e - 100).toFixed(1) + '%'; };
@@ -653,14 +654,14 @@ function run() {
   lineChart($('cchart'), dates, [{v: ra, c: ca}, {v: rb, c: cbb}], {label: 'Performance compared, rebased to 100', tf: (y) => y.toFixed(0)});
   $('cleg').innerHTML = `<span style="color:${ca}"><i style="border-color:${ca}"></i>${NM[A].n} ${pct(ra)}</span><span style="color:${cbb}"><i style="border-color:${cbb}"></i>${NM[B].n} ${pct(rb)}</span><span><i style="border-color:transparent"></i>Both start at 100</span>`;
   // rolling 63-day correlation over the whole history shown (min 1 year window for context)
-  const j0 = Math.max(64, L - Math.max(n, 252)), rd = [], rv = [], xa = rets(va, 0), xb = rets(vb, 0);
+  const j0 = Math.max(64, L - Math.max(n, 252)), rd = [], rv = [], xa = RT(A, 0), xb = RT(B, 0);
   for (let j = j0; j < L; j++) { rd.push(C.dates[j]); rv.push(corr(xa.slice(j - 64, j - 1), xb.slice(j - 64, j - 1))); }
   lineChart($('croll'), rd, [{v: rv, c: '#ffb000'}], {lo: -1, hi: 1, ticks: [-1, -0.5, 0, 0.5, 1], zero: 0, tf: (y) => (y > 0 ? '+' : '') + y.toFixed(1), label: 'Rolling correlation'});
-  $('cnote').textContent = `Correlation runs from −1 (always opposite) through 0 (no link) to +1 (always together). It is measured on daily % moves, not on price levels. Stock funds trade on weekdays only, so weekend crypto moves count on Monday. Data to ${C.dates[L - 1]}.`;
+  $('cnote').textContent = `Correlation runs from −1 (always opposite) through 0 (no link) to +1 (always together). It is measured on daily % moves, not on price levels. Stock markets trade on weekdays only, so weekend crypto moves count on Monday. For the 10-year yield, the daily change in the rate is used. Data to ${C.dates[L - 1]}.`;
   // matrix
-  const ks = N.map(([k]) => k), R = {}; ks.forEach((k) => R[k] = rets(C.series[k], i0));
+  const ks = N.map(([k]) => k), R = {}; ks.forEach((k) => R[k] = RT(k, i0));
   const cell = (a, b) => { const c = a === b ? 1 : corr(R[a], R[b]); const bg = c == null ? 'transparent' : c > 0 ? `rgba(63,191,111,${Math.min(0.85, Math.abs(c))})` : `rgba(232,98,91,${Math.min(0.85, Math.abs(c))})`; return `<td style="background:${bg};text-align:center;cursor:pointer;color:${Math.abs(c || 0) > 0.55 ? '#0b0b0b' : 'var(--ink)'}" data-a="${a}" data-b="${b}">${a === b ? '·' : fmtR(c)}</td>`; };
-  $('cmat').innerHTML = `<thead><tr><th></th>${ks.map((k) => `<th style="text-align:center;color:${NM[k].c}">${k === 'PAXG' ? 'GOLD' : k}</th>`).join('')}</tr></thead><tbody>${ks.map((a) => `<tr><td style="color:${NM[a].c};white-space:nowrap">${NM[a].n.split(' (')[0]}</td>${ks.map((b) => cell(a, b)).join('')}</tr>`).join('')}</tbody>`;
+  $('cmat').innerHTML = `<thead><tr><th></th>${ks.map((k) => `<th style="text-align:center;color:${NM[k].c}">${{PAXG: 'GOLD', NDQ: 'NASDAQ', SPX: 'S&P', DJI: 'DOW', US10Y: '10Y'}[k] || k}</th>`).join('')}</tr></thead><tbody>${ks.map((a) => `<tr><td style="color:${NM[a].c};white-space:nowrap">${NM[a].n.split(' (')[0]}</td>${ks.map((b) => cell(a, b)).join('')}</tr>`).join('')}</tbody>`;
   $('cmat').querySelectorAll('td[data-a]').forEach((td) => td.addEventListener('click', () => { if (td.dataset.a === td.dataset.b) return; $('ca').value = td.dataset.a; $('cb').value = td.dataset.b; run(); scrollTo({top: 0, behavior: 'smooth'}); }));
 }
 ['ca', 'cb', 'cp'].forEach((i) => $(i).addEventListener('input', run));
@@ -671,7 +672,8 @@ CMP_FAQ = [
     ("What does correlation mean?", "Correlation measures how two markets move day to day, from −1 to +1. Near +1 they rise and fall together; near −1 one tends to rise when the other falls; near 0 there is no reliable link."),
     ("Is Bitcoin correlated with the Nasdaq?", "Often, yes. Since 2020 Bitcoin has frequently moved with tech stocks, especially in sell-offs, but the link comes and goes. The rolling chart above shows how strong it is right now."),
     ("Is gold a hedge against stocks or crypto?", "Gold usually has a low or slightly negative link to stocks and crypto, which is why investors use it to diversify. It often moves opposite to the US dollar."),
-    ("Why do you use funds like SPY and QQQ?", "SPY, QQQ and DIA are exchange-traded funds that track the S&P 500, the Nasdaq 100 and the Dow Jones. Their daily moves match the indexes almost exactly."),
+    ("Where does the stock market data come from?", "Daily closing levels of the S&P 500, the Nasdaq Composite and the Dow Jones, and the 10-year US Treasury yield, come from the US Federal Reserve's FRED database. We show only % performance and correlations, not the index levels themselves."),
+    ("What does the 10-year yield tell me?", "It is the interest rate on 10-year US government bonds. When it rises quickly, it often weighs on gold, tech stocks and crypto, because safe bonds pay more. A negative correlation with these assets shows that pull."),
     ("Does correlation predict prices?", "No. It describes how markets have moved together in the past. Relationships change, sometimes suddenly. Use it as context, not as a signal to buy or sell."),
 ]
 
@@ -756,7 +758,7 @@ def all_pages(conv_data, slot):
             "<h2 class='disp'>Why Correlation Matters</h2><p>If two things you own always move together, owning both does not spread your risk. Correlation tells you which markets <b>move together</b>, which <b>move opposite</b>, and which are <b>unrelated</b>, so you can see how diversified you really are.</p><p>Links change with the times. In calm markets Bitcoin can move on its own; in a panic it often falls together with tech stocks. Gold tends to rise when the US dollar weakens. Always look at the rolling chart, not just one number.</p>",
             CMP_FAQ, [("/", "Daily Market Lights"), ("/bitcoin-signal-today/", "Bitcoin Signal Today"), ("/gold-price-per-gram/", "Gold Price per Gram"), ("/bitcoin-dca-calculator/", "Bitcoin DCA Calculator")]).replace("@@AD@@", ad("compare-mid"))
         out["compare"] = ("Compare Markets: Bitcoin vs Nasdaq, Gold vs Dollar Correlation · MarketLights",
-            "Compare Bitcoin, Ethereum, gold, the US dollar, the S&P 500 and the Nasdaq on one chart, with correlation explained in plain words. Free and updated daily.",
+            "Compare Bitcoin, Ethereum, gold, the US dollar, the S&P 500, the Nasdaq and the Dow on one chart, with correlation explained in plain words. Free and updated daily.",
             body, js(CMP_JS), {"cmp": full["cmp"], "cmp_names": CMP_NAMES})
     tool, explain, code, faq, day = btc_page(full)
     add("bitcoin-signal-today", f"Bitcoin Signal Today ({day}) · MarketLights",

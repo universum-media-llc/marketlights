@@ -98,13 +98,16 @@ def compare_data(prices, dollar_rows, days=760):
     import csv as _c
     ser = {k: v for k, v in prices.items()}
     ser["USD"] = {d: v for d, v in dollar_rows}
-    for t in ("SPY", "QQQ", "DIA", "NVDA", "MSTR", "TLT"):
-        fp = os.path.join(B.D, f"stk_{t}.csv")
+    for key, sid in (("SPX", "SP500"), ("NDQ", "NASDAQCOM"), ("DJI", "DJIA"), ("US10Y", "DGS10")):
+        fp = os.path.join(B.D, f"fred_{sid}.csv")
         if os.path.exists(fp):
-            rows = {r["Date"]: float(r["Close"]) for r in _c.DictReader(open(fp)) if r.get("Close") not in (None, "", "null")}
-            if len(rows) > 500:
-                ser[t] = rows
-    cal = sorted(ser["SPY"]) if "SPY" in ser else sorted(ser["USD"])
+            try:
+                rows = {r["observation_date"]: float(r[sid]) for r in _c.DictReader(open(fp)) if r.get(sid) not in (None, "", ".")}
+                if len(rows) > 500:
+                    ser[key] = rows
+            except Exception as e:
+                print("compare: skip", sid, e)
+    cal = sorted(ser["SPX"]) if "SPX" in ser else sorted(ser["USD"])
     last = min(max(v) for v in ser.values())  # newest date every series has reached
     cal = [d for d in cal if d <= last][-days:]
     out = {}
