@@ -590,6 +590,114 @@ DCA_FAQ = [
 ]
 
 
+# ---------------------------------------------------------------- bitcoin rainbow chart
+RB_NAMES = ["Fire sale", "Very cheap", "Cheap", "Below fair value", "Fair value", "Above fair value", "Expensive", "Very expensive", "Bubble"]
+RB_COLS = ["#5b6cf0", "#3d9be0", "#2fb7a3", "#46c164", "#a9d23f", "#ecd43c", "#f4a43a", "#ef6b3b", "#e03b52"]
+RAINBOW_TOOL = """
+<section class="cv wide" style="--cc:var(--c-btc);margin-top:22px">
+  <div class="thero"><div class="big" id="rb_big"><span id="rb_lbl">Bitcoin today</span><b id="rb_band">—</b><em id="rb_note"></em></div></div>
+  <div class="val" id="rb_val" style="--cc:var(--c-btc)"></div>
+  <div class="tile" style="padding:14px;position:relative">
+    <div class="seg" role="group" aria-label="Chart range" style="margin:0 0 8px;justify-self:start"><button type="button" data-rr="all" class="on">2015 to 2030</button><button type="button" data-rr="5">Last 5 years</button></div>
+    <div class="dfig" id="rb_chart" style="touch-action:pan-y"></div>
+    <div id="rb_tip" class="rbtip" hidden></div>
+    <div class="dleg" id="rb_leg"></div>
+  </div>
+  <p class="note2">Weekly closing prices since 2015 (Coin Metrics), fitted to Bitcoin's full daily history since 2014. The coloured bands after today are where the model puts each band in the future; they are not a price forecast. Information only, not financial advice.</p>
+</section>
+<section class="cv wide" style="--cc:var(--amb);margin-top:22px">
+  <header class="chead"><h2 class="disp" style="color:var(--amb)">Today's Band Prices</h2></header>
+  <p class="note2" style="font-size:15px">The price range of each band today. The row with the arrow is where Bitcoin is now.</p>
+  <div class="twrap"><table class="ttable" id="rb_table" style="--cc:var(--amb)"></table></div>
+</section>
+<section class="cv wide" style="--cc:#4fa3ff;margin-top:22px">
+  <header class="chead"><h2 class="disp" style="color:#4fa3ff">How It Read at Past Tops and Bottoms</h2></header>
+  <div class="twrap"><table class="ttable" id="rb_hist" style="--cc:#4fa3ff"></table></div>
+</section>
+<style>
+.rbtip{position:absolute;pointer-events:none;background:var(--panel2,#15181c);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:600 13px Inter,sans-serif;line-height:1.4;white-space:nowrap;z-index:3}
+.rbtip b{font-weight:800}
+#rb_table td:first-child i,#rb_hist td i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+#rb_table tr.now td{background:color-mix(in srgb,var(--amb) 14%,transparent);font-weight:800}
+</style>"""
+RAINBOW_JS = NUMJS + r"""
+const R = D.rainbow, H = D.hist.BTC, NM = D.rb_names, CL = D.rb_cols, G = Date.UTC(2009, 0, 3), DAY = 864e5;
+const usd = (x) => '$' + (x >= 100 ? Math.round(x).toLocaleString('en-US') : x.toLocaleString('en-US', {maximumFractionDigits: 2}));
+const short = (x) => x >= 1e6 ? '$' + nf(x / 1e6, 1) + 'M' : x >= 1e3 ? '$' + nf(x / 1e3, x >= 1e4 ? 0 : 1) + 'k' : '$' + Math.round(x);
+const tms = (s) => Date.parse(s + 'T00:00:00Z');
+const fair = (t) => Math.pow(10, R.a * Math.log10((t - G) / DAY) + R.b);
+const edge = (t, k) => fair(t) * Math.pow(10, R.lo + k * R.step);
+const bandOf = (t, p) => Math.max(0, Math.min(R.k - 1, Math.floor((Math.log10(p / fair(t)) - R.lo) / R.step)));
+const W0 = tms(H.start), pts = H.w.map((p, i) => [W0 + i * 7 * DAY, p]);
+let live = null, range = 'all';
+function readout() {
+  const t = live ? Date.now() : tms(R.now.date), p = live || R.now.price, b = bandOf(t, p), f = fair(t), col = CL[b];
+  $('rb_big').style.borderColor = col; $('rb_big').style.background = `color-mix(in srgb, ${col} 12%, var(--panel))`;
+  $('rb_band').textContent = NM[b].toUpperCase(); $('rb_band').style.color = col;
+  $('rb_lbl').textContent = 'Bitcoin rainbow band · ' + (live ? 'live price' : 'daily close');
+  const vs = p / f - 1;
+  $('rb_note').textContent = `At ${usd(p)}, Bitcoin is ${nf(Math.abs(vs) * 100, 0)}% ${vs < 0 ? 'below' : 'above'} its long-term fair value of ${usd(f)}. Band ${b + 1} of 9.`;
+  $('rb_val').innerHTML = `<div><b>${usd(p)}</b><span>${live ? 'Live price' : 'Daily close'}</span></div><div><b>${usd(f)}</b><span>Long-term fair value</span></div><div><b>${usd(edge(t, b))}</b><span>Bottom of this band</span></div><div><b>${usd(edge(t, b + 1))}</b><span>Top of this band</span></div>`;
+  const tm = innerWidth < 600 ? short : usd;
+  let tr = '<thead><tr><th>Band</th><th style="text-align:right">From</th><th style="text-align:right">To</th></tr></thead><tbody>';
+  for (let k = R.k - 1; k >= 0; k--) tr += `<tr class="${k === b ? 'now' : ''}"><td><i style="background:${CL[k]}"></i>${k === b ? '➜ ' : ''}${NM[k]}</td><td style="text-align:right">${tm(edge(t, k))}</td><td style="text-align:right">${tm(edge(t, k + 1))}</td></tr>`;
+  $('rb_table').innerHTML = tr + '</tbody>';
+}
+function draw() {
+  const f = $('rb_chart'), Wd = f.clientWidth || 800, Ht = Wd < 600 ? 440 : Math.max(340, Math.min(540, Math.round(Wd * 0.55))), m = {l: Wd < 600 ? 46 : 58, r: 10, t: 10, b: 26};
+  const end = Date.UTC(2030, 11, 31), start = range === 'all' ? W0 : Date.UTC(new Date().getUTCFullYear() - 5, 0, 1);
+  const last = pts[pts.length - 1][0];
+  const vis = pts.filter(([t]) => t >= start);
+  const lo = Math.log10(Math.min(edge(start, 0), ...vis.map((x) => x[1])) * 0.9), hi = Math.log10(Math.max(edge(end, R.k), ...vis.map((x) => x[1])) * 1.05);
+  const X = (t) => m.l + (t - start) / (end - start) * (Wd - m.l - m.r), Y = (v) => m.t + (1 - (Math.log10(v) - lo) / (hi - lo)) * (Ht - m.t - m.b);
+  const ts = []; for (let t = start; t <= end; t += 14 * DAY) ts.push(t); ts.push(end);
+  let g = '';
+  for (let k = 0; k < R.k; k++) {
+    const top = ts.map((t) => X(t).toFixed(1) + ',' + Y(edge(t, k + 1)).toFixed(1)), bot = ts.slice().reverse().map((t) => X(t).toFixed(1) + ',' + Y(edge(t, k)).toFixed(1));
+    g += `<polygon points="${top.join(' ')} ${bot.join(' ')}" fill="${CL[k]}" fill-opacity="0.72"/>`;
+  }
+  g += `<rect x="${X(last)}" y="${m.t}" width="${Math.max(0, X(end) - X(last))}" height="${Ht - m.t - m.b}" fill="var(--bg,#0d0f12)" fill-opacity="0.35"/>`;
+  const dpx = (Ht - m.t - m.b) / (hi - lo), muls = dpx >= 70 ? [1, 2, 5] : [1];
+  for (let e = Math.floor(lo); e <= Math.ceil(hi); e++) for (const mul of muls) { const v = mul * Math.pow(10, e), lv = Math.log10(v); if (lv < lo || lv > hi) continue; const y = Y(v).toFixed(1);
+    g += `<line x1="${m.l}" x2="${Wd - m.r}" y1="${y}" y2="${y}" stroke="#000" stroke-opacity="${mul === 1 ? .35 : .15}"/><text x="${m.l - 6}" y="${+y + 4}" text-anchor="end" font-size="12" fill="#a3a9b0">${short(v)}</text>`; }
+  for (let yr = new Date(start).getUTCFullYear() + (new Date(start).getUTCMonth() ? 1 : 0); yr <= 2030; yr++) { const x = X(Date.UTC(yr, 0, 1)); if (x < m.l) continue;
+    g += `<line x1="${x}" x2="${x}" y1="${m.t}" y2="${Ht - m.b}" stroke="#000" stroke-opacity=".18"/>`; if (yr % Math.max(1, Math.ceil(40 / (X(Date.UTC(2021, 0, 1)) - X(Date.UTC(2020, 0, 1))))) === 0) g += `<text x="${x}" y="${Ht - 6}" text-anchor="middle" font-size="12" font-weight="700" fill="#a3a9b0">${yr}</text>`; }
+  const path = vis.map(([t, p], i) => (i ? 'L' : 'M') + X(t).toFixed(1) + ',' + Y(p).toFixed(1)).join('');
+  g += `<path d="${path}" fill="none" stroke="#0b0d10" stroke-width="4" stroke-opacity=".55"/><path d="${path}" fill="none" stroke="#fff" stroke-width="2"/>`;
+  const nt = live ? Date.now() : last, np = live || pts[pts.length - 1][1];
+  g += `<line x1="${X(nt)}" x2="${X(nt)}" y1="${m.t}" y2="${Ht - m.b}" stroke="#fff" stroke-dasharray="4 4" stroke-opacity=".6"/><circle cx="${X(nt)}" cy="${Y(np)}" r="6" fill="var(--c-btc)" stroke="#fff" stroke-width="2"/>`;
+  g += `<text x="${X(nt) + 8}" y="${m.t + 14}" font-size="12" font-weight="800" fill="#fff">TODAY</text>`;
+  g += `<line id="rb_cur" x1="0" x2="0" y1="${m.t}" y2="${Ht - m.b}" stroke="#fff" stroke-opacity=".8" visibility="hidden"/>`;
+  f.innerHTML = `<svg viewBox="0 0 ${Wd} ${Ht}" width="100%" height="${Ht}" role="img" aria-label="Bitcoin rainbow chart, log scale">${g}</svg>`;
+  const svg = f.firstChild, tip = $('rb_tip'), cur = svg.getElementById ? svg.querySelector('#rb_cur') : null;
+  const move = (ev) => {
+    const r = svg.getBoundingClientRect(), cx = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left, x = cx * Wd / r.width;
+    const t = start + (x - m.l) / (Wd - m.l - m.r) * (end - start); if (t < start || t > end) { tip.hidden = true; cur.setAttribute('visibility', 'hidden'); return; }
+    let s = '<b>' + new Date(t).toLocaleDateString('en-GB', {month: 'short', year: 'numeric', timeZone: 'UTC'}) + '</b>';
+    if (t <= last) { const q = vis.reduce((a, c) => Math.abs(c[0] - t) < Math.abs(a[0] - t) ? c : a, vis[0]); const b = bandOf(q[0], q[1]); s += `<br>Price ${usd(q[1])}<br><span style="color:${CL[b]}">■</span> ${NM[b]}`; }
+    s += `<br>Fair value ${usd(fair(t))}`;
+    tip.innerHTML = s; tip.hidden = false; cur.setAttribute('x1', x); cur.setAttribute('x2', x); cur.setAttribute('visibility', 'visible');
+    const tw = tip.offsetWidth; tip.style.left = Math.min(r.width - tw - 4, Math.max(4, cx + 14)) + 14 + 'px'; tip.style.top = '52px';
+  };
+  svg.addEventListener('mousemove', move); svg.addEventListener('touchstart', move, {passive: true}); svg.addEventListener('touchmove', move, {passive: true});
+  svg.addEventListener('mouseleave', () => { tip.hidden = true; cur.setAttribute('visibility', 'hidden'); });
+}
+$('rb_leg').innerHTML = NM.map((n, k) => `<span style="color:${CL[k]}"><i style="border-color:${CL[k]};border-top-width:8px"></i>${n}</span>`).reverse().join('');
+$('rb_hist').innerHTML = '<thead><tr><th>Moment</th><th style="text-align:right">Price</th><th>Band</th></tr></thead><tbody>' + R.events.map((e) => `<tr><td>${e.kind === 'high' ? 'Cycle top' : 'Cycle bottom'} · ${new Date(e.date + 'T00:00:00Z').toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'})}</td><td style="text-align:right">${usd(e.price)}</td><td><i style="background:${CL[e.band]}"></i>${NM[e.band]}</td></tr>`).join('') + '</tbody>';
+document.querySelectorAll('[data-rr]').forEach((b) => b.addEventListener('click', () => { range = b.dataset.rr; document.querySelectorAll('[data-rr]').forEach((x) => x.classList.toggle('on', x === b)); draw(); }));
+readout(); draw(); addEventListener('resize', draw);
+const getLive = () => fetch('https://api.exchange.coinbase.com/products/BTC-USD/ticker', {cache: 'no-store'}).then((r) => r.ok ? r.json() : 0).then((j) => { if (j && +j.price > 0) { live = +j.price; readout(); draw(); } }).catch(() => {});
+getLive(); setInterval(getLive, 30000);
+"""
+RAINBOW_FAQ = [
+    ("What is the Bitcoin rainbow chart?", "It is a long-term chart of Bitcoin's price on a logarithmic scale, with coloured bands around a curve fitted to its whole price history. The bands show whether Bitcoin is cheap or expensive compared with its own long-run trend. Blue means far below the trend, red means far above it."),
+    ("How is this rainbow chart calculated?", "We fit a power-law curve to every daily Bitcoin close since 2014: the logarithm of the price against the logarithm of the number of days since Bitcoin's first block on 3 January 2009. That curve is the fair value. Nine bands of equal width on the log scale sit around it, wide enough to contain the whole history. The fit is recalculated automatically with every update."),
+    ("Is the rainbow chart a price prediction?", "No. The bands after today only show where the model puts each band if the long-term trend continues. The trend can change, and past cycles do not guarantee future ones. Use it as a sense of where price sits against history, not as a forecast."),
+    ("Is it accurate?", "Historically, the cycle bottoms of 2015, 2018 and 2022 sat in the lowest bands and the 2017 and 2021 tops in the highest. Each cycle top has been lower in the rainbow than the one before, so the top bands may never be reached again. The table above shows exactly where past tops and bottoms landed."),
+    ("Why does this chart differ from other rainbow charts?", "Other versions use different start dates, formulas and band widths, so their bands sit at different prices. This one is fitted to Coin Metrics daily data and updated twice a day, and the method is described above in full."),
+]
+
+
 # ---------------------------------------------------------------- compare / correlation
 CMP_NAMES = [("BTC", "Bitcoin", "#f7931a"), ("ETH", "Ethereum", "#aeb8e8"), ("SOL", "Solana", "#b98aff"), ("PAXG", "Gold", "#d4af37"),
              ("USD", "US dollar index", "#85bb65"), ("SPX", "S&P 500", "#4fa3ff"), ("NDQ", "Nasdaq", "#22b5a8"),
@@ -702,7 +810,7 @@ def all_pages(conv_data, slot):
     }
     ad = lambda n: slot(n, "rect", "responsive · up to 728×280")
     GOLDREL = [("/gold-price-per-gram/", "Gold Price per Gram"), ("/silver-price-per-gram/", "Silver Price per Gram"), ("/zakat-calculator/", "Zakat Calculator"), ("/troy-ounce-to-grams/", "Troy Ounce to Grams")]
-    CRYPTOREL = [("/bitcoin-signal-today/", "Bitcoin Signal Today"), ("/bitcoin-dca-calculator/", "Bitcoin DCA Calculator"), ("/crypto-profit-calculator/", "Crypto Profit Calculator"), ("/currency-converter/", "Currency Converter")]
+    CRYPTOREL = [("/bitcoin-rainbow-chart/", "Bitcoin Rainbow Chart"), ("/bitcoin-signal-today/", "Bitcoin Signal Today"), ("/bitcoin-dca-calculator/", "Bitcoin DCA Calculator"), ("/crypto-profit-calculator/", "Crypto Profit Calculator"), ("/currency-converter/", "Currency Converter")]
     CALCREL = [("/percentage-calculator/", "Percentage Calculator"), ("/rule-of-three-calculator/", "Rule of Three"), ("/currency-converter/", "Currency Converter"), ("/kg-to-lbs/", "Kg to Lbs")]
     def add(slug, title, desc, h1, intro, tool, explain, faq, rel, code, cur=False, shared=False):
         body = page(h1, intro, tool, explain, faq, [x for x in rel if x[0] != f"/{slug}/"] + [x for x in RELATED if x[0] not in [y[0] for y in rel]], cur).replace("@@AD@@", ad(slug + "-mid"))
@@ -753,6 +861,13 @@ def all_pages(conv_data, slot):
         "Bitcoin DCA Calculator", "What if you had bought a fixed amount of Bitcoin every month? Pick an asset, an amount and a start date to see what it would be worth today.",
         DCA_TOOL, "<h2 class='disp'>Why People Use DCA</h2><p>Nobody can reliably buy at the bottom. Dollar-cost averaging removes the guesswork: you invest the same amount on a schedule, so falling prices simply buy you more coins. Over Bitcoin's history, regular buyers have usually ended up with a lower average price than people who bought in one go near a peak.</p><p>It does not remove risk. Bitcoin has fallen more than 70% several times, and a DCA plan started near a peak can stay below water for a long time. The chart above shows that journey, not just the end result.</p>",
         DCA_FAQ, CRYPTOREL, DCA_JS)
+    if full.get("rainbow"):
+        data["rainbow"] = full["rainbow"]; data["rb_names"] = RB_NAMES; data["rb_cols"] = RB_COLS
+        add("bitcoin-rainbow-chart", "Bitcoin Rainbow Chart Today: Live Price Bands · MarketLights",
+            "Live Bitcoin rainbow chart: see which price band Bitcoin is in today, its long-term fair value, today's price for every band, and where past tops and bottoms landed.",
+            "Bitcoin Rainbow Chart", "Where is Bitcoin today against its long-term trend? The rainbow shows nine price bands around a curve fitted to Bitcoin's whole history, from fire sale in blue to bubble in red. Updated twice a day, with the live price.",
+            RAINBOW_TOOL, "<h2 class='disp'>How to Read the Rainbow</h2><p>The middle of the rainbow is Bitcoin's <b>long-term fair value</b>: a curve that rises every year, but more slowly over time. The <b>blue bands</b> below it are where Bitcoin has been cheap compared with its own history, and where past cycle bottoms formed. The <b>red bands</b> above it are where past bubbles peaked.</p><p>The chart uses a <b>log scale</b>: each step up the price axis is ten times the one below. That is why a $100 move in 2015 and a $10,000 move today take up a similar space. Use the rainbow together with today's <a href='/bitcoin-signal-today/' style='color:var(--amb)'>Bitcoin Signal</a>, which reads the shorter-term trend. Neither is advice to buy or sell.</p>",
+            RAINBOW_FAQ, CRYPTOREL, RAINBOW_JS)
     if full.get("cmp"):
         body = page("Compare Markets: Crypto, Gold, Dollar and Stocks", "See how Bitcoin, Ethereum, Solana, gold, the US dollar and the stock market move together or apart. Pick any two, compare their performance on one chart, and read the correlation in plain words.", CMP_TOOL,
             "<h2 class='disp'>Why Correlation Matters</h2><p>If two things you own always move together, owning both does not spread your risk. Correlation tells you which markets <b>move together</b>, which <b>move opposite</b>, and which are <b>unrelated</b>, so you can see how diversified you really are.</p><p>Links change with the times. In calm markets Bitcoin can move on its own; in a panic it often falls together with tech stocks. Gold tends to rise when the US dollar weakens. Always look at the rolling chart, not just one number.</p>",

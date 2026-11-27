@@ -93,6 +93,29 @@ def fx_rates():
         c = json.load(open(cache)); c["rates"].update(rates); return c["rates"], c["date"]
     return rates, last
 
+def rainbow_data(price):
+    """Power-law fit of Bitcoin's whole daily history: log10(price) = a*log10(days since 3 Jan 2009) + b."""
+    import math
+    G = dt.date(2009, 1, 3)
+    ds = sorted(d for d in price if price[d] and price[d] > 0)
+    xs = [math.log10((dt.date.fromisoformat(d) - G).days) for d in ds]; ys = [math.log10(price[d]) for d in ds]
+    n = len(xs); mx = sum(xs) / n; my = sum(ys) / n
+    a = sum((x - mx) * (y - my) for x, y in zip(xs, ys)) / sum((x - mx) ** 2 for x in xs); b = my - a * mx
+    lo, hi, k = -0.55, 0.85, 9
+    step = (hi - lo) / k
+    band = lambda d: max(0, min(k - 1, int(((math.log10(price[d]) - (a * math.log10((dt.date.fromisoformat(d) - G).days) + b)) - lo) / step)))
+    ev = []
+    for yr, kind in (("2015", "low"), ("2017", "high"), ("2018", "low"), ("2021", "high"), ("2022", "low"), ("2024", "high"), ("2025", "high")):
+        yd = [d for d in ds if d.startswith(yr)]
+        if not yd:
+            continue
+        d = (max if kind == "high" else min)(yd, key=lambda x: price[x])
+        ev.append({"date": d, "price": round(price[d]), "kind": kind, "band": band(d)})
+    ev = [e for e in ev if not (e["date"].startswith("2024"))]  # 2025 record replaces the 2024 high
+    return {"a": round(a, 6), "b": round(b, 6), "lo": lo, "step": round(step, 6), "k": k, "since": ds[0], "events": ev,
+            "now": {"date": ds[-1], "price": round(price[ds[-1]], 2), "band": band(ds[-1])}}
+
+
 def compare_data(prices, dollar_rows, days=760):
     """Daily closes on stock-market days for the Compare page: crypto, gold, US dollar and stock funds."""
     import csv as _c
@@ -208,6 +231,7 @@ def main():
     import pages as _pg
     open(os.path.join(HERE, "dist", "index.html"), "w").write(tpl.replace("/*DATA*/null", blob).replace("</body>", _pg.CALC_WIDGET + "\n</body>"))
     json.dump(data, open(os.path.join(HERE, "dist", "data.json"), "w"), indent=1)
+    data["rainbow"] = rainbow_data(PRICES["BTC"])
     data["cmp"] = compare_data(PRICES, drows)  # only for the Compare page (kept out of the homepage)
     import pages
     extra = pages.write_all(HERE, data)
