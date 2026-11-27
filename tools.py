@@ -32,19 +32,19 @@ TOOL_CSS = """
 @media(max-width:600px){.ttable th,.ttable td{padding:9px 7px}.ttable td{font-size:15.5px}.ttable td:first-child{font-size:13.5px}.ttable thead th{font-size:12px;letter-spacing:.02em}}
 .swipe{display:none;font:800 12.5px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--amb);margin:0 0 6px}
 .twrap.more+.swipe,.swipe.on{display:block}
-.faq details{border:2px solid var(--line);border-radius:12px;background:var(--panel);padding:14px 16px;margin-top:10px}
+.faq details{border:2px solid var(--gl);border-radius:12px;background:var(--panel);padding:14px 16px;margin-top:10px}
 .faq summary{font:700 18px Inter,sans-serif;cursor:pointer}
 .faq details[open]{border-color:var(--amb)}
 .faq p{margin:10px 0 0;line-height:1.65}
 .rel{display:flex;flex-wrap:wrap;gap:10px}
-.rel a{font:800 14px Inter,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);text-decoration:none;border:2px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--panel)}
+.rel a{font:800 14px Inter,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);text-decoration:none;border:2px solid var(--gl);border-radius:10px;padding:10px 14px;background:var(--panel)}
 .rel a:hover{border-color:var(--amb);color:var(--amb)}
 .srcline{font-size:14px;color:var(--mute);margin:0}
 .srcline b{color:var(--ink)}
 @media(max-width:600px){#quick{display:grid;grid-template-columns:1fr 1fr;gap:8px}#quick a{font-size:12px;padding:9px 8px;text-align:center}}
 .zg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px}
 .zg label{display:grid;gap:6px;font:800 12.5px Inter,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--mute)}
-.zg input,.zg select{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;box-sizing:border-box}
+.zg input,.zg select{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--gl);border-radius:10px;padding:10px 12px;width:100%;box-sizing:border-box}
 .zg input:focus,.zg select:focus{outline:none;border-color:var(--cc)}
 .cv .val{grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr))}
 @media(max-width:600px){.cv .val{grid-template-columns:1fr 1fr}.cv .val b{font-size:20px;word-break:break-word}}
@@ -76,7 +76,7 @@ const tnow = () => new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minu
 
 CUR_BOX = """<div class="box" style="margin-top:22px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;border-color:var(--usd)">
   <div class="bh" style="margin:0">Your Currency</div>
-  <select id="cur" aria-label="Currency" style="font:700 16px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:8px;padding:8px 10px"></select>
+  <select id="cur" aria-label="Currency" style="font:700 16px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--gl);border-radius:8px;padding:8px 10px"></select>
   <p class="srcline" id="src"></p>
 </div>"""
 
@@ -465,7 +465,7 @@ function render() {
   const due = net >= nis ? net * 0.025 : 0;
   $('zdue').textContent = money(due, 2);
   $('zmsg').textContent = net >= nis ? 'Your net wealth is above the nisab. If you have held it for one lunar year (hawl), 2.5% is due.' : `Your net wealth is below the nisab (${money(nis)}), so no zakat is due on it.`;
-  $('zbig').style.borderColor = net >= nis ? 'var(--grn)' : 'var(--line)';
+  $('zbig').style.borderColor = net >= nis ? 'var(--grn)' : 'var(--gl)';
   $('zsum').innerHTML = `<div><b>${money(goldVal)}</b><span>Your gold value</span></div><div><b>${money(silVal)}</b><span>Your silver value</span></div><div><b>${money(net)}</b><span>Net zakatable wealth</span></div><div><b>${money(nis)}</b><span>Nisab used (${used})</span></div>`;
   try { const sv = {basis}; ids.forEach((i) => { sv[i] = $(i).value; }); localStorage.setItem('ml_zakat', JSON.stringify(sv)); } catch (e) {}
 }
@@ -615,7 +615,7 @@ RAINBOW_TOOL = """
   <div class="twrap"><table class="ttable" id="rb_hist" style="--cc:#4fa3ff"></table></div>
 </section>
 <style>
-.rbtip{position:absolute;pointer-events:none;background:var(--panel2,#15181c);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:600 13px Inter,sans-serif;line-height:1.4;white-space:nowrap;z-index:3}
+.rbtip{position:absolute;pointer-events:none;background:var(--panel2,#15181c);border:1px solid var(--gl);border-radius:10px;padding:8px 10px;font:600 13px Inter,sans-serif;line-height:1.4;white-space:nowrap;z-index:3}
 .rbtip b{font-weight:800}
 #rb_table td:first-child i,#rb_hist td i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:-1px}
 #rb_table tr.now td{background:color-mix(in srgb,var(--amb) 14%,transparent);font-weight:800}

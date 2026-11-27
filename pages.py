@@ -19,7 +19,7 @@ TOOL_GROUPS = [
     ("Everyday", "#4fa3ff", [("/currency-converter/", "Currency Converter"), ("/percentage-calculator/", "Percentage Calculator"), ("/rule-of-three-calculator/", "Rule of Three"), ("/kg-to-lbs/", "Kg to Lbs"), ("/convert/", "All Unit Converters")]),
 ]
 TOOLBAR_CSS = """<style>
-.toolbar{display:grid;gap:9px;margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.toolbar{display:grid;gap:9px;margin-top:16px;padding:12px 14px;border:1px solid var(--gl,var(--line));border-radius:12px;background:var(--panel)}
 .toolbar .tgrp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .toolbar .tgrp>span{font:800 11px Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--tc);min-width:118px}
 .toolbar .tgrp a{font:700 13px Inter,sans-serif;color:var(--ink);text-decoration:none;padding:6px 11px;border:1px solid color-mix(in srgb,var(--tc) 45%,var(--line));border-radius:999px;background:color-mix(in srgb,var(--tc) 8%,transparent);white-space:nowrap}
@@ -36,7 +36,7 @@ def toolbar(path="/"):
 
 EXTRA_CSS = """
 .topnav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.topnav a{font:800 13px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding:8px 14px;border:2px solid var(--line);border-radius:10px;background:var(--panel)}
+.topnav a{font:800 13px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding:8px 14px;border:2px solid var(--gl);border-radius:10px;background:var(--panel)}
 .topnav a:hover{border-color:var(--amb)}
 .topnav a.on{border-color:var(--amb);color:var(--amb)}
 .top{align-items:center!important}
@@ -56,11 +56,11 @@ EXTRA_CSS = """
 .cv.wide{grid-column:1/-1}
 .cv .chead h2{font-size:clamp(22px,2.4vw,30px)}
 .cvin{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.cvin input,.cvin select{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:10px 12px}
+.cvin input,.cvin select{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--gl);border-radius:10px;padding:10px 12px}
 .cvin input{width:170px}
 .cvin input:focus,.cvin select:focus{outline:none;border-color:var(--cc)}
 .res{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.res div{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:10px 12px}
+.res div{border:1px solid var(--gl);border-radius:10px;background:var(--panel);padding:10px 12px}
 .res b{display:block;font:700 22px "Barlow Semi Condensed",Inter,sans-serif;font-variant-numeric:tabular-nums;word-break:break-all}
 .res span{font:800 12.5px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .res div.src{border-color:var(--cc)}
@@ -73,7 +73,7 @@ EXTRA_CSS = """
 .cexpr{font:600 15px Inter,sans-serif;color:var(--mute);min-height:20px;word-break:break-all}
 .cout{display:block;font:700 38px/1.1 "Barlow Semi Condensed",Inter,sans-serif;color:var(--ink);word-break:break-all}
 .ckeys{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.ckeys button{font:700 22px Inter,sans-serif;padding:14px 0;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.ckeys button{font:700 22px Inter,sans-serif;padding:14px 0;border-radius:10px;border:1px solid var(--gl);background:var(--panel);color:var(--ink);cursor:pointer}
 .ckeys button:hover{border-color:var(--cc)}
 .ckeys .cfn{color:var(--mute)}.ckeys .cop{color:var(--cc);background:color-mix(in srgb,var(--cc) 12%,var(--panel))}
 .ckeys .ceq{background:var(--cc);color:#0b1020;border-color:var(--cc)}
@@ -81,7 +81,7 @@ EXTRA_CSS = """
 .r3g{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end}
 .r3g span{font-weight:800;font-size:20px;padding-bottom:10px;color:var(--amb)}
 .r3g label{display:grid;gap:4px;font:800 12px Inter,sans-serif;letter-spacing:.06em;color:var(--mute)}
-.r3g input,.pl input{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.r3g input,.pl input{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--gl);border-radius:10px;padding:10px 12px;width:100%}
 .r3g output{display:block;font:700 24px "Barlow Semi Condensed",Inter,sans-serif;border:2px solid var(--amb);border-radius:10px;padding:7px 12px;background:color-mix(in srgb,var(--amb) 10%,var(--panel));color:var(--amb)}
 .pl{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:14px 0;border-top:1px solid var(--line);font-size:15px;font-weight:700}
 .pl:first-of-type{border-top:0}
@@ -243,7 +243,7 @@ def footer():
 </footer>"""
 
 
-def box(title, inner, color="var(--line)"):
+def box(title, inner, color="var(--gl)"):
     return f'<section class="box" style="border-color:{color}"><div class="bh">{title}</div>{inner}</section>'
 
 
@@ -255,7 +255,7 @@ CONV_BODY = """
 </div>
 <div class="box" style="margin-top:22px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;border-color:var(--usd)">
   <div class="bh" style="margin:0">Your Currency</div>
-  <select id="cur" aria-label="Currency" style="font:700 15px Inter,sans-serif;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px"></select>
+  <select id="cur" aria-label="Currency" style="font:700 15px Inter,sans-serif;background:var(--bg);color:var(--ink);border:1px solid var(--gl);border-radius:8px;padding:7px 10px"></select>
   <span id="goldsrc" class="note2"></span>
 </div>
 """ + slot("conv-top", "lead", "728×90 · phone 320×100") + """
@@ -387,7 +387,7 @@ const fmtCur = (x, c) => { try { return new Intl.NumberFormat('en-US', {style: '
 let fxF = 'USD', fxT = cur === 'USD' ? 'THB' : cur, fxSrc = D.fx_date ? 'Federal Reserve, ' + D.fx_date : '';
 function fxUpdate() {
   const a = parseFloat(document.getElementById('fxamt').value), usd = a / rates[fxF];
-  document.getElementById('fxmain').innerHTML = isNaN(a) ? '' : `<div style="border-color:var(--usd);background:color-mix(in srgb,var(--usd) 10%,var(--panel))"><b style="color:var(--usd)">${fmtCur(usd * rates[fxT], fxT)}</b><span>${esc(fmtCur(a, fxF))} in ${fxT}</span></div><div style="border-color:var(--line);background:var(--panel)"><b style="color:var(--ink)">${fmt(rates[fxT] / rates[fxF])}</b><span>1 ${fxF} = ? ${fxT}</span></div><div style="border-color:var(--line);background:var(--panel)"><b style="color:var(--ink)">${fmt(rates[fxF] / rates[fxT])}</b><span>1 ${fxT} = ? ${fxF}</span></div>`;
+  document.getElementById('fxmain').innerHTML = isNaN(a) ? '' : `<div style="border-color:var(--usd);background:color-mix(in srgb,var(--usd) 10%,var(--panel))"><b style="color:var(--usd)">${fmtCur(usd * rates[fxT], fxT)}</b><span>${esc(fmtCur(a, fxF))} in ${fxT}</span></div><div style="border-color:var(--gl);background:var(--panel)"><b style="color:var(--ink)">${fmt(rates[fxT] / rates[fxF])}</b><span>1 ${fxF} = ? ${fxT}</span></div><div style="border-color:var(--gl);background:var(--panel)"><b style="color:var(--ink)">${fmt(rates[fxF] / rates[fxT])}</b><span>1 ${fxT} = ? ${fxF}</span></div>`;
   document.getElementById('fxall').innerHTML = isNaN(a) ? '' : CURS.filter(([c]) => rates[c] && c !== fxF).map(([c, n]) => `<div class="${c === fxT ? 'src' : ''}"><b>${fmtCur(usd * rates[c], c)}</b><span>${n}</span></div>`).join('');
   document.getElementById('fxnote').textContent = 'Rates: ' + fxSrc + '. Mid-market rates for information only; banks and exchange shops add a margin.';
 }
