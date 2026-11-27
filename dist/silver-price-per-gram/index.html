@@ -307,6 +307,21 @@ h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
 .card .tile .sec,.card .tile .kr,.card .tile .lv{border-color:color-mix(in srgb,var(--cc) 25%,transparent)!important}
 .cv .res div{border:1.5px solid color-mix(in srgb,var(--cc) 50%,transparent)}
 .cv .res div.src{border-color:var(--cc)}
+
+.goldsrc{grid-column:1/-1;margin:-26px 0 -14px;font-size:14px;color:var(--mute);border-left:3px solid var(--c-gold);padding:4px 0 4px 12px}
+.goldsrc b{color:var(--c-gold)}
+span.coin{color:#2b1d00;font-weight:800}
+#dollarbox{cursor:pointer;position:relative;transition:transform .15s,box-shadow .15s}
+#dollarbox:hover{transform:translateY(-2px);box-shadow:0 0 0 3px color-mix(in srgb,var(--usd) 35%,transparent)}
+.dchart-btn{display:inline-flex;align-items:center;gap:8px;margin-top:10px;font:800 13px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#0f2a12;background:var(--usd);border:0;border-radius:999px;padding:8px 14px;cursor:pointer}
+.dchart-btn svg{width:18px;height:18px}
+.dmodal .box{border:3px solid var(--usd);max-height:calc(100vh - 24px);overflow:auto}
+.dmodal h4{padding-right:100px}
+body:has(.modal) .fcalc-btn{display:none}
+.dmodal svg text{font-family:Inter,sans-serif}
+.dleg{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:8px;font:700 13px Inter,sans-serif;text-transform:uppercase;letter-spacing:.04em}
+.dleg i{display:inline-block;width:22px;border-top:3px solid;vertical-align:middle;margin-right:6px}
+.dnote{font-size:14px;color:var(--mute);margin:10px 0 0;line-height:1.55}
 footer.band{padding-bottom:90px!important}
 .kw,.asset{font-size:max(.86em,12.5px)!important}.term{font-size:max(.92em,12.5px)!important}.dist{font-size:12.5px!important}
 /* ad spaces: reserved, fixed height (no jumping); hidden until ads are switched on; preview with ?ads=1 */
