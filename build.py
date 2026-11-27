@@ -99,6 +99,7 @@ def main():
     fng_week = B.FNG.get(fng_dates[-8]) if len(fng_dates) > 8 else None
     dollar_strong = B.DOLLAR_STRONG[max(B.DOLLAR_STRONG)]
     out = []
+    HIST = {}
     for name, tick, f, use_fng, start, light in ASSETS:
         price, mvrv = B.load_cm(f)
         r = B.run(price, mvrv, use_fng, start, "dollar")
@@ -131,6 +132,8 @@ def main():
         wspark = [round(v, 4) for v in wc[-104:]]; wdates = wd[-104:]
         wavg50 = [round(sum(wc[i - 49:i + 1]) / 50, 4) if i >= 49 else None for i in range(nw - 104, nw)]
         wavg200 = [round(sum(wc[i - 199:i + 1]) / 200, 4) if i >= 199 else None for i in range(nw - 104, nw)]
+        hist_start = max(0, next((i for i, d in enumerate(wd) if d >= "2015-01-01"), 0))
+        HIST[tick] = {"start": wd[hist_start], "w": [round(v, 4) for v in wc[hist_start:]]}
         out.append({
             "name": name, "tick": tick, "light": light, "phase": r["latest"]["phase"], "since": since,
             "sentence": SENT[r["latest"]["phase"]], "price": p, "date": dates[-1], "rsi": rs, "rsi_word": rsi_word(rs),
@@ -164,7 +167,7 @@ def main():
     st = max(0, len(dol) - n)
     dollar_series = {"dates": [d for d, _ in drows[st:]], "vals": [round(v, 3) for v in dol[st:]],
                      "ma50": [_ma(50, i) for i in range(st, len(dol))], "ma200": [_ma(200, i) for i in range(st, len(dol))]}
-    data = {"logos": logos, "dollar_series": dollar_series, "dollar_val": dollar_val, "dollar_avg": dollar_avg, "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "data_date": out[0]["date"],
+    data = {"logos": logos, "hist": HIST, "dollar_series": dollar_series, "dollar_val": dollar_val, "dollar_avg": dollar_avg, "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "data_date": out[0]["date"],
             "fng": fng_now, "fng_word": fng_word(fng_now), "fng_week": fng_week, "dollar_strong": dollar_strong,
             "lead": lead, "note": note, "assets": out}
     data["fx"], data["fx_date"] = fx_rates()

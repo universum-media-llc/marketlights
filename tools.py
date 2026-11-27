@@ -41,6 +41,15 @@ TOOL_CSS = """
 .rel a:hover{border-color:var(--amb);color:var(--amb)}
 .srcline{font-size:14px;color:var(--mute);margin:0}
 .srcline b{color:var(--ink)}
+.zg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px}
+.zg label{display:grid;gap:6px;font:800 12.5px Inter,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--mute)}
+.zg input,.zg select{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;box-sizing:border-box}
+.zg input:focus,.zg select:focus{outline:none;border-color:var(--cc)}
+.cv .val{grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr))}
+@media(max-width:600px){.cv .val{grid-template-columns:1fr 1fr}.cv .val b{font-size:20px;word-break:break-word}}
+.zrow{display:grid;grid-template-columns:1fr 100px;gap:8px}
+.dleg{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:8px;font:700 13px Inter,sans-serif;text-transform:uppercase;letter-spacing:.04em}
+.dleg i{display:inline-block;width:22px;border-top:3px solid;vertical-align:middle;margin-right:6px}
 @media(max-width:600px){.pl .q{display:none}}
 @media(max-width:600px){#gunits{grid-template-columns:1fr 1fr}#gunits b{font-size:21px}}
 </style>
@@ -413,6 +422,172 @@ live(); setInterval(live, 15000);""")
     ]
     return tool, explain, tool_js, faq, day
 
+
+# ---------------------------------------------------------------- zakat
+ZAKAT_TOOL = """
+<section class="cv wide" style="--cc:var(--c-gold);margin-top:22px">
+  <header class="chead"><h2 class="disp" style="color:var(--c-gold)">Nisab Today</h2></header>
+  <div class="seg" role="group" aria-label="Nisab basis" style="margin-left:0;justify-self:start"><button type="button" data-nb="silver" class="on">Silver nisab (595 g)</button><button type="button" data-nb="gold">Gold nisab (85 g)</button></div>
+  <div class="val" id="nis"></div>
+  <p class="note2" id="nsrc"></p>
+</section>
+<section class="cv wide" style="--cc:var(--grn);margin-top:22px">
+  <header class="chead"><h2 class="disp" style="color:var(--grn)">Your Zakatable Wealth</h2></header>
+  <div class="zg">
+    <label>Cash at home and in bank accounts<input type="number" inputmode="decimal" step="any" min="0" id="z_cash" value="0"></label>
+    <label>Gold you own (grams)<span class="zrow"><input type="number" inputmode="decimal" step="any" min="0" id="z_gold" value="0"><select id="z_gk" aria-label="Gold karat"><option value="0.999">24K</option><option value="0.9167">22K</option><option value="0.875">21K</option><option value="0.75">18K</option><option value="0.585">14K</option></select></span></label>
+    <label>Silver you own (grams)<input type="number" inputmode="decimal" step="any" min="0" id="z_silver" value="0"></label>
+    <label>Shares, funds and crypto (current value)<input type="number" inputmode="decimal" step="any" min="0" id="z_inv" value="0"></label>
+    <label>Business stock for sale (value)<input type="number" inputmode="decimal" step="any" min="0" id="z_biz" value="0"></label>
+    <label>Money others owe you (expected back)<input type="number" inputmode="decimal" step="any" min="0" id="z_owed" value="0"></label>
+    <label>Minus: debts and bills due now<input type="number" inputmode="decimal" step="any" min="0" id="z_debt" value="0"></label>
+  </div>
+  <div class="thero"><div class="big" id="zbig" style="border-color:var(--grn);background:color-mix(in srgb,var(--grn) 10%,var(--panel))"><span>Zakat due (2.5%)</span><b id="zdue" style="color:var(--grn)">—</b><em id="zmsg"></em></div></div>
+  <div class="val" id="zsum" style="--cc:var(--grn)"></div>
+</section>"""
+ZAKAT_JS = NUMJS + r"""
+const OZ = 31.1034768; let goldOz = D.gold_close, silverOz = D.silver_close || null, basis = 'silver';
+const ids = ['z_cash', 'z_gold', 'z_gk', 'z_silver', 'z_inv', 'z_biz', 'z_owed', 'z_debt'];
+try { const sv = JSON.parse(localStorage.getItem('ml_zakat') || '{}'); ids.forEach((i) => { if (sv[i] != null) $(i).value = sv[i]; }); if (sv.basis) basis = sv.basis; } catch (e) {}
+const loc = (usd) => usd * (rates[cur] || 1), fromLoc = (x) => x / (rates[cur] || 1);
+function render() {
+  $('src').innerHTML = '1 USD = <b>' + (rates[cur] || 1).toLocaleString('en-US', {maximumFractionDigits: 4}) + ' ' + (rates[cur] ? cur : 'USD') + '</b> · enter all amounts in ' + (rates[cur] ? cur : 'USD');
+  document.querySelectorAll('[data-nb]').forEach((b) => b.classList.toggle('on', b.dataset.nb === basis));
+  const gG = goldOz / OZ, sG = silverOz ? silverOz / OZ : null;
+  const nG = 85 * gG, nS = sG ? 595 * sG : null;
+  $('nis').innerHTML = `<div><b>${money(nG)}</b><span>Gold nisab · 85 g of gold</span></div><div><b>${nS ? money(nS) : '…'}</b><span>Silver nisab · 595 g of silver</span></div><div><b>${money(gG, 2)}</b><span>Gold · per gram (24K)</span></div><div><b>${sG ? money(sG, 2) : '…'}</b><span>Silver · per gram</span></div>`;
+  $('nsrc').textContent = 'Gold: ' + gsrc + ' · Silver: ' + ssrc + '. Many scholars recommend the silver nisab because it is lower, so more people pay and the poor benefit more.';
+  const used = basis === 'gold' || !nS ? 'gold' : 'silver', nis = used === 'gold' ? nG : nS;  // USD
+  const v = (i) => Math.max(0, num(i) || 0);
+  const goldVal = fromLoc(0) + v('z_gold') * num('z_gk') * gG, silVal = sG ? v('z_silver') * 0.999 * sG : 0;
+  const assets = fromLoc(v('z_cash') + v('z_inv') + v('z_biz') + v('z_owed')) + goldVal + silVal, net = assets - fromLoc(v('z_debt'));
+  const due = net >= nis ? net * 0.025 : 0;
+  $('zdue').textContent = money(due, 2);
+  $('zmsg').textContent = net >= nis ? 'Your net wealth is above the nisab. If you have held it for one lunar year (hawl), 2.5% is due.' : `Your net wealth is below the nisab (${money(nis)}), so no zakat is due on it.`;
+  $('zbig').style.borderColor = net >= nis ? 'var(--grn)' : 'var(--line)';
+  $('zsum').innerHTML = `<div><b>${money(goldVal)}</b><span>Your gold value</span></div><div><b>${money(silVal)}</b><span>Your silver value</span></div><div><b>${money(net)}</b><span>Net zakatable wealth</span></div><div><b>${money(nis)}</b><span>Nisab used (${used})</span></div>`;
+  try { const sv = {basis}; ids.forEach((i) => { sv[i] = $(i).value; }); localStorage.setItem('ml_zakat', JSON.stringify(sv)); } catch (e) {}
+}
+let gsrc = 'daily close ' + D.gold_date, ssrc = D.silver_close ? 'price at last update' : 'loading';
+ids.forEach((i) => $(i).addEventListener('input', render));
+document.querySelectorAll('[data-nb]').forEach((b) => b.addEventListener('click', () => { basis = b.dataset.nb; render(); }));
+fetch('https://api.exchange.coinbase.com/products/PAXG-USD/ticker', {cache: 'no-store'}).then((r) => r.ok ? r.json() : 0).then((j) => { if (j && +j.price > 0) { goldOz = +j.price; gsrc = 'LIVE ' + tnow(); render(); } }).catch(() => {});
+fetch('https://api.gold-api.com/price/XAG', {cache: 'no-store'}).then((r) => r.ok ? r.json() : 0).then((j) => { if (j && +j.price > 0) { silverOz = +j.price; ssrc = 'LIVE ' + tnow(); render(); } }).catch(() => {});
+render();
+"""
+ZAKAT_FAQ = [
+    ("What is the nisab for zakat today?", "The nisab is the minimum wealth on which zakat is due. It equals the value of 85 grams of gold or 595 grams of silver. This page works out both from today's live gold and silver prices in your currency."),
+    ("Should I use the gold or the silver nisab?", "Both are accepted. The silver nisab is much lower, so it includes more people, and many scholars and zakat organisations recommend it as the more cautious choice. If you are unsure, ask a scholar you trust."),
+    ("How much zakat do I pay?", "Zakat is 2.5% (one-fortieth) of your net zakatable wealth, once it has stayed above the nisab for a full lunar year (hawl)."),
+    ("Is zakat due on jewellery I wear?", "Scholars differ. The Hanafi school counts gold and silver jewellery; many others exempt jewellery worn regularly. Include it here if your school counts it."),
+    ("What can I deduct?", "Debts and bills that are due now, such as unpaid bills or a loan instalment due, are usually deducted. Long-term debts are treated differently by different schools."),
+]
+
+# ---------------------------------------------------------------- crypto profit
+PROFIT_TOOL = """
+<section class="cv wide" style="--cc:var(--c-crypto);margin-top:22px">
+  <header class="chead"><h2 class="disp" style="color:var(--c-crypto)">Crypto Profit Calculator</h2></header>
+  <div class="zg">
+    <label>Coin<select id="pc_coin"><option value="BTC">Bitcoin (BTC)</option><option value="ETH">Ethereum (ETH)</option><option value="SOL">Solana (SOL)</option></select></label>
+    <label>Amount invested<input type="number" inputmode="decimal" step="any" min="0" id="pc_inv" value="1000"></label>
+    <label>Buy price (per coin)<input type="number" inputmode="decimal" step="any" min="0" id="pc_buy"></label>
+    <label>Sell price (per coin) · live price by default<input type="number" inputmode="decimal" step="any" min="0" id="pc_sell"></label>
+    <label>Buy fee %<input type="number" inputmode="decimal" step="any" min="0" id="pc_fb" value="0.5"></label>
+    <label>Sell fee %<input type="number" inputmode="decimal" step="any" min="0" id="pc_fs" value="0.5"></label>
+  </div>
+  <div class="thero"><div class="big" id="pc_big"><span>Profit / loss</span><b id="pc_pl">—</b><em id="pc_note"></em></div></div>
+  <div class="val" id="pc_out" style="--cc:var(--c-crypto)"></div>
+</section>"""
+PROFIT_JS = NUMJS + r"""
+const PROD = {BTC: 'BTC-USD', ETH: 'ETH-USD', SOL: 'SOL-USD'}, live = {};
+const loc = (usd) => usd * (rates[cur] || 1);
+let touched = {buy: false, sell: false};
+$('pc_buy').addEventListener('input', () => touched.buy = true); $('pc_sell').addEventListener('input', () => touched.sell = true);
+const fill = () => { const c = $('pc_coin').value, p = live[c]; if (!p) return; const x = +loc(p).toPrecision(6);
+  if (!touched.sell) $('pc_sell').value = x; if (!touched.buy) $('pc_buy').value = +(x * 0.8).toPrecision(6); };
+function render() {
+  const c3 = rates[cur] ? cur : 'USD';
+  $('src').innerHTML = 'Enter all amounts in <b>' + c3 + '</b>' + (live[$('pc_coin').value] ? ' · live price ' + money(live[$('pc_coin').value]) : '');
+  const inv = num('pc_inv'), buy = num('pc_buy'), sell = num('pc_sell'), fb = (num('pc_fb') || 0) / 100, fs = (num('pc_fs') || 0) / 100;
+  if (!(inv > 0 && buy > 0 && sell > 0)) { $('pc_pl').textContent = '—'; $('pc_out').innerHTML = ''; return; }
+  const coins = inv * (1 - fb) / buy, gross = coins * sell, net = gross * (1 - fs), pl = net - inv, roi = pl / inv * 100, be = buy / ((1 - fb) * (1 - fs));
+  const f = (x) => { try { return new Intl.NumberFormat('en-US', {style: 'currency', currency: c3, currencyDisplay: 'narrowSymbol', maximumFractionDigits: Math.abs(x) >= 1000 ? 0 : 2}).format(x); } catch (e) { return c3 + ' ' + nf(x, 2); } };
+  const col = pl >= 0 ? 'var(--grn)' : 'var(--red)';
+  $('pc_big').style.borderColor = col; $('pc_pl').style.color = col;
+  $('pc_pl').textContent = (pl >= 0 ? '+' : '') + f(pl) + '  (' + (roi >= 0 ? '+' : '') + nf(roi, 2) + '%)';
+  $('pc_note').textContent = pl >= 0 ? 'After fees, this trade makes a profit.' : 'After fees, this trade makes a loss.';
+  $('pc_out').innerHTML = `<div><b>${nf(coins, 8)}</b><span>${$('pc_coin').value} bought</span></div><div><b>${f(net)}</b><span>Value after selling</span></div><div><b>${f(be)}</b><span>Break-even sell price</span></div><div><b>${f(inv * fb + gross * fs)}</b><span>Total fees</span></div>`;
+}
+['pc_inv', 'pc_buy', 'pc_sell', 'pc_fb', 'pc_fs'].forEach((i) => $(i).addEventListener('input', render));
+$('pc_coin').addEventListener('change', () => { touched = {buy: false, sell: false}; fill(); render(); });
+const getLive = () => Promise.all(Object.entries(PROD).map(([c, pr]) => fetch(`https://api.exchange.coinbase.com/products/${pr}/ticker`, {cache: 'no-store'}).then((r) => r.ok ? r.json() : 0).then((j) => { if (j && +j.price > 0) live[c] = +j.price; }).catch(() => {}))).then(() => { fill(); render(); });
+const _r = render; render = () => { fill(); _r(); };
+getLive(); setInterval(getLive, 30000);
+"""
+PROFIT_FAQ = [
+    ("How do I calculate crypto profit?", "Divide the amount invested (after the buy fee) by the buy price to get the coins you own. Multiply by the sell price, take off the sell fee, and subtract what you invested. The difference is your profit or loss."),
+    ("What is the break-even price?", "It is the sell price at which you get back exactly what you invested once both fees are paid. Selling above it is a profit, below it a loss."),
+    ("What fees should I enter?", "Use your exchange's trading fee, often 0.1% to 1.5% per trade. Card purchases and instant-buy buttons are usually more expensive than the exchange's own order book."),
+    ("Does this include tax?", "No. Tax on crypto gains depends on your country. Use the profit figure here as the starting point for your own tax calculation."),
+]
+
+# ---------------------------------------------------------------- DCA
+DCA_TOOL = """
+<section class="cv wide" style="--cc:var(--c-btc);margin-top:22px">
+  <header class="chead"><h2 class="disp" style="color:var(--c-btc)">Dollar-Cost Averaging (DCA) Calculator</h2></header>
+  <div class="zg">
+    <label>Asset<select id="dc_coin"><option value="BTC">Bitcoin (from 2015)</option><option value="ETH">Ethereum (from 2016)</option><option value="SOL">Solana (from 2020)</option><option value="PAXG">Gold (from 2020)</option></select></label>
+    <label>Amount each time (US dollars)<input type="number" inputmode="decimal" step="any" min="1" id="dc_amt" value="100"></label>
+    <label>How often<select id="dc_freq"><option value="m">Every month</option><option value="2">Every two weeks</option><option value="1">Every week</option></select></label>
+    <label>Start date<input type="month" id="dc_start" value="2020-01"></label>
+  </div>
+  <div class="thero"><div class="big" id="dc_big"><span id="dc_lbl">Value today</span><b id="dc_val">—</b><em id="dc_note"></em></div></div>
+  <div class="val" id="dc_out" style="--cc:var(--c-btc)"></div>
+  <div class="tile" style="padding:14px"><div class="dfig" id="dc_chart"></div>
+  <div class="dleg"><span style="color:var(--c-btc)"><i style="border-color:var(--c-btc)"></i>Value of your coins</span><span><i style="border-color:#e6e6e6;border-top-style:dashed"></i>Money put in</span></div></div>
+  <p class="note2">Uses weekly closing prices. Past results do not predict future returns.</p>
+</section>"""
+DCA_JS = NUMJS + r"""
+const H = D.hist, NAMES = {BTC: 'BTC', ETH: 'ETH', SOL: 'SOL', PAXG: 'oz of gold'};
+const usd = (x) => '$' + x.toLocaleString('en-US', {maximumFractionDigits: Math.abs(x) >= 1000 ? 0 : 2});
+const addDays = (s, n) => { const d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+let livePx = {};
+function run() {
+  const c = $('dc_coin').value, h = H[c]; if (!h) return;
+  const amt = num('dc_amt'), fq = $('dc_freq').value, step = +fq, start = ($('dc_start').value || '2020-01') + '-01';
+  const i0 = Math.max(0, h.w.findIndex((_, i) => addDays(h.start, 7 * i) >= start));
+  if (i0 < 0 || !(amt > 0)) return;
+  let coins = 0, put = 0; const pv = [], pp = [], dd = [];
+  let lastMo = ''; for (let i = i0; i < h.w.length; i++) { const ds = addDays(h.start, 7 * i), mo = ds.slice(0, 7); if (fq === 'm' ? mo !== lastMo : (i - i0) % step === 0) { coins += amt / h.w[i]; put += amt; lastMo = mo; } pv.push(coins * h.w[i]); pp.push(put); dd.push(addDays(h.start, 7 * i)); }
+  const px = livePx[c] || h.w[h.w.length - 1], val = coins * px, pl = val - put, roi = pl / put * 100;
+  // lump sum on day one, same total
+  const lump = put / h.w[i0] * px;
+  const col = pl >= 0 ? 'var(--grn)' : 'var(--red)';
+  $('dc_big').style.borderColor = col; $('dc_val').style.color = col;
+  $('dc_val').textContent = usd(val);
+  $('dc_note').textContent = `${usd(put)} put in since ${new Date(dd[0] + 'T00:00:00Z').toLocaleDateString('en-GB', {month: 'long', year: 'numeric', timeZone: 'UTC'})} · ${pl >= 0 ? 'profit' : 'loss'} ${pl >= 0 ? '+' : ''}${usd(pl)} (${roi >= 0 ? '+' : ''}${nf(roi, 1)}%)` + (livePx[c] ? ' · live price' : '');
+  $('dc_out').innerHTML = `<div><b>${usd(put)}</b><span>Total put in</span></div><div><b>${nf(coins, 6)}</b><span>${NAMES[c]} owned</span></div><div><b>${usd(put / coins)}</b><span>Average buy price</span></div><div><b>${usd(lump)}</b><span>Same total, all on day one</span></div>`;
+  // chart
+  const f = $('dc_chart'), W = f.clientWidth || 800, Ht = Math.max(240, Math.min(380, Math.round(W * 0.42))), m = {l: 64, r: 12, t: 10, b: 26};
+  const raw = Math.max(...pv, ...pp), mag = Math.pow(10, Math.floor(Math.log10(raw / 4))), stp = [1, 2, 2.5, 5, 10].map((k) => k * mag).find((k) => k * 4 >= raw), hi = stp * 4, X = (i) => m.l + i / Math.max(1, pv.length - 1) * (W - m.l - m.r), Y = (y) => m.t + (1 - y / hi) * (Ht - m.t - m.b);
+  let g = ''; for (let k = 0; k <= 4; k++) { const y = hi * k / 4; g += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(y)}" y2="${Y(y)}" stroke="#2a2e33"/><text x="${m.l - 8}" y="${Y(y) + 4}" text-anchor="end" font-size="12" fill="#a3a9b0">${usd(y)}</text>`; }
+  let ly = ''; dd.forEach((d, i) => { if (d.slice(5, 7) === '01' && (i === 0 || dd[i - 1].slice(0, 4) !== d.slice(0, 4))) ly += `<text x="${X(i)}" y="${Ht - 6}" text-anchor="middle" font-size="12" font-weight="700" fill="#a3a9b0">${d.slice(0, 4)}</text>`; });
+  const path = (a) => a.map((y, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(y).toFixed(1)).join('');
+  f.innerHTML = `<svg viewBox="0 0 ${W} ${Ht}" width="100%" height="${Ht}" role="img" aria-label="DCA value chart">${g}${ly}<path d="${path(pv)} L${X(pv.length - 1)},${Y(0)} L${X(0)},${Y(0)} Z" fill="color-mix(in srgb, var(--c-btc) 14%, transparent)"/><path d="${path(pp)}" fill="none" stroke="#e6e6e6" stroke-width="2" stroke-dasharray="7 5"/><path d="${path(pv)}" fill="none" stroke="var(--c-btc)" stroke-width="2.4"/></svg>`;
+}
+['dc_coin', 'dc_amt', 'dc_freq', 'dc_start'].forEach((i) => $(i).addEventListener('input', run));
+addEventListener('resize', run);
+const PROD = {BTC: 'BTC-USD', ETH: 'ETH-USD', SOL: 'SOL-USD', PAXG: 'PAXG-USD'};
+Promise.all(Object.entries(PROD).map(([c, pr]) => fetch(`https://api.exchange.coinbase.com/products/${pr}/ticker`, {cache: 'no-store'}).then((r) => r.ok ? r.json() : 0).then((j) => { if (j && +j.price > 0) livePx[c] = +j.price; }).catch(() => {}))).then(run);
+run();
+"""
+DCA_FAQ = [
+    ("What is dollar-cost averaging (DCA)?", "DCA means investing the same amount at regular intervals, such as $100 every month, whatever the price. You buy more when prices are low and less when they are high, which smooths out your average buy price."),
+    ("Is DCA better than investing a lump sum?", "Not always. When prices rise steadily, investing everything on day one usually wins. DCA reduces the risk of buying everything at a peak and is easier to stick with. This calculator shows both so you can compare."),
+    ("Where does the price history come from?", "Weekly closing prices from Coin Metrics for Bitcoin, Ethereum and Solana, and PAX Gold for gold. Today's value uses the live price when it is available."),
+    ("Does this include fees?", "No. Exchange fees on small regular purchases are often 0.5% to 1.5%, which lowers the result slightly."),
+]
+
 def gold_conv_data(conv_data):
     d = dict(conv_data)
     d["curs"] = CURS
@@ -437,7 +612,8 @@ def all_pages(conv_data, slot):
             GOLD_JS.replace("<script>\n{", "<script>\n{" + SWIPE + "}\n{", 1), data),
     }
     ad = lambda n: slot(n, "rect", "responsive · up to 728×280")
-    GOLDREL = [("/gold-price-per-gram/", "Gold Price per Gram"), ("/silver-price-per-gram/", "Silver Price per Gram"), ("/troy-ounce-to-grams/", "Troy Ounce to Grams")]
+    GOLDREL = [("/gold-price-per-gram/", "Gold Price per Gram"), ("/silver-price-per-gram/", "Silver Price per Gram"), ("/zakat-calculator/", "Zakat Calculator"), ("/troy-ounce-to-grams/", "Troy Ounce to Grams")]
+    CRYPTOREL = [("/bitcoin-signal-today/", "Bitcoin Signal Today"), ("/bitcoin-dca-calculator/", "Bitcoin DCA Calculator"), ("/crypto-profit-calculator/", "Crypto Profit Calculator"), ("/currency-converter/", "Currency Converter")]
     CALCREL = [("/percentage-calculator/", "Percentage Calculator"), ("/rule-of-three-calculator/", "Rule of Three"), ("/currency-converter/", "Currency Converter"), ("/kg-to-lbs/", "Kg to Lbs")]
     def add(slug, title, desc, h1, intro, tool, explain, faq, rel, code, cur=False, shared=False):
         body = page(h1, intro, tool, explain, faq, [x for x in rel if x[0] != f"/{slug}/"] + [x for x in RELATED if x[0] not in [y[0] for y in rel]], cur).replace("@@AD@@", ad(slug + "-mid"))
@@ -472,6 +648,22 @@ def all_pages(conv_data, slot):
         "Kg to Lbs Converter", "Convert kilograms to pounds, or pounds to kilograms. Type in either box. Also shows pounds and ounces, and stone and pounds.",
         KG_TOOL, "<h2 class='disp'>Kilograms and Pounds</h2><p>One kilogram is <b>2.20462 pounds</b>, and one pound is <b>0.453592 kilograms</b>. Most of the world weighs in kilograms; the United States uses pounds, and the UK often gives body weight in stone and pounds.</p><p>Quick mental trick: double the kilograms and add 10%. 80 kg × 2 = 160, plus 16 = 176 lb (exact: 176.4 lb).</p>",
         KG_FAQ, CALCREL, KG_JS)
+    data["hist"] = full.get("hist", {})
+    add("zakat-calculator", "Zakat Calculator 2026 with Live Gold & Silver Nisab · MarketLights",
+        "Free zakat calculator with today's gold and silver nisab in 29 currencies. Add cash, gold, silver, investments and debts to see the 2.5% zakat due.",
+        "Zakat Calculator", "Work out the zakat due on your wealth, using today's live gold and silver prices for the nisab, in your own currency. Your figures stay on your device.",
+        ZAKAT_TOOL, "<h2 class='disp'>How Zakat Is Calculated</h2><p>Add up the wealth you have held for a full lunar year: cash and bank balances, gold and silver, shares, funds and crypto, business stock for sale, and money owed to you that you expect back. Take away debts and bills that are due now. If what is left is at least the <b>nisab</b>, the value of 85 grams of gold or 595 grams of silver, zakat is <b>2.5%</b> of it.</p><p>Schools of thought differ on details such as jewellery that is worn and long-term debts. This calculator follows the common approach; for a ruling on your own situation, ask a scholar you trust.</p>",
+        ZAKAT_FAQ, GOLDREL, ZAKAT_JS, cur=True, shared=True)
+    add("crypto-profit-calculator", "Crypto Profit Calculator: Bitcoin, Ethereum, Solana · MarketLights",
+        "Free crypto profit calculator with live Bitcoin, Ethereum and Solana prices. Enter buy price, sell price and fees to see profit, ROI and break-even price.",
+        "Crypto Profit Calculator", "See the profit or loss on a Bitcoin, Ethereum or Solana trade after fees, with the break-even price. The sell price starts at today's live price.",
+        PROFIT_TOOL, "<h2 class='disp'>Profit, Fees and Break-Even</h2><p>Fees are taken twice: once when you buy and again when you sell. A trade can look profitable on price alone and still lose money once both fees are paid. The <b>break-even price</b> shows exactly where the line is.</p><p>Crypto prices can fall as fast as they rise. Check the <a href='/bitcoin-signal-today/' style='color:var(--amb)'>Bitcoin Signal Today</a> for the current trend before you decide anything, and never invest money you cannot afford to lose.</p>",
+        PROFIT_FAQ, CRYPTOREL, PROFIT_JS, cur=True, shared=True)
+    add("bitcoin-dca-calculator", "Bitcoin DCA Calculator: What If I Bought Every Month? · MarketLights",
+        "See what regular Bitcoin, Ethereum, Solana or gold purchases since any month from 2015 would be worth today, compared with investing a lump sum.",
+        "Bitcoin DCA Calculator", "What if you had bought a fixed amount of Bitcoin every month? Pick an asset, an amount and a start date to see what it would be worth today.",
+        DCA_TOOL, "<h2 class='disp'>Why People Use DCA</h2><p>Nobody can reliably buy at the bottom. Dollar-cost averaging removes the guesswork: you invest the same amount on a schedule, so falling prices simply buy you more coins. Over Bitcoin's history, regular buyers have usually ended up with a lower average price than people who bought in one go near a peak.</p><p>It does not remove risk. Bitcoin has fallen more than 70% several times, and a DCA plan started near a peak can stay below water for a long time. The chart above shows that journey, not just the end result.</p>",
+        DCA_FAQ, CRYPTOREL, DCA_JS)
     tool, explain, code, faq, day = btc_page(full)
     add("bitcoin-signal-today", f"Bitcoin Signal Today ({day}) · MarketLights",
         "Today's Bitcoin traffic light: trend, RSI, support, resistance, distance from record and market mood, updated twice a day. Plain English, information only.",
