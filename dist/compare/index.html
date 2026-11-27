@@ -322,6 +322,22 @@ body:has(.modal) .fcalc-btn{display:none}
 .dleg{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:8px;font:700 13px Inter,sans-serif;text-transform:uppercase;letter-spacing:.04em}
 .dleg i{display:inline-block;width:22px;border-top:3px solid;vertical-align:middle;margin-right:6px}
 .dnote{font-size:14px;color:var(--mute);margin:10px 0 0;line-height:1.55}
+
+/* signal card prices: close (what the light uses) and live (right now), same size, aligned */
+.sig .pxrow{display:grid;gap:6px;justify-items:center;margin-top:12px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--cc) 35%,transparent);width:100%}
+.sig .pxrow.live{display:grid!important;margin-top:10px}
+.sig .pxrow.live[hidden]{display:none!important}
+.sig .pxl{display:flex;flex-direction:column;align-items:center;gap:3px}
+.sig .pxl small{font:600 12.5px Inter,sans-serif;color:var(--mute)}
+.sig .pxl .lab{font:800 12.5px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px}
+.sig .pxv{display:flex;flex-direction:column;align-items:center;gap:5px;font-variant-numeric:tabular-nums}
+.sig{display:flex!important;flex-direction:column;align-items:center}
+.sig .pxrow:not(.live){margin-top:auto}
+.sig .pxl{min-height:40px;justify-content:flex-start}
+.sig .pxv b{font:700 16px Inter,sans-serif;white-space:nowrap}
+.sig .pxv b small{font-size:12.5px;font-weight:600;color:var(--mute)}
+.ppill.big{font:700 23px/1.15 "Barlow Semi Condensed",Inter,sans-serif;padding:3px 12px;border-radius:9px;display:inline-block;letter-spacing:.01em}
+@media(max-width:600px){.ppill.big{font-size:21px}.sig span.coin{font-size:11px!important;letter-spacing:0}}
 footer.band{padding-bottom:90px!important}
 .kw,.asset{font-size:max(.86em,12.5px)!important}.term{font-size:max(.92em,12.5px)!important}.dist{font-size:12.5px!important}
 /* ad spaces: reserved, fixed height (no jumping); hidden until ads are switched on; preview with ?ads=1 */
