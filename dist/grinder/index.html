@@ -157,7 +157,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--amb)}
       <p class="hint">Tell the Grinder what you care about, so it judges what is useful to you. Example: “The Mental Architect: mindset, psychology, persuasion, YouTube growth. Universum Media: utility websites, SEO, AdSense, AI tools.”</p>
       <textarea id="focus"></textarea>
       <label class="f" style="margin-top:12px">Model<select id="model"><option value="claude-sonnet-5-5">Sonnet 5.5 · fast and economical (recommended)</option><option value="claude-opus-5-5">Opus 5.5 · deeper, costs more</option><option value="claude-haiku-5-5">Haiku 5.5 · cheapest</option></select></label>
-      <label class="f">Language of results<select id="lang"><option>English</option><option>Spanish</option></select></label>
+      <p class="hint">Everything comes out in English. Material in any other language is translated to English first, in full.</p>
       <div class="row"><button class="btn" id="savefocus">Save</button><span class="status" id="focst"></span></div>
     </div>
     <div class="box">
@@ -210,10 +210,10 @@ $('addproj').addEventListener('click', () => { const n = (prompt('Name of the ne
 $('lproj').addEventListener('change', renderLib);
 
 // ---------- settings
-const cfg = () => ({ant: LS.get('k_ant', ''), sup: LS.get('k_sup', ''), oai: LS.get('k_oai', ''), focus: LS.get('focus', ''), model: LS.get('model', 'claude-sonnet-5-5'), lang: LS.get('lang', 'English')});
-function loadSettings() { const c = cfg(); $('k_ant').value = c.ant; $('k_sup').value = c.sup; $('k_oai').value = c.oai; $('g_url').value = LS.get('g_url', ''); $('focus').value = c.focus; $('model').value = c.model; $('lang').value = c.lang; $('nokey').hidden = !!c.ant; $('cost').textContent = '$' + LS.get('cost', 0).toFixed(2); $('libn').textContent = srcs.length ? '(' + srcs.length + ')' : ''; fillProjects(); }
+const cfg = () => ({ant: LS.get('k_ant', ''), sup: LS.get('k_sup', ''), oai: LS.get('k_oai', ''), focus: LS.get('focus', ''), model: LS.get('model', 'claude-sonnet-5-5'), lang: 'English'});
+function loadSettings() { const c = cfg(); $('k_ant').value = c.ant; $('k_sup').value = c.sup; $('k_oai').value = c.oai; $('g_url').value = LS.get('g_url', ''); $('focus').value = c.focus; $('model').value = c.model; $('nokey').hidden = !!c.ant; $('cost').textContent = '$' + LS.get('cost', 0).toFixed(2); $('libn').textContent = srcs.length ? '(' + srcs.length + ')' : ''; fillProjects(); }
 $('savekeys').addEventListener('click', () => { LS.set('k_ant', $('k_ant').value.trim()); LS.set('k_sup', $('k_sup').value.trim()); LS.set('k_oai', $('k_oai').value.trim()); $('keyst').className = 'status ok'; $('keyst').textContent = 'Saved on this device.'; loadSettings(); });
-$('savefocus').addEventListener('click', () => { LS.set('focus', $('focus').value.trim()); LS.set('model', $('model').value); LS.set('lang', $('lang').value); $('focst').className = 'status ok'; $('focst').textContent = 'Saved.'; });
+$('savefocus').addEventListener('click', () => { LS.set('focus', $('focus').value.trim()); LS.set('model', $('model').value); $('focst').className = 'status ok'; $('focst').textContent = 'Saved.'; });
 $('testkey').addEventListener('click', async () => {
   const out = [];
   $('keyst').className = 'status'; $('keyst').textContent = 'Testing…';
@@ -343,10 +343,30 @@ For the source "${srcLabel}", return ONLY a JSON object, no other text:
 {"source":{"title":"","author":"","type":"article|book|video|podcast|post|paper|other","summary":"3-5 sentences: what it is and its core message","quality":"high|medium|low","quality_note":"one sentence: how credible and useful is it"},
  "ideas":[{"title":"short name of the idea","idea":"2-4 sentences in your own words","type":"principle|framework|tactic|claim|evidence|story|warning","topic":"1-3 word topic","action":"one concrete thing to do with it, or empty","verdict":"NEW|ADDS_TO|CONFLICTS|ALREADY_HAVE|WEAK","related_id":"library id or null","why":"one sentence explaining the verdict"}]}
 
-Rules: NEW = not in the library. ADDS_TO = complements or deepens a library item (give related_id). CONFLICTS = contradicts a library item (give related_id and say how). ALREADY_HAVE = the library already covers it. WEAK = vague, unsupported, generic or not useful for the focus. Give 5-25 ideas depending on how rich the source is; skip filler, ads and self-promotion. Write the result in ${c.lang}.`;
+Rules: NEW = not in the library. ADDS_TO = complements or deepens a library item (give related_id). CONFLICTS = contradicts a library item (give related_id and say how). ALREADY_HAVE = the library already covers it. WEAK = vague, unsupported, generic or not useful for the focus. Give 5-25 ideas depending on how rich the source is; skip filler, ads and self-promotion. Write everything in English, whatever language the source is in.`;
 }
 function parseJSON(t) { const s = t.indexOf('{'), e = t.lastIndexOf('}'); if (s < 0 || e < 0) throw new Error('Claude did not return results. Try again.'); return JSON.parse(t.slice(s, e + 1)); }
 const CHUNK = 350000;
+// ---------- everything ends up in English
+const EN_WORDS = new Set('the and of to is in that it you a for are with this was on be not have as but they we he what your'.split(' '));
+function looksEnglish(t) { const w = t.slice(0, 4000).toLowerCase().match(/[a-z']+/g) || []; const all = t.slice(0, 4000).split(/\s+/).length || 1; return w.filter((x) => EN_WORDS.has(x)).length / all > 0.12; }
+function splitText(t, size) { const out = []; let i = 0; while (i < t.length) { let e = Math.min(i + size, t.length); if (e < t.length) { const cut = Math.max(t.lastIndexOf('\n', e), t.lastIndexOf('. ', e), t.lastIndexOf('。', e)); if (cut > i + size * 0.6) e = cut + 1; } out.push(t.slice(i, e)); i = e; } return out; }
+async function toEnglish(text, say) {
+  if (looksEnglish(text)) return {text, lang: 'English'};
+  if (!cfg().ant) return {text, lang: ''};   // no Claude key: keep the original
+  const d = await claude([{role: 'user', content: `<sample>\n${text.slice(0, 2500)}\n</sample>\nWhich language is this sample mainly written in? Reply with only the language name in English, e.g. "French". If it is English, reply "English".`}], {max: 20});
+  const lang = d.text.trim().replace(/[^A-Za-z ()-]/g, '').slice(0, 30) || 'unknown';
+  if (/^english$/i.test(lang)) return {text, lang: 'English'};
+  const cjk = (text.slice(0, 3000).match(/[\u3000-\u9fff\uac00-\ud7af\u0600-\u06ff]/g) || []).length > 300;
+  const parts = splitText(text, cjk ? 5000 : 12000), out = new Array(parts.length); let done = 0;
+  const work = async (i) => {
+    const r = await claude([{role: 'user', content: `<text>\n${parts[i]}\n</text>\n\nTranslate this ${lang} text into natural, faithful English. Translate ALL of it: no summarising, no skipping, no notes or comments. Keep headings, paragraph breaks and speaker changes. Output only the English translation.`}], {max: 16000});
+    out[i] = r.text.trim(); done++; say(`translating from ${lang} to English… ${done}/${parts.length}`);
+  };
+  say(`translating from ${lang} to English… 0/${parts.length}`);
+  for (let i = 0; i < parts.length; i += 3) await Promise.all([i, i + 1, i + 2].filter((j) => j < parts.length).map(work));
+  return {text: out.join('\n\n'), lang, original: text};
+}
 async function getText(q, say) {
   if (q.kind === 'text') return {text: q.text, kind: 'text'};
   if (q.kind === 'link') {
@@ -366,6 +386,9 @@ async function grindOne(q, k, n, project, tonly) {
     text = r.text.trim();
   }
   if (text.length < 200) throw new Error(q.name + ': no readable text found.');
+  const en = await toEnglish(text, say);
+  if (en.original) { src.lang = en.lang; await DB.put(src.id + '_orig', en.original); }
+  text = en.text;
   src.chars = text.length; src.words = Math.round(text.split(/\s+/).length);
   await DB.put(src.id, text);
   if (tonly) { src.title = guessTitle(q, text); return {source: src, ideas: [], tonly: true}; }
@@ -401,7 +424,7 @@ $('go').addEventListener('click', async () => {
 });
 const VL = {NEW: 'New', ADDS_TO: 'Adds to', CONFLICTS: 'Conflicts', ALREADY_HAVE: 'Already have', WEAK: 'Weak'};
 function srcHead(s, withBtns) {
-  return `<div class="src"><h3>${esc(s.title)}</h3><div class="meta">${esc([s.project, s.author, s.type || s.kind, s.words ? s.words.toLocaleString() + ' words' : '', s.quality && 'quality: ' + s.quality, s.date].filter(Boolean).join(' · '))}${s.url ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener" style="color:var(--amb)">open original</a>` : ''}</div>${s.summary ? `<p style="margin:8px 0 4px">${esc(s.summary)}</p>` : ''}${s.quality_note ? `<p class="meta" style="margin:0">${esc(s.quality_note)}</p>` : ''}
+  return `<div class="src"><h3>${esc(s.title)}</h3><div class="meta">${esc([s.project, s.author, s.type || s.kind, s.lang && 'translated from ' + s.lang, s.words ? s.words.toLocaleString() + ' words' : '', s.quality && 'quality: ' + s.quality, s.date].filter(Boolean).join(' · '))}${s.url ? ` · <a href="${esc(s.url)}" target="_blank" rel="noopener" style="color:var(--amb)">open original</a>` : ''}</div>${s.summary ? `<p style="margin:8px 0 4px">${esc(s.summary)}</p>` : ''}${s.quality_note ? `<p class="meta" style="margin:0">${esc(s.quality_note)}</p>` : ''}
   ${withBtns ? `<div class="row" style="margin-top:10px"><button class="btn sm" data-copy="${s.id}">Copy full transcript</button><button class="btn sm ghost" data-dl="${s.id}">Download transcript</button>${withBtns === 'lib' ? `<button class="btn sm ghost" data-delsrc="${s.id}">Remove</button>` : ''}</div>` : ''}</div>`;
 }
 function wireSrcBtns(root) {
@@ -518,7 +541,7 @@ async function projectFiles(P) {
   ideas += 'KEY IDEAS BY TOPIC\n\n' + (Object.keys(byT).sort().map((t) => `TOPIC: ${t.toUpperCase()}\n\n` + byT[t].map((d) => `• ${d.title}\n${d.idea}${d.action ? `\nDo: ${d.action}` : ''}\nSource: ${d.source}${d.url ? ' ' + d.url : ''}`).join('\n\n')).join('\n\n\n') || '(no ideas saved yet)');
   ideas += '\n\n\nSOURCES\n\n' + S.map((s) => `• ${s.title}${s.author ? ' (' + s.author + ')' : ''} · ${s.kind || ''} · ${s.date}${s.url ? '\n' + s.url : ''}${s.summary ? '\n' + s.summary : ''}`).join('\n\n');
   let full = `# ${P}: Full transcripts and texts\nUpdated ${today()} · ${S.length} sources\n\n`;
-  for (const s of S) { const t = await DB.get(s.id); full += `\n\n========================================\n# ${s.title}\n${[s.author, s.kind, s.date, s.url].filter(Boolean).join(' · ')}\n========================================\n\n${t || '(text not available on this device)'}\n`; }
+  for (const s of S) { const t = await DB.get(s.id); full += `\n\n========================================\n# ${s.title}\n${[s.author, s.kind, s.lang && 'translated from ' + s.lang, s.date, s.url].filter(Boolean).join(' · ')}\n========================================\n\n${t || '(text not available on this device)'}\n`; }
   return {ideas, full};
 }
 async function syncDrive(P, quiet) {
