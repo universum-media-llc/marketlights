@@ -47,17 +47,15 @@ EXTRA_CSS = """
 .val b{display:block;font:700 26px "Barlow Semi Condensed",Inter,sans-serif;color:var(--cc,var(--c-gold))}
 .val span{font:800 11px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .note2{font-size:13px;color:var(--mute);margin:0}
-.cdisp{border:2px solid var(--line);border-radius:12px;background:var(--bg);padding:10px 14px;text-align:right;min-height:84px}
-.cdisp div{font:600 14px Inter,sans-serif;color:var(--mute);min-height:20px;word-break:break-all}
-.cdisp output{display:block;font:700 clamp(32px,4vw,42px)/1.1 "Barlow Semi Condensed",Inter,sans-serif;color:var(--ink);word-break:break-all}
+.cdisp{border:2px solid var(--cc);border-radius:12px;background:var(--bg);padding:10px 14px;text-align:right;min-height:84px;display:grid;align-content:end}
+.cexpr{font:600 15px Inter,sans-serif;color:var(--mute);min-height:20px;word-break:break-all}
+.cout{display:block;font:700 38px/1.1 "Barlow Semi Condensed",Inter,sans-serif;color:var(--ink);word-break:break-all}
 .ckeys{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .ckeys button{font:700 22px Inter,sans-serif;padding:14px 0;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
 .ckeys button:hover{border-color:var(--cc)}
-.ckeys button:active{transform:scale(.97)}
-.ckeys .fn{color:var(--mute)}
-.ckeys .op{color:var(--amb);border-color:color-mix(in srgb,var(--amb) 45%,transparent)}
-.ckeys .eq{background:var(--amb);color:#111;border-color:var(--amb)}
-.ccopy{justify-self:start;font:800 12px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;background:none;color:var(--mute);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+.ckeys .cfn{color:var(--mute)}.ckeys .cop{color:var(--cc);background:color-mix(in srgb,var(--cc) 12%,var(--panel))}
+.ckeys .ceq{background:var(--cc);color:#0b1020;border-color:var(--cc)}
+.res div{cursor:copy}
 .r3g{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end}
 .r3g span{font-weight:800;font-size:20px;padding-bottom:10px;color:var(--amb)}
 .r3g label{display:grid;gap:4px;font:800 12px Inter,sans-serif;letter-spacing:.06em;color:var(--mute)}
@@ -144,6 +142,19 @@ CONV_BODY = """
     <div class="res" id="fxall"></div>
     <p class="note2" id="fxnote"></p>
   </section>
+  <section class="cv" style="--cc:#8fb3ff;align-self:start" id="calc">
+    <header class="chead"><h2 class="disp" style="color:var(--cc)">Calculator</h2></header>
+    <div class="cdisp"><div id="cexpr" class="cexpr">&nbsp;</div><output id="cout" class="cout">0</output></div>
+    <div class="ckeys" id="ckeys">
+      <button data-k="C" class="cfn">C</button><button data-k="B" class="cfn">⌫</button><button data-k="%" class="cfn">%</button><button data-k="/" class="cop">÷</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="*" class="cop">×</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="-" class="cop">−</button>
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="+" class="cop">+</button>
+      <button data-k="N" class="cfn">±</button><button data-k="0">0</button><button data-k=".">.</button><button data-k="=" class="ceq">=</button>
+    </div>
+    <p class="note2">You can also type on your keyboard: numbers, + − × ÷, Enter for =, Esc to clear. Click a result anywhere on this page to copy it into the calculator.</p>
+  </section>
+  <div style="display:grid;gap:22px;align-content:start">
   <section class="cv" style="--cc:var(--amb)" id="r3">
     <header class="chead"><h2 class="disp" style="color:var(--amb)">Rule of Three</h2></header>
     <p class="note2" style="font-size:14px">If <b>A</b> gives <b>B</b>, how much does <b>C</b> give? Example: 2 kg cost 300 baht, so 5 kg cost 750 baht.</p>
@@ -154,24 +165,13 @@ CONV_BODY = """
     <div class="seg" role="group" aria-label="Proportion type" style="width:fit-content"><button type="button" class="on" data-r3="d">Direct</button><button type="button" data-r3="i">Inverse</button></div>
     <p class="note2" id="r3n"></p>
   </section>
-  <section class="cv" style="--cc:#e8ecf1" id="calc">
-    <header class="chead"><h2 class="disp" style="color:var(--cc)">Calculator</h2></header>
-    <div class="cdisp"><div id="cexpr">&nbsp;</div><output id="cout">0</output></div>
-    <div class="ckeys">
-      <button data-k="C" class="fn">C</button><button data-k="back" class="fn" aria-label="Delete">⌫</button><button data-k="%" class="fn">%</button><button data-k="/" class="op">÷</button>
-      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="*" class="op">×</button>
-      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="-" class="op">−</button>
-      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="+" class="op">+</button>
-      <button data-k="neg" class="fn">±</button><button data-k="0">0</button><button data-k=".">.</button><button data-k="=" class="eq">=</button>
-    </div>
-    <button type="button" id="ccopy" class="ccopy">Copy result</button>
-  </section>
   <section class="cv" style="--cc:var(--c-crypto)" id="pct">
     <header class="chead"><h2 class="disp" style="color:var(--c-crypto)">Percentage</h2></header>
     <div class="pl"><span>What is</span><input type="number" step="any" value="15" id="p1a"><span>% of</span><input type="number" step="any" value="200" id="p1b"><span>=</span><b id="p1x">—</b></div>
     <div class="pl"><span>Change from</span><input type="number" step="any" value="80" id="p2a"><span>to</span><input type="number" step="any" value="100" id="p2b"><span>=</span><b id="p2x">—</b></div>
     <div class="pl"><span></span><input type="number" step="any" value="30" id="p3a"><span>is what % of</span><input type="number" step="any" value="120" id="p3b"><span>=</span><b id="p3x">—</b></div>
   </section>
+  </div>
 </div>
 """
 
@@ -281,6 +281,40 @@ fetch('https://api.coinbase.com/v2/exchange-rates?currency=USD', {cache: 'no-sto
   CURS.forEach(([c]) => { const x = +((j.data || {}).rates || {})[c]; if (x > 0) rates[c] = x; });
   fxSrc = 'Coinbase, live ' + new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'}); fxInit(); }).catch(() => {});
 
+// ---- basic calculator (own parser, no eval)
+{
+  let ex = '', last = '';
+  const out = document.getElementById('cout'), exl = document.getElementById('cexpr');
+  const show = () => { out.textContent = ex === '' ? (last || '0') : ex.replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−'); };
+  const calc = (s) => {
+    const t = s.match(/\d*\.?\d+(?:e[+-]?\d+)?|[-+*/%()]/g) || []; let i = 0;
+    const peek = () => t[i], take = () => t[i++];
+    const prim = () => { let v; const x = take(); if (x === '-') return -prim(); if (x === '+') return prim(); if (x === '(') { v = add(); take(); } else v = parseFloat(x);
+      if (peek() === '%') { take(); v = v / 100; } return v; };
+    const mul = () => { let v = prim(); while (peek() === '*' || peek() === '/') { const o = take(), r = prim(); v = o === '*' ? v * r : v / r; } return v; };
+    const add = () => { let v = mul(); while (peek() === '+' || peek() === '-') { const o = take(), r = mul(); v = o === '+' ? v + r : v - r; } return v; };
+    const v = add(); return i === t.length ? v : NaN;
+  };
+  const nice = (v) => !isFinite(v) ? 'Error' : String(+v.toPrecision(12));
+  const press = (k) => {
+    if (k === 'C') { ex = ''; last = ''; exl.innerHTML = '&nbsp;'; }
+    else if (k === 'B') ex = ex.slice(0, -1);
+    else if (k === '=') { if (!ex) return; const v = calc(ex); exl.textContent = ex.replace(/\*/g, '×').replace(/\//g, '÷') + ' ='; last = nice(v); ex = ''; }
+    else if (k === 'N') { if (ex) ex = /^-/.test(ex) ? ex.slice(1) : '-' + ex; else if (last && last !== 'Error') { ex = String(-parseFloat(last)); } }
+    else { if (!ex && last && last !== 'Error' && /[-+*/%]/.test(k)) ex = last; if (!ex && /[*/%]/.test(k)) return; if (/[-+*/]$/.test(ex) && /[-+*/]/.test(k)) ex = ex.slice(0, -1); ex += k; }
+    show();
+  };
+  document.getElementById('ckeys').addEventListener('click', (e) => { const b = e.target.closest('[data-k]'); if (b) press(b.dataset.k); });
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest('input,select,textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+    const r = document.getElementById('calc').getBoundingClientRect(); if (r.bottom < 0 || r.top > innerHeight) return;
+    const m = {Enter: '=', '=': '=', Escape: 'C', Backspace: 'B', x: '*', X: '*'}; const k = m[e.key] || e.key;
+    if (/^[0-9.+\-*/%]$/.test(k) || ['=', 'C', 'B'].includes(k)) { e.preventDefault(); press(k); }
+  });
+  document.addEventListener('click', (e) => { const d = e.target.closest('.res div, .val div'); if (!d) return; const b = d.querySelector('b'); if (!b) return;
+    const v = b.textContent.replace(/[^0-9.\-]/g, ''); if (v && isFinite(+v)) { ex = v; show(); } });
+}
+
 // ---- rule of three
 let r3m = 'd';
 function r3() {
@@ -304,40 +338,6 @@ function pc() {
   document.getElementById('p3x').textContent = isFinite(x3) ? fmt(x3) + '%' : '—';
 }
 document.getElementById('pct').addEventListener('input', pc); pc();
-// ---- basic calculator (no eval: left-to-right with × ÷ before + −)
-{
-  let toks = [], cur = '0', fresh = false;
-  const SYM = {'+': '+', '-': '−', '*': '×', '/': '÷'};
-  const compute = (t) => {
-    const a = t.slice(); for (let i = 1; i < a.length - 1;) { if (a[i] === '*' || a[i] === '/') { const v = a[i] === '*' ? a[i - 1] * a[i + 1] : a[i - 1] / a[i + 1]; a.splice(i - 1, 3, v); } else i += 2; }
-    let v = a[0]; for (let i = 1; i < a.length - 1; i += 2) v = a[i] === '+' ? v + a[i + 1] : v - a[i + 1]; return v;
-  };
-  const show = (x) => { if (!isFinite(x)) return 'Error'; const r = +x.toPrecision(12); return Math.abs(r) >= 1e15 ? r.toExponential(6) : r.toLocaleString('en-US', {maximumFractionDigits: 10}); };
-  const render = () => {
-    document.getElementById('cexpr').textContent = toks.map((t) => typeof t === 'number' ? show(t) : SYM[t]).join(' ') || '\u00a0';
-    document.getElementById('cout').textContent = cur === 'Error' ? 'Error' : (cur.endsWith('.') ? show(+cur) + '.' : cur.includes('.') && /0+$/.test(cur) ? cur : show(+cur));
-  };
-  const press = (k) => {
-    if (cur === 'Error' && k !== 'C') cur = '0';
-    if (/^[0-9]$/.test(k)) { cur = fresh || cur === '0' ? k : cur.length < 16 ? cur + k : cur; fresh = false; }
-    else if (k === '.') { if (fresh) { cur = '0.'; fresh = false; } else if (!cur.includes('.')) cur += '.'; }
-    else if (k === 'C') { toks = []; cur = '0'; fresh = false; }
-    else if (k === 'back') { cur = fresh ? cur : cur.length > 1 ? cur.slice(0, -1) : '0'; }
-    else if (k === 'neg') { cur = cur.startsWith('-') ? cur.slice(1) : cur === '0' ? cur : '-' + cur; }
-    else if (k === '%') { const base = toks.length >= 2 && (toks[toks.length - 1] === '+' || toks[toks.length - 1] === '-') ? toks[toks.length - 2] : 1; cur = String(+cur / 100 * base); fresh = true; }
-    else if (SYM[k]) { if (fresh && toks.length && typeof toks[toks.length - 1] !== 'number') toks[toks.length - 1] = k; else { toks.push(+cur, k); } fresh = true; }
-    else if (k === '=') { if (!toks.length) return render(); toks.push(+cur); const v = compute(toks); toks = []; cur = isFinite(v) ? String(+v.toPrecision(12)) : 'Error'; fresh = true; }
-    render();
-  };
-  document.querySelector('#calc .ckeys').addEventListener('click', (e) => { const b = e.target.closest('[data-k]'); if (b) press(b.dataset.k); });
-  document.addEventListener('keydown', (e) => {
-    if (e.target.closest('input, select, textarea')) return;
-    const m = {Enter: '=', '=': '=', Backspace: 'back', Escape: 'C', Delete: 'C', ',': '.'}; const k = m[e.key] || e.key;
-    if (/^[0-9.+\-*/%=]$/.test(k) || ['back', 'C'].includes(k)) { press(k); e.preventDefault(); }
-  });
-  document.getElementById('ccopy').addEventListener('click', () => { const t = String(+cur); try { navigator.clipboard.writeText(t); document.getElementById('ccopy').textContent = 'Copied ' + t; setTimeout(() => { document.getElementById('ccopy').textContent = 'Copy result'; }, 1500); } catch (e) {} });
-  render();
-}
 }
 </script>"""
 
