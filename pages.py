@@ -10,8 +10,8 @@ ADDRESS = "30 N Gould St, STE R, Sheridan, WY 82801, USA"
 EMAIL = "contact@marketlights.net"
 UPDATED = "26 November 2026"
 
-TOOL_LINKS = [("/gold-price-per-gram/", "Gold Price per Gram"), ("/silver-price-per-gram/", "Silver Price per Gram"), ("/troy-ounce-to-grams/", "Troy Ounce to Grams"), ("/bitcoin-signal-today/", "Bitcoin Signal Today"), ("/currency-converter/", "Currency Converter"), ("/percentage-calculator/", "Percentage Calculator"), ("/rule-of-three-calculator/", "Rule of Three"), ("/kg-to-lbs/", "Kg to Lbs"), ("/zakat-calculator/", "Zakat Calculator"), ("/bitcoin-dca-calculator/", "Bitcoin DCA Calculator"), ("/crypto-profit-calculator/", "Crypto Profit Calculator")]
-NAV = [("/", "Market Lights"), ("/convert/", "Unit Converter"), ("#calculator", "Calculator"), ("/about/", "About"), ("/contact/", "Contact")]
+TOOL_LINKS = [("/compare/", "Compare Markets"), ("/gold-price-per-gram/", "Gold Price per Gram"), ("/silver-price-per-gram/", "Silver Price per Gram"), ("/troy-ounce-to-grams/", "Troy Ounce to Grams"), ("/bitcoin-signal-today/", "Bitcoin Signal Today"), ("/currency-converter/", "Currency Converter"), ("/percentage-calculator/", "Percentage Calculator"), ("/rule-of-three-calculator/", "Rule of Three"), ("/kg-to-lbs/", "Kg to Lbs"), ("/zakat-calculator/", "Zakat Calculator"), ("/bitcoin-dca-calculator/", "Bitcoin DCA Calculator"), ("/crypto-profit-calculator/", "Crypto Profit Calculator")]
+NAV = [("/", "Market Lights"), ("/compare/", "Compare"), ("/convert/", "Unit Converter"), ("#calculator", "Calculator"), ("/about/", "About"), ("/contact/", "Contact")]
 
 EXTRA_CSS = """
 .topnav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}

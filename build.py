@@ -93,6 +93,32 @@ def fx_rates():
         c = json.load(open(cache)); c["rates"].update(rates); return c["rates"], c["date"]
     return rates, last
 
+def compare_data(prices, dollar_rows, days=760):
+    """Daily closes on stock-market days for the Compare page: crypto, gold, US dollar and stock funds."""
+    import csv as _c
+    ser = {k: v for k, v in prices.items()}
+    ser["USD"] = {d: v for d, v in dollar_rows}
+    for t in ("SPY", "QQQ", "DIA", "NVDA", "MSTR", "TLT"):
+        fp = os.path.join(B.D, f"stk_{t}.csv")
+        if os.path.exists(fp):
+            rows = {r["Date"]: float(r["Close"]) for r in _c.DictReader(open(fp)) if r.get("Close") not in (None, "", "null")}
+            if len(rows) > 500:
+                ser[t] = rows
+    cal = sorted(ser["SPY"]) if "SPY" in ser else sorted(ser["USD"])
+    last = min(max(v) for v in ser.values())  # newest date every series has reached
+    cal = [d for d in cal if d <= last][-days:]
+    out = {}
+    for k, s in ser.items():
+        keys = sorted(s); i = 0; prev = None; vals = []
+        for d in cal:
+            while i < len(keys) and keys[i] <= d:
+                prev = s[keys[i]]; i += 1
+            vals.append(None if prev is None else float(f"{prev:.6g}"))
+        if sum(v is not None for v in vals) > len(cal) * 0.5:
+            out[k] = vals
+    return {"dates": cal, "series": out}
+
+
 def main():
     fng_dates = sorted(B.FNG)
     fng_now = B.FNG[fng_dates[-1]] if fng_dates else None
@@ -100,8 +126,10 @@ def main():
     dollar_strong = B.DOLLAR_STRONG[max(B.DOLLAR_STRONG)]
     out = []
     HIST = {}
+    PRICES = {}
     for name, tick, f, use_fng, start, light in ASSETS:
         price, mvrv = B.load_cm(f)
+        PRICES[tick] = price
         r = B.run(price, mvrv, use_fng, start, "dollar")
         dates = sorted(price); c = [price[d] for d in dates]
         p = c[-1]; rs = rsi_series(c)[-1]
@@ -177,6 +205,7 @@ def main():
     import pages as _pg
     open(os.path.join(HERE, "dist", "index.html"), "w").write(tpl.replace("/*DATA*/null", blob).replace("</body>", _pg.CALC_WIDGET + "\n</body>"))
     json.dump(data, open(os.path.join(HERE, "dist", "data.json"), "w"), indent=1)
+    data["cmp"] = compare_data(PRICES, drows)  # only for the Compare page (kept out of the homepage)
     import pages
     extra = pages.write_all(HERE, data)
     open(os.path.join(HERE, "dist", "robots.txt"), "w").write("User-agent: *\nAllow: /\nDisallow: /grinder/\nSitemap: https://marketlights.net/sitemap.xml\n")
