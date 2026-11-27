@@ -28,6 +28,10 @@ TOOL_CSS = """
 .ttable td:first-child{font:800 15px Inter,sans-serif}
 .ttable tr:nth-child(even) td{background:color-mix(in srgb,var(--panel) 60%,transparent)}
 .twrap{overflow-x:auto}
+.ttable th,.ttable td{white-space:nowrap}
+@media(max-width:600px){.ttable th,.ttable td{padding:9px 7px}.ttable td{font-size:15.5px}.ttable td:first-child{font-size:13.5px}.ttable thead th{font-size:12px;letter-spacing:.02em}}
+.swipe{display:none;font:800 12.5px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--amb);margin:0 0 6px}
+.twrap.more+.swipe,.swipe.on{display:block}
 .faq details{border:2px solid var(--line);border-radius:12px;background:var(--panel);padding:14px 16px;margin-top:10px}
 .faq summary{font:700 18px Inter,sans-serif;cursor:pointer}
 .faq details[open]{border-color:var(--amb)}
@@ -37,6 +41,7 @@ TOOL_CSS = """
 .rel a:hover{border-color:var(--amb);color:var(--amb)}
 .srcline{font-size:14px;color:var(--mute);margin:0}
 .srcline b{color:var(--ink)}
+@media(max-width:600px){.pl .q{display:none}}
 @media(max-width:600px){#gunits{grid-template-columns:1fr 1fr}#gunits b{font-size:21px}}
 </style>
 """
@@ -163,8 +168,11 @@ def page(h1, intro, tool, explain, faq, rel, cur=False, ad="mid"):
             + faq_html(faq) + related(rel))
 
 
+SWIPE = "\ndocument.querySelectorAll('.twrap').forEach((w) => { const h = document.createElement('p'); h.className = 'swipe'; h.textContent = 'Swipe the table sideways to see all columns →'; w.before(h); const f = () => h.classList.toggle('on', w.scrollWidth > w.clientWidth + 4); f(); addEventListener('resize', f); });\n"
+
+
 def js(code, shared=False):
-    return "<script>\n{\n" + (SHARED_JS if shared else "const D = JSON.parse(document.getElementById('data').textContent);\n") + code + "\n}\n</script>"
+    return "<script>\n{\n" + SWIPE + "}\n{\n" + (SHARED_JS if shared else "const D = JSON.parse(document.getElementById('data').textContent);\n") + code + "\n}\n</script>"
 
 
 NUMJS = r"""
@@ -252,10 +260,10 @@ TROY_FAQ = [
 PCT_TOOL = """
 <section class="cv wide" style="--cc:var(--c-crypto);margin-top:22px">
   <header class="chead"><h2 class="disp" style="color:var(--c-crypto)">Percentage Calculator</h2></header>
-  <div class="pl"><span>What is</span><input type="number" step="any" id="a1" value="15"><span>% of</span><input type="number" step="any" id="b1" value="200"><span>?</span><b id="r1"></b></div>
-  <div class="pl"><input type="number" step="any" id="a2" value="30"><span>is what % of</span><input type="number" step="any" id="b2" value="120"><span>?</span><span></span><b id="r2"></b></div>
-  <div class="pl"><span>From</span><input type="number" step="any" id="a3" value="80"><span>to</span><input type="number" step="any" id="b3" value="100"><span>change</span><b id="r3"></b></div>
-  <div class="pl"><input type="number" step="any" id="a4" value="250"><span>plus / minus</span><input type="number" step="any" id="b4" value="10"><span>%</span><b id="r4"></b></div>
+  <div class="pl"><span>What is</span><input type="number" step="any" id="a1" value="15"><span>% of</span><input type="number" step="any" id="b1" value="200"><span class="q">?</span><b id="r1"></b></div>
+  <div class="pl"><input type="number" step="any" id="a2" value="30"><span>is what % of</span><input type="number" step="any" id="b2" value="120"><span class="q">?</span><b id="r2"></b></div>
+  <div class="pl"><span>From</span><input type="number" step="any" id="a3" value="80"><span>to</span><input type="number" step="any" id="b3" value="100"><span>= change</span><b id="r3"></b></div>
+  <div class="pl"><input type="number" step="any" id="a4" value="250"><span>±</span><input type="number" step="any" id="b4" value="10"><span>%</span><b id="r4"></b></div>
 </section>"""
 PCT_JS = NUMJS + r"""
 function go() {
@@ -423,10 +431,10 @@ def all_pages(conv_data, slot):
         print("silver fail", ex)
     out = {
         "gold-price-per-gram": (
-            "Gold Price per Gram Today · Live 24K, 22K, 18K in Your Currency · MarketLights",
-            "Live gold price per gram today in USD, INR, AED, EUR, GBP and 25 more currencies. 24K, 22K, 21K, 18K, 14K prices per gram, tola, ounce and kilo, plus a gold value calculator.",
+            "Gold Price per Gram Today: 24K, 22K, 18K · MarketLights",
+            "Live gold price per gram in USD, INR, AED, EUR and 25 more currencies. 24K, 22K, 18K per gram, tola, ounce and kilo, plus a value calculator.",
             GOLD_BODY.replace("@@AD1@@", slot("gold-mid", "rect", "responsive · up to 728×280")).replace("@@FAQ@@", faq_html(GOLD_FAQ)).replace("@@REL@@", related([("/convert/", "Gold Weight Converter")] + RELATED[1:])),
-            GOLD_JS, data),
+            GOLD_JS.replace("<script>\n{", "<script>\n{" + SWIPE + "}\n{", 1), data),
     }
     ad = lambda n: slot(n, "rect", "responsive · up to 728×280")
     GOLDREL = [("/gold-price-per-gram/", "Gold Price per Gram"), ("/silver-price-per-gram/", "Silver Price per Gram"), ("/troy-ounce-to-grams/", "Troy Ounce to Grams")]
@@ -434,38 +442,38 @@ def all_pages(conv_data, slot):
     def add(slug, title, desc, h1, intro, tool, explain, faq, rel, code, cur=False, shared=False):
         body = page(h1, intro, tool, explain, faq, [x for x in rel if x[0] != f"/{slug}/"] + [x for x in RELATED if x[0] not in [y[0] for y in rel]], cur).replace("@@AD@@", ad(slug + "-mid"))
         out[slug] = (title, desc, body, code if code.startswith("<script") else js(code, shared), data)
-    add("silver-price-per-gram", "Silver Price per Gram Today · Live Fine & Sterling Silver Price · MarketLights",
+    add("silver-price-per-gram", "Silver Price per Gram Today, Live · MarketLights",
         "Live silver price per gram today in 29 currencies. Fine, Britannia and sterling silver per gram, ounce, tola and kilo, plus a silver value calculator.",
         "Silver Price per Gram Today", "Live spot price of silver per gram, troy ounce, tola and kilogram in your currency, for fine (999), Britannia, sterling (925) and coin silver. Updates every minute.",
         SILVER_TOOL, "<h2 class='disp'>How the Silver Price Works</h2><p>Silver, like gold, is priced worldwide in US dollars per <b>troy ounce</b> (31.1035 grams). The price per gram is the ounce price divided by 31.1035, converted at today's exchange rate. Sterling silver is 92.5% pure, so it is worth 92.5% of the fine-silver price per gram.</p><p>Silver moves more sharply than gold because about half of it is used in industry, from solar panels to electronics. Use these figures as a fair reference, then compare with your dealer's buy and sell prices.</p>",
         SILVER_FAQ, GOLDREL, NUMJS + SILVER_JS, cur=True, shared=True)
-    add("troy-ounce-to-grams", "Troy Ounce to Grams Converter · 1 oz t = 31.1035 g · MarketLights",
+    add("troy-ounce-to-grams", "Troy Ounce to Grams Converter · MarketLights",
         "Convert troy ounces to grams and grams to troy ounces instantly, with a conversion table, the difference from a regular ounce, and the live value in gold.",
         "Troy Ounce to Grams", "Convert troy ounces to grams and back. Type in either box. Includes the difference from a regular ounce and the live value of that weight in 24K gold.",
         TROY_TOOL, "<h2 class='disp'>Troy Ounce vs Regular Ounce</h2><p>A <b>troy ounce</b> is 31.1035 grams and is used only for precious metals. A <b>regular ounce</b> (avoirdupois), used for food and post, is 28.3495 grams. So a troy ounce is about 9.7% heavier. Confusing the two is a common and expensive mistake when buying gold or silver online.</p><p>Bullion coins and bars are sold in troy ounces: a 1 oz gold coin holds 31.1 grams of gold, and a 1 kilogram bar holds 32.15 troy ounces.</p>",
         TROY_FAQ, GOLDREL, TROY_JS)
-    add("percentage-calculator", "Percentage Calculator · Percent of, Percent Change, Add or Remove % · MarketLights",
+    add("percentage-calculator", "Percentage Calculator: %, Change, Add or Remove · MarketLights",
         "Free percentage calculator: find X% of a number, what percent one number is of another, percentage increase or decrease, and add or subtract a percentage.",
         "Percentage Calculator", "Four everyday percentage sums in one place. Change any number and the answer updates at once.",
         PCT_TOOL, "<h2 class='disp'>Percentages Made Simple</h2><p>A percentage is a number out of 100. To use one in a sum, divide it by 100 first: 15% becomes 0.15. Then multiply to find a share, or compare two numbers and multiply by 100 to turn the ratio back into a percentage.</p><p>Percentage change always compares against the <b>starting</b> value. That is why a 50% fall followed by a 50% rise does not bring you back where you started: 100 falls to 50, and 50 rises only to 75.</p>",
         PCT_FAQ, CALCREL, PCT_JS)
-    add("rule-of-three-calculator", "Rule of Three Calculator · Direct & Inverse Proportion · MarketLights",
+    add("rule-of-three-calculator", "Rule of Three Calculator (Direct & Inverse) · MarketLights",
         "Free rule of three calculator for direct and inverse proportion. Find the missing value for prices, recipes, fuel, workers and days, with worked examples.",
         "Rule of Three Calculator", "Find a missing value from three known ones. Use direct proportion when both go up together, inverse when one goes up as the other goes down.",
         R3_TOOL, "<h2 class='disp'>How the Rule of Three Works</h2><p>Write the two pairs as a ratio: A is to B as C is to X. For <b>direct</b> proportion, X = B × C ÷ A. For <b>inverse</b> proportion, X = A × B ÷ C.</p><p>Everyday examples: a recipe for 4 people scaled to 6, the price of 750 grams when you know the price per kilo, how long a trip takes at a different speed, or how many days a job needs with more workers.</p>",
         R3_FAQ, CALCREL, R3_JS)
-    add("currency-converter", "Currency Converter · Live Exchange Rates for 29 Currencies · MarketLights",
+    add("currency-converter", "Currency Converter: Live Rates, 29 Currencies · MarketLights",
         "Free currency converter with live mid-market exchange rates for USD, EUR, GBP, INR, AED, JPY, CNY, THB and 21 more currencies. See any amount in every currency at once.",
         "Currency Converter", "Live mid-market exchange rates for 29 world currencies. Type an amount, pick two currencies, and see the same amount in every other currency too.",
         FX_TOOL, "<h2 class='disp'>What Is the Mid-Market Rate?</h2><p>Every currency has a buy price and a sell price. The <b>mid-market rate</b> is the point halfway between them, the fairest reference there is. Banks, cards and money changers add their own margin on top, so the rate they offer is usually worse.</p><p>Before you change money or pay abroad, check the rate here, then compare it with your provider's rate. The difference is the hidden fee you are paying.</p>",
         FX_FAQ, CALCREL, FX_JS)
-    add("kg-to-lbs", "Kg to Lbs Converter · Kilograms to Pounds & Stone · MarketLights",
+    add("kg-to-lbs", "Kg to Lbs: Kilograms to Pounds Converter · MarketLights",
         "Convert kilograms to pounds and pounds to kilograms instantly. Shows pounds and ounces, stone and pounds, plus a kg to lbs chart from 1 to 150 kg.",
         "Kg to Lbs Converter", "Convert kilograms to pounds, or pounds to kilograms. Type in either box. Also shows pounds and ounces, and stone and pounds.",
         KG_TOOL, "<h2 class='disp'>Kilograms and Pounds</h2><p>One kilogram is <b>2.20462 pounds</b>, and one pound is <b>0.453592 kilograms</b>. Most of the world weighs in kilograms; the United States uses pounds, and the UK often gives body weight in stone and pounds.</p><p>Quick mental trick: double the kilograms and add 10%. 80 kg × 2 = 160, plus 16 = 176 lb (exact: 176.4 lb).</p>",
         KG_FAQ, CALCREL, KG_JS)
     tool, explain, code, faq, day = btc_page(full)
-    add("bitcoin-signal-today", f"Bitcoin Signal Today ({day}) · Daily Traffic Light, RSI, Support & Resistance · MarketLights",
+    add("bitcoin-signal-today", f"Bitcoin Signal Today ({day}) · MarketLights",
         "Today's Bitcoin traffic light: trend, RSI, support, resistance, distance from record and market mood, updated twice a day. Plain English, information only.",
         "Bitcoin Signal Today", "One clear daily reading for Bitcoin: a green, amber or red light with the trend, RSI, support and resistance behind it. Updated automatically twice a day.",
         tool, explain, faq, [("/", "Full Dashboard: Bitcoin, Ethereum &amp; Gold"), ("/currency-converter/", "Currency Converter"), ("/percentage-calculator/", "Percentage Calculator")], code)

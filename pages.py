@@ -41,12 +41,12 @@ EXTRA_CSS = """
 .res{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .res div{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:10px 12px}
 .res b{display:block;font:700 22px "Barlow Semi Condensed",Inter,sans-serif;font-variant-numeric:tabular-nums;word-break:break-all}
-.res span{font:800 11px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.res span{font:800 12.5px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .res div.src{border-color:var(--cc)}
 .val{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
 .val div{border:2px solid var(--cc,var(--c-gold));border-radius:10px;background:color-mix(in srgb,var(--cc,var(--c-gold)) 10%,var(--panel));padding:12px 14px}
 .val b{display:block;font:700 26px "Barlow Semi Condensed",Inter,sans-serif;color:var(--cc,var(--c-gold))}
-.val span{font:800 11px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.val span{font:800 12.5px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .note2{font-size:13px;color:var(--mute);margin:0}
 .cdisp{border:2px solid var(--cc);border-radius:12px;background:var(--bg);padding:10px 14px;text-align:right;min-height:84px;display:grid;align-content:end}
 .cexpr{font:600 15px Inter,sans-serif;color:var(--mute);min-height:20px;word-break:break-all}
@@ -62,10 +62,12 @@ EXTRA_CSS = """
 .r3g label{display:grid;gap:4px;font:800 12px Inter,sans-serif;letter-spacing:.06em;color:var(--mute)}
 .r3g input,.pl input{font:700 18px Inter,sans-serif;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
 .r3g output{display:block;font:700 24px "Barlow Semi Condensed",Inter,sans-serif;border:2px solid var(--amb);border-radius:10px;padding:7px 12px;background:color-mix(in srgb,var(--amb) 10%,var(--panel));color:var(--amb)}
-.pl{display:grid;grid-template-columns:auto 90px auto 90px auto minmax(80px,1fr);gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:14px;font-weight:600}
+.pl{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:14px 0;border-top:1px solid var(--line);font-size:15px;font-weight:700}
 .pl:first-of-type{border-top:0}
-.pl b{font:700 22px "Barlow Semi Condensed",Inter,sans-serif;color:var(--c-crypto);text-align:right}
-@media(max-width:600px){.pl{grid-template-columns:auto 1fr auto 1fr}.pl b{grid-column:1/-1;text-align:left}.pl span:nth-of-type(3){display:none}}
+.pl input{width:120px!important;flex:none}
+.pl b{margin-left:auto;font:700 24px "Barlow Semi Condensed",Inter,sans-serif;color:var(--c-crypto);text-align:right;border:2px solid color-mix(in srgb,var(--c-crypto) 60%,transparent);border-radius:10px;padding:4px 12px;background:color-mix(in srgb,var(--c-crypto) 10%,var(--panel))}
+@media(max-width:600px){.pl input{width:96px!important}.pl b{flex-basis:100%;margin-left:0;text-align:left}}
+@media(max-width:600px){.r3g{grid-template-columns:repeat(3,minmax(0,1fr))!important}.r3g>span{display:none}.r3g>label:last-child{grid-column:1/-1}}
 """
 
 CALC_WIDGET = """
@@ -73,6 +75,7 @@ CALC_WIDGET = """
 .fcalc-btn{position:fixed;right:20px;bottom:20px;z-index:60;display:inline-flex;align-items:center;gap:10px;font:800 15px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#0b1020;background:#8fb3ff;border:0;border-radius:999px;padding:13px 20px 13px 16px;box-shadow:0 8px 24px rgba(0,0,0,.45),0 0 0 3px rgba(143,179,255,.25);cursor:pointer}
 .fcalc-btn svg{width:22px;height:22px}
 .fcalc-btn:hover{transform:translateY(-1px)}
+.fcalc-btn{transition:opacity .2s,transform .2s}.fcalc-btn.away{opacity:0;pointer-events:none;transform:translateY(20px)}
 .fcalc{position:fixed;right:20px;bottom:84px;z-index:61;width:min(340px,calc(100vw - 24px));border:3px solid #8fb3ff;border-radius:18px;background:#15181c;padding:14px;display:grid;gap:10px;box-shadow:0 18px 50px rgba(0,0,0,.6)}
 .fcalc[hidden]{display:none}
 .fcalc header{display:flex;align-items:center;justify-content:space-between;cursor:move;user-select:none}
@@ -142,6 +145,12 @@ CALC_WIDGET = """
     const b = d.matches('.res div, .val div') ? d.querySelector('b') : d; if (!b) return;
     const v = b.textContent.replace(/,/g, '').match(/-?\\d+(?:\\.\\d+)?/); if (v) open(v[0]);
   });
+  // never sit on top of an ad (Google policy: no accidental clicks): hide the button while it overlaps an ad space
+  const adOverlap = () => { const b = btn.getBoundingClientRect(); let hit = false;
+    document.querySelectorAll('.adslot').forEach((el) => { if (!el.offsetHeight) return; const r = el.getBoundingClientRect();
+      if (r.left < b.right + 8 && r.right > b.left - 8 && r.top < b.bottom + 8 && r.bottom > b.top - 8) hit = true; });
+    btn.classList.toggle('away', hit); };
+  addEventListener('scroll', adOverlap, {passive: true}); addEventListener('resize', adOverlap); setTimeout(adOverlap, 500);
   // drag by the header (desktop)
   const head = document.getElementById('fcalcHead'); let dx = 0, dy = 0, drag = false;
   head.addEventListener('pointerdown', (e) => { if (e.target.closest('button') || innerWidth < 600) return; drag = true; const r = box.getBoundingClientRect(); dx = e.clientX - r.left; dy = e.clientY - r.top; head.setPointerCapture(e.pointerId); });
@@ -150,6 +159,9 @@ CALC_WIDGET = """
 }
 </script>
 """
+
+
+NOADS = {"/404", "/contact/", "/privacy/", "/terms/", "/about/"}
 
 
 def slot(name, kind, size):
@@ -165,6 +177,8 @@ def shell(tpl, title, desc, path, body, script="", data=None):
         'content="https://marketlights.net/"', f'content="https://marketlights.net{path}"')
     head = re.sub(r'<meta property="og:title" content=".*?">', f'<meta property="og:title" content="{title}">', head)
     head = head[: -len("<style>")]
+    if path == "/404":
+        head = re.sub(r'<link rel="canonical"[^>]*>', '', head) + '<meta name="robots" content="noindex">\n'
     nav = "".join(f'<a href="{h}"{" class=\"on\"" if h == path else ""}{" data-opencalc" if h.startswith("#") else ""}>{t}</a>' for h, t in NAV)
     blob = "" if data is None else '<script id="data" type="application/json">' + json.dumps(data).replace("</", "<\\/") + "</script>"
     return f"""<!DOCTYPE html>
@@ -183,7 +197,7 @@ def shell(tpl, title, desc, path, body, script="", data=None):
 <main class="band">
   <div class="wrap">
 {body}
-  <div style="margin-top:40px">{slot(path.strip('/').replace('/','-') + '-bottom' if path != '/' else 'bottom', 'rect', 'responsive · up to 728×280')}</div>
+  {'' if path in NOADS else '<div style="margin-top:40px">' + slot(path.strip('/').replace('/','-') + '-bottom', 'rect', 'responsive · up to 728×280') + '</div>'}
   </div>
 </main>
 {footer()}
@@ -447,8 +461,8 @@ def write_all(here, data):
     gold = next(a for a in data["assets"] if a["tick"] == "PAXG")
     conv_data = {"fx": data.get("fx", {}), "fx_date": data.get("fx_date", ""), "gold_close": gold["price"], "gold_date": gold["date"]}
     pages = {
-        "convert": ("Unit Converter & Calculators · Gold Baht, Troy Ounce, Currency, Rule of Three · MarketLights",
-                    "Free tools: gold and silver weights (troy ounce, gram, Thai baht, tola, tael) with live gold value, currency exchange, rule of three, percentage, plus length, area (rai, ngan, square wah), weight, volume and temperature.",
+        "convert": ("Unit Converter: Gold, Length, Area, Weight · MarketLights",
+                    "Free unit converter: gold and silver weights with live value, length, area, weight, volume, temperature, currency, rule of three and percentages.",
                     CONV_BODY, CONV_JS, conv_data),
         "about": ("About · MarketLights", "What MarketLights is, how the daily traffic lights work and who publishes it.", ABOUT, "", None),
         "contact": ("Contact · MarketLights", "How to contact MarketLights and Universum Media LLC.", CONTACT, "", None),
