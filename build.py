@@ -108,7 +108,7 @@ def compare_data(prices, dollar_rows, days=760):
             except Exception as e:
                 print("compare: skip", sid, e)
     cal = sorted(ser["SPX"]) if "SPX" in ser else sorted(ser["USD"])
-    last = min(max(v) for v in ser.values())  # newest date every series has reached
+    last = min(max(v) for k, v in ser.items() if k != "USD")  # newest date all daily markets have reached (the dollar index lags a week; it is carried forward)
     cal = [d for d in cal if d <= last][-days:]
     out = {}
     for k, s in ser.items():
