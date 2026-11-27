@@ -124,8 +124,8 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--amb)}
       <div class="row" style="margin-bottom:12px;gap:14px"><label class="f" style="margin:0;min-width:240px">Project<select id="lproj"></select></label></div>
       <div class="box" style="background:var(--panel2);border-color:color-mix(in srgb,var(--amb) 50%,transparent)">
         <h2 style="font-size:20px">Take It to Claude</h2>
-        <p class="hint">Downloads one file for the project above. In claude.ai, open that project, add the file to its Files (or Project knowledge), and every chat in that project can use it.</p>
-        <div class="row"><button class="btn" id="expproj">Export ideas + transcripts</button><button class="btn ghost" id="expideas">Export ideas only</button><span class="status" id="expst"></span></div>
+        <p class="hint">With the Google Drive link set up, each project is kept up to date in your Drive automatically: <b>Grinder / [project] / Ideas</b> (a Google Doc) and <b>Full transcripts</b> (a text file). Or download the file and add it to the project in claude.ai.</p>
+        <div class="row"><button class="btn" id="sendDrive">Send to Google Drive now</button><button class="btn ghost" id="expproj">Download ideas + transcripts</button><button class="btn ghost" id="expideas">Export ideas only</button><span class="status" id="expst"></span></div>
       </div>
       <h2 style="font-size:20px;margin-top:6px">Sources &amp; Transcripts</h2>
       <div class="ideas" id="srclist" style="margin:10px 0 22px"></div>
@@ -145,6 +145,12 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--amb)}
       <label class="f">Video transcripts key (Supadata) · for YouTube, X, Facebook, TikTok, Instagram links<input type="password" id="k_sup" autocomplete="off" placeholder="sd_…"></label>
       <label class="f">Optional: OpenAI key, only for audio or video FILES from your computer<input type="password" id="k_oai" autocomplete="off" placeholder="sk-…"></label>
       <div class="row"><button class="btn" id="savekeys">Save keys</button><button class="btn ghost" id="testkey">Test keys</button><span class="status" id="keyst"></span></div>
+    </div>
+    <div class="box">
+      <h2>Google Drive Link</h2>
+      <p class="hint">Sends every project straight to your Google Drive (folder "Grinder"), automatically after each grind. Your Mind Literacy and Nemo chats in Claude can then read it from Drive.</p>
+      <label class="f">Drive link address (from Google Apps Script)<input type="text" id="g_url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec"></label>
+      <div class="row"><button class="btn" id="savedrive">Save</button><button class="btn ghost" id="testdrive">Test Drive link</button><button class="btn ghost" id="copyscript">Copy setup script</button><span class="status" id="drivest"></span></div>
     </div>
     <div class="box">
       <h2>Your Focus</h2>
@@ -205,7 +211,7 @@ $('lproj').addEventListener('change', renderLib);
 
 // ---------- settings
 const cfg = () => ({ant: LS.get('k_ant', ''), sup: LS.get('k_sup', ''), oai: LS.get('k_oai', ''), focus: LS.get('focus', ''), model: LS.get('model', 'claude-sonnet-5-5'), lang: LS.get('lang', 'English')});
-function loadSettings() { const c = cfg(); $('k_ant').value = c.ant; $('k_sup').value = c.sup; $('k_oai').value = c.oai; $('focus').value = c.focus; $('model').value = c.model; $('lang').value = c.lang; $('nokey').hidden = !!c.ant; $('cost').textContent = '$' + LS.get('cost', 0).toFixed(2); $('libn').textContent = srcs.length ? '(' + srcs.length + ')' : ''; fillProjects(); }
+function loadSettings() { const c = cfg(); $('k_ant').value = c.ant; $('k_sup').value = c.sup; $('k_oai').value = c.oai; $('g_url').value = LS.get('g_url', ''); $('focus').value = c.focus; $('model').value = c.model; $('lang').value = c.lang; $('nokey').hidden = !!c.ant; $('cost').textContent = '$' + LS.get('cost', 0).toFixed(2); $('libn').textContent = srcs.length ? '(' + srcs.length + ')' : ''; fillProjects(); }
 $('savekeys').addEventListener('click', () => { LS.set('k_ant', $('k_ant').value.trim()); LS.set('k_sup', $('k_sup').value.trim()); LS.set('k_oai', $('k_oai').value.trim()); $('keyst').className = 'status ok'; $('keyst').textContent = 'Saved on this device.'; loadSettings(); });
 $('savefocus').addEventListener('click', () => { LS.set('focus', $('focus').value.trim()); LS.set('model', $('model').value); LS.set('lang', $('lang').value); $('focst').className = 'status ok'; $('focst').textContent = 'Saved.'; });
 $('testkey').addEventListener('click', async () => {
@@ -391,6 +397,7 @@ $('go').addEventListener('click', async () => {
   $('go').disabled = false; queue = []; renderQueue(); loadSettings();
   if (results.length) { current = results; renderResults(); }
   setStatus(fails.length ? 'Problems: ' + fails.join(' · ') : `Done ✓ · ${results.length} source${results.length === 1 ? '' : 's'} saved to ${project}`, !!fails.length);
+  if (results.length) autoSync([project], (t) => { $('status').textContent += t; });
 });
 const VL = {NEW: 'New', ADDS_TO: 'Adds to', CONFLICTS: 'Conflicts', ALREADY_HAVE: 'Already have', WEAK: 'Weak'};
 function srcHead(s, withBtns) {
@@ -424,7 +431,7 @@ function ideaCard(d, key) {
 $('save').addEventListener('click', () => {
   if (!current) return; let n = 0;
   current.forEach((o) => o.ideas.filter((d) => d.keep).forEach((d) => { lib.push({id: uid('i'), project: o.source.project, title: d.title, idea: d.idea, action: d.action || '', type: d.type, topic: d.topic, verdict: d.verdict, why: d.why || '', related_id: d.related_id || null, source: o.source.title, sourceId: o.source.id, author: o.source.author || '', url: o.source.url || '', date: today()}); n++; }));
-  if (LS.set('lib', lib)) { $('savest').className = 'status ok'; $('savest').textContent = `${n} ideas saved ✓`; loadSettings(); setStatus(`${n} ideas saved to ${current[0].source.project}.`); current.forEach((o) => o.ideas = []); renderResults(); }
+  if (LS.set('lib', lib)) { $('savest').className = 'status ok'; $('savest').textContent = `${n} ideas saved ✓`; loadSettings(); setStatus(`${n} ideas saved to ${current[0].source.project}.`); const P = current[0].source.project; current.forEach((o) => o.ideas = []); renderResults(); autoSync([P], (t) => { $('status').textContent += t; }); }
 });
 const asText = (items) => items.map((d) => `## ${d.title}\n${d.idea}${d.action ? `\nDo: ${d.action}` : ''}\nTopic: ${d.topic} · ${d.type}${d.source ? ` · Source: ${d.source}${d.author ? ' (' + d.author + ')' : ''}` : ''}${d.url ? ' ' + d.url : ''}`).join('\n\n');
 $('copyres').addEventListener('click', async () => { if (!current) return; const t = current.map((o) => `# ${o.source.title}\n${o.source.summary}\n\n` + asText(o.ideas.filter((d) => d.keep))).join('\n\n'); try { await navigator.clipboard.writeText(t); $('savest').className = 'status ok'; $('savest').textContent = 'Copied.'; } catch (e) { $('savest').textContent = 'Copy failed.'; } });
@@ -469,6 +476,74 @@ $('expmd').addEventListener('click', () => { const byT = {}; lib.forEach((x) => 
 $('expjson').addEventListener('click', async () => { const texts = {}; for (const s of srcs) texts[s.id] = await DB.get(s.id); dl('grinder-backup-' + today() + '.json', JSON.stringify({lib, srcs, projects, texts, focus: cfg().focus}), 'application/json'); });
 $('impjson').addEventListener('click', () => $('impfile').click());
 $('impfile').addEventListener('change', async (e) => { try { const j = JSON.parse(await e.target.files[0].text()); const ids = new Set(lib.map((x) => x.id)), sids = new Set(srcs.map((x) => x.id)); const add = (j.lib || []).filter((x) => x.id && !ids.has(x.id)), addS = (j.srcs || []).filter((x) => x.id && !sids.has(x.id)); lib = lib.concat(add); srcs = srcs.concat(addS); for (const s of addS) if (j.texts && j.texts[s.id]) await DB.put(s.id, j.texts[s.id]); (j.projects || []).forEach((p) => { if (!projects.includes(p)) projects.push(p); }); LS.set('lib', lib); LS.set('srcs', srcs); LS.set('projects', projects); $('libst').className = 'status ok'; $('libst').textContent = `${addS.length} sources and ${add.length} ideas restored.`; loadSettings(); renderLib(); } catch (err) { $('libst').className = 'status err'; $('libst').textContent = 'That file is not a Grinder backup.'; } e.target.value = ''; });
+
+// ---------- Google Drive link (Apps Script web app in the user's own Google account)
+const gtoken = () => { let t = LS.get('g_tok', ''); if (!t) { t = Array.from(crypto.getRandomValues(new Uint8Array(18)), (b) => b.toString(16).padStart(2, '0')).join(''); LS.set('g_tok', t); } return t; };
+const appsScript = () => `// The Grinder → Google Drive link. Paste all of this into a new Apps Script project.
+const TOKEN = '${gtoken()}';
+function doGet() { return out({ok: true, service: 'grinder'}); }
+function doPost(e) {
+  try {
+    const d = JSON.parse(e.postData.contents);
+    if (d.token !== TOKEN) return out({ok: false, error: 'wrong token'});
+    const dir = folder(folder(DriveApp.getRootFolder(), 'Grinder'), d.project || 'General');
+    if (d.test) return out({ok: true, folder: dir.getUrl()});
+    const name = d.name, files = dir.getFilesByName(name);
+    let url;
+    if (d.doc) {
+      let doc;
+      if (files.hasNext()) doc = DocumentApp.openById(files.next().getId()); else { doc = DocumentApp.create(name); DriveApp.getFileById(doc.getId()).moveTo(dir); }
+      doc.getBody().setText(d.content); doc.saveAndClose(); url = doc.getUrl();
+    } else {
+      const f = files.hasNext() ? files.next() : dir.createFile(name, '', MimeType.PLAIN_TEXT);
+      f.setContent(d.content); url = f.getUrl();
+    }
+    return out({ok: true, url: url, folder: dir.getUrl()});
+  } catch (err) { return out({ok: false, error: String(err)}); }
+}
+function folder(parent, name) { const it = parent.getFoldersByName(name); return it.hasNext() ? it.next() : parent.createFolder(name); }
+function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+`;
+async function drivePost(payload) {
+  const u = LS.get('g_url', ''); if (!u) throw new Error('No Google Drive link yet (Settings).');
+  const r = await fetch(u, {method: 'POST', headers: {'content-type': 'text/plain;charset=utf-8'}, body: JSON.stringify(Object.assign({token: gtoken()}, payload)), redirect: 'follow'});
+  const j = await r.json().catch(() => ({ok: false, error: 'no answer from Google'}));
+  if (!j.ok) throw new Error('Google Drive: ' + j.error);
+  return j;
+}
+async function projectFiles(P) {
+  const S = srcs.filter((s) => s.project === P), L = lib.filter((x) => x.project === P);
+  const byT = {}; L.forEach((x) => (byT[x.topic] = byT[x.topic] || []).push(x));
+  let ideas = `${P}: Grinder Knowledge\nUpdated ${new Date().toLocaleString('en-GB')} · ${S.length} sources · ${L.length} ideas\n\n`;
+  ideas += 'KEY IDEAS BY TOPIC\n\n' + (Object.keys(byT).sort().map((t) => `TOPIC: ${t.toUpperCase()}\n\n` + byT[t].map((d) => `• ${d.title}\n${d.idea}${d.action ? `\nDo: ${d.action}` : ''}\nSource: ${d.source}${d.url ? ' ' + d.url : ''}`).join('\n\n')).join('\n\n\n') || '(no ideas saved yet)');
+  ideas += '\n\n\nSOURCES\n\n' + S.map((s) => `• ${s.title}${s.author ? ' (' + s.author + ')' : ''} · ${s.kind || ''} · ${s.date}${s.url ? '\n' + s.url : ''}${s.summary ? '\n' + s.summary : ''}`).join('\n\n');
+  let full = `# ${P}: Full transcripts and texts\nUpdated ${today()} · ${S.length} sources\n\n`;
+  for (const s of S) { const t = await DB.get(s.id); full += `\n\n========================================\n# ${s.title}\n${[s.author, s.kind, s.date, s.url].filter(Boolean).join(' · ')}\n========================================\n\n${t || '(text not available on this device)'}\n`; }
+  return {ideas, full};
+}
+async function syncDrive(P, quiet) {
+  if (!LS.get('g_url', '')) return false;
+  const f = await projectFiles(P);
+  await drivePost({project: P, name: `${P} · Grinder Ideas`, doc: true, content: f.ideas});
+  const r = await drivePost({project: P, name: `${P} · Grinder Full Transcripts.txt`, doc: false, content: f.full});
+  LS.set('g_folder_' + P, r.folder);
+  return r;
+}
+$('savedrive').addEventListener('click', () => { LS.set('g_url', $('g_url').value.trim()); $('drivest').className = 'status ok'; $('drivest').textContent = 'Saved.'; });
+$('copyscript').addEventListener('click', async () => { try { await navigator.clipboard.writeText(appsScript()); $('drivest').className = 'status ok'; $('drivest').textContent = 'Setup script copied.'; } catch (e) { $('drivest').textContent = 'Copy failed.'; } });
+$('testdrive').addEventListener('click', async () => { $('drivest').className = 'status'; $('drivest').textContent = 'Testing…'; try { await drivePost({test: true, project: 'General'}); $('drivest').className = 'status ok'; $('drivest').textContent = 'Google Drive link works ✓'; } catch (e) { $('drivest').className = 'status err'; $('drivest').textContent = e.message; } });
+$('sendDrive').addEventListener('click', async () => {
+  const P = $('lproj').value; const list = P ? [P] : [...new Set(srcs.map((s) => s.project))];
+  if (!LS.get('g_url', '')) { $('expst').className = 'status err'; $('expst').textContent = 'Set up the Google Drive link in Settings first.'; return; }
+  $('expst').className = 'status'; $('expst').textContent = 'Sending to Google Drive…';
+  try { for (const p of list) await syncDrive(p); $('expst').className = 'status ok'; $('expst').innerHTML = `Sent ✓ ${list.join(', ')} · <a href="${esc(LS.get('g_folder_' + list[0], '#'))}" target="_blank" rel="noopener" style="color:var(--grn)">open in Drive</a>`; }
+  catch (e) { $('expst').className = 'status err'; $('expst').textContent = e.message; }
+});
+async function autoSync(projectsTouched, statusFn) {
+  if (!LS.get('g_url', '')) return;
+  try { for (const p of projectsTouched) await syncDrive(p); statusFn(' · sent to Google Drive ✓'); }
+  catch (e) { statusFn(' · Google Drive: ' + e.message); }
+}
 
 loadSettings();
 </script>
