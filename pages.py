@@ -10,6 +10,7 @@ ADDRESS = "30 N Gould St, STE R, Sheridan, WY 82801, USA"
 EMAIL = "contact@marketlights.net"
 UPDATED = "26 November 2026"
 
+TOOL_LINKS = [("/gold-price-per-gram/", "Gold Price per Gram")]
 NAV = [("/", "Market Lights"), ("/convert/", "Unit Converter"), ("#calculator", "Calculator"), ("/about/", "About"), ("/contact/", "Contact")]
 
 EXTRA_CSS = """
@@ -196,7 +197,7 @@ def shell(tpl, title, desc, path, body, script="", data=None):
 
 
 def footer():
-    links = "".join(f'<a href="{h}">{t}</a>' for h, t in [x for x in NAV if not x[0].startswith("#")] + [("/privacy/", "Privacy Policy"), ("/terms/", "Terms &amp; Disclaimer")])
+    links = "".join(f'<a href="{h}">{t}</a>' for h, t in [x for x in NAV if not x[0].startswith("#")] + TOOL_LINKS + [("/privacy/", "Privacy Policy"), ("/terms/", "Terms &amp; Disclaimer")])
     return f"""<footer class="band">
   <div class="wrap">
     <nav class="flinks" aria-label="Footer">{links}</nav>
@@ -454,6 +455,8 @@ def write_all(here, data):
         "privacy": ("Privacy Policy · MarketLights", "How MarketLights handles data, cookies and third-party services.", PRIVACY, "", None),
         "terms": ("Terms & Disclaimer · MarketLights", "Terms of use and financial disclaimer for MarketLights.", TERMS, "", None),
     }
+    import tools
+    pages.update(tools.all_pages(conv_data, slot))
     for slug, (title, desc, body, js, d) in pages.items():
         os.makedirs(os.path.join(dist, slug), exist_ok=True)
         open(os.path.join(dist, slug, "index.html"), "w").write(shell(tpl, title, desc, f"/{slug}/", body, js, d))
