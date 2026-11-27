@@ -113,7 +113,8 @@ def main():
         weekly = c[::-1][::7][::-1]
         w_sup, w_res = levels(weekly[-104:], p, 2)
         low365 = min(c[-365:]); hi365 = max(c[-365:])
-        rp = p / mvrv[dates[-1]] if dates[-1] in mvrv else None
+        mk = max((d for d in mvrv if d <= dates[-1]), default=None)
+        rp = price[mk] / mvrv[mk] if mk else None  # realized price = price / MVRV on the newest day that has both
         phases = [s["phase"] for s in r["series"]]
         since = dates[-1]
         for s in reversed(r["series"]):

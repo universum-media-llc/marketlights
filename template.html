@@ -79,7 +79,7 @@ h1{font-size:clamp(34px,5vw,52px);line-height:1.05;margin:18px 0 10px;text-wrap:
 .stampbox b{color:var(--ink)}
 .curbox{margin-top:6px;display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;padding:6px 10px;border:2px solid var(--usd);border-radius:10px;color:var(--ink);font-weight:600}
 .curbox select{font-weight:700}
-#fxsrc{font-weight:400;font-size:12px;color:var(--mute)}
+#fxsrc{font-weight:700;color:var(--ink)}
 .gr{display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:15px}
 .gr:first-of-type{border-top:0}
 .sw{height:14px;border-radius:7px}
@@ -195,6 +195,21 @@ footer p{max-width:80ch;margin:0 0 10px}
 .topnav a{font:800 13px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding:8px 14px;border:2px solid var(--line);border-radius:10px;background:var(--panel)}
 .topnav a:hover{border-color:var(--amb)}.topnav a.on{border-color:var(--amb);color:var(--amb)}
 .top{align-items:center!important}
+.infobar{grid-template-columns:minmax(0,2fr) minmax(0,1fr)!important}
+.updrow{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.bigcal{display:grid;grid-template-rows:22px 1fr 18px;width:92px;height:100px;border:2px solid var(--line);border-radius:14px;overflow:hidden;text-align:center;background:var(--bg);flex:none;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.bigcal span{background:var(--red);color:#fff;font:800 13px/22px Inter,sans-serif;text-transform:uppercase;letter-spacing:.08em}
+.bigcal b{font:700 44px/58px "Barlow Semi Condensed",Inter,sans-serif;color:var(--ink)!important}
+.bigcal i{font:800 11px/14px Inter,sans-serif;font-style:normal;text-transform:uppercase;letter-spacing:.08em;color:var(--mute)}
+.update{font:700 clamp(28px,3.4vw,40px)/1.05 "Barlow Semi Condensed",Inter,sans-serif;color:var(--ink)}
+.uptime{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px;font:700 clamp(20px,2.2vw,26px) "Barlow Semi Condensed",Inter,sans-serif;color:var(--amb)}
+.minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.mini2{border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:9px 12px;display:grid;gap:3px}
+.mini2>span{font:800 11px Inter,sans-serif;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);display:flex;align-items:center;gap:6px}
+.mini2>b{font-size:14px;color:var(--ink)}
+.lv-dot{width:8px;height:8px;border-radius:50%;background:var(--grn);display:inline-block}
+@media(max-width:860px){.infobar{grid-template-columns:minmax(0,1fr)!important}}
+@media(max-width:600px){.minis{grid-template-columns:minmax(0,1fr)}.bigcal{width:78px;height:88px;grid-template-rows:20px 1fr 16px}.bigcal b{font-size:38px;line-height:52px}}
 /* coin card: header, chart box, four summary boxes */
 .chead{grid-column:1/-1;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 18px;border-radius:12px;background:color-mix(in srgb,var(--cc) 14%,var(--panel));border:1px solid color-mix(in srgb,var(--cc) 50%,transparent)}
 .chead h2{margin:0;font-size:clamp(26px,3vw,36px);line-height:1;text-transform:uppercase}
@@ -287,12 +302,18 @@ h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
       <nav class="topnav" aria-label="Main"><a href="/" class="on">Market Lights</a><a href="/convert/">Unit Converter</a><a href="/about/">About</a><a href="/contact/">Contact</a></nav>
     </div>
     <div class="infobar">
-      <div class="box"><div class="bh">Prices</div>
-        <div class="row1"><span class="stampbox" style="display:contents"><span class="cal" aria-hidden="true"><span id="calm"></span><span id="cald"></span></span></span>
-        <div><b id="closeday"></b> daily close, 00:00 UTC<br>Lights and charts: once a day · <b>LIVE</b> price: every 15 seconds</div></div></div>
-      <div class="box"><div class="bh">Last Update</div><b id="upd" style="font-size:16px"></b>
-        <select id="tz" aria-label="Time zone"><option value="">Your time zone</option><option value="UTC">UTC</option><option value="America/New_York">New York</option><option value="Europe/London">London</option><option value="Asia/Bangkok">Bangkok</option><option value="Asia/Tokyo">Tokyo</option></select></div>
-      <div class="box" style="border-color:var(--usd)"><div class="bh">Your Currency</div><select id="cur" aria-label="Currency"></select><span id="fxsrc" style="font-size:12px"></span></div>
+      <div class="box updbox"><div class="bh">Updated</div>
+        <div class="updrow">
+          <div class="bigcal" aria-hidden="true"><span id="calm"></span><b id="cald"></b><i id="calw"></i></div>
+          <div class="upmain"><div class="update" id="upddate"></div><div class="uptime"><span id="updtime"></span> <select id="tz" aria-label="Time zone"><option value="">Your time zone</option><option value="UTC">UTC</option><option value="America/New_York">New York</option><option value="Europe/London">London</option><option value="Asia/Bangkok">Bangkok</option><option value="Asia/Tokyo">Tokyo</option></select></div></div>
+        </div>
+        <div class="minis">
+          <div class="mini2"><span>Lights &amp; charts</span><b><span id="closelbl">Daily close</span> · <span id="closeday"></span></b></div>
+          <div class="mini2"><span>Next update</span><b>Every day 09:20 Bangkok</b></div>
+          <div class="mini2"><span><b class="lv-dot"></b>Live price</span><b>Every 15 seconds</b></div>
+        </div>
+      </div>
+      <div class="box" style="border-color:var(--usd)"><div class="bh">Your Currency</div><select id="cur" aria-label="Currency" style="font-size:18px;padding:10px 12px"></select><div class="mini2" style="margin-top:6px"><span>Exchange rate</span><b id="fxsrc" style="font-size:15px">1 USD = 1 USD</b></div><div class="mini2"><span>What changes</span><b>Every price on the page</b></div></div>
     </div>
     <div class="box notebox" style="margin-top:22px">
     <h1 class="disp" id="lead"></h1>
@@ -444,16 +465,19 @@ const hl = (s) => esc(s).replace(TERM_RE, (w) => {
   return hit[1].startsWith('A:') ? `<span class="asset" style="--ac:var(${hit[1].slice(2)});--ai:${hit[1] === 'A:--c-sol' ? '#fff' : '#111'}">${w}</span>` : `<span class="term" style="color:${hit[1]}">${w}</span>`;
 });
 {
-  const cd = new Date(D.data_date + 'T00:00:00Z');
-  document.getElementById('calm').textContent = cd.toLocaleDateString('en-GB', {month: 'short', timeZone: 'UTC'});
-  document.getElementById('cald').textContent = cd.getUTCDate();
   document.getElementById('closeday').textContent = day(D.data_date);
+  { const gap = Math.round((Date.parse(D.updated.slice(0, 10)) - Date.parse(D.data_date)) / 864e5);
+    document.getElementById('closelbl').textContent = gap === 1 ? "Yesterday's close" : gap === 0 ? "Today's close" : 'Daily close'; }
   const tzSel = document.getElementById('tz');
   try { const saved = localStorage.getItem('ml_tz'); if (saved !== null) tzSel.value = saved; } catch (e) {}
   const showUpd = () => {
-    const opt = {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short'};
-    if (tzSel.value) opt.timeZone = tzSel.value;
-    document.getElementById('upd').textContent = new Date(D.updated).toLocaleString('en-GB', opt);
+    const tz = tzSel.value ? {timeZone: tzSel.value} : {}, u = new Date(D.updated);
+    const f = (o) => u.toLocaleString('en-GB', Object.assign({}, o, tz));
+    document.getElementById('calm').textContent = f({month: 'short'});
+    document.getElementById('cald').textContent = f({day: 'numeric'});
+    document.getElementById('calw').textContent = f({weekday: 'short'});
+    document.getElementById('upddate').textContent = f({day: 'numeric', month: 'long', year: 'numeric'});
+    document.getElementById('updtime').textContent = f({hour: '2-digit', minute: '2-digit', timeZoneName: 'short'});
   };
   tzSel.addEventListener('change', () => { try { localStorage.setItem('ml_tz', tzSel.value); } catch (e) {} showUpd(); });
   showUpd();
@@ -474,7 +498,7 @@ document.getElementById('note').innerHTML = hl(moneyText(D.note));
 {
   const sel = document.getElementById('cur');
   sel.innerHTML = CURS.filter(([c]) => FX.rates[c]).map(([c, n]) => `<option value="${c}"${c === FX.code ? ' selected' : ''}>${c} · ${n}</option>`).join('');
-  document.getElementById('fxsrc').textContent = FX.code === 'USD' ? '' : `1 USD = ${FX.rate >= 100 ? FX.rate.toFixed(0) : FX.rate.toFixed(4)} ${FX.code} (${FX.src})`;
+  document.getElementById('fxsrc').textContent = FX.code === 'USD' ? 'US dollar · no conversion' : `1 USD = ${FX.rate >= 100 ? FX.rate.toFixed(0) : FX.rate.toFixed(4)} ${FX.code} (${FX.src})`;
   sel.addEventListener('change', () => { try { localStorage.setItem('ml_cur', sel.value); } catch (e) {} location.reload(); });
   fetch('https://api.coinbase.com/v2/exchange-rates?currency=USD', {cache: 'no-store'}).then((r) => r.ok ? r.json() : Promise.reject(r.status)).then((j) => {
     const rates = {}; CURS.forEach(([c]) => { const v = +((j.data || {}).rates || {})[c]; if (v > 0) rates[c] = v; });

@@ -14,14 +14,23 @@ import csv, json, os, sys
 D = os.environ.get("BT_DATA", os.path.join(os.path.dirname(os.path.abspath(__file__)), "data") + "/")
 PHASES = ["Falling", "Bottoming", "Consolidating", "Rising", "Overheated"]
 
+def _num(x):
+    """A number from a CSV cell, or None for blanks and 'null' (Coin Metrics leaves the newest day empty at times)."""
+    try:
+        v = float(x)
+        return v if v == v and v > 0 else None
+    except (TypeError, ValueError):
+        return None
+
 def load_cm(f):
     price, mvrv = {}, {}
     for r in csv.DictReader(open(D + f)):
         d = r["time"][:10]
-        if r.get("PriceUSD"):
-            price[d] = float(r["PriceUSD"])
-        if r.get("CapMVRVCur"):
-            mvrv[d] = float(r["CapMVRVCur"])
+        p, m = _num(r.get("PriceUSD")), _num(r.get("CapMVRVCur"))
+        if p is not None:
+            price[d] = p
+        if m is not None:
+            mvrv[d] = m
     return price, mvrv
 
 FNG = {}
