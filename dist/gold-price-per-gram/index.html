@@ -301,6 +301,12 @@ h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
 .gr{padding:9px 0!important}
 @media(max-width:600px){.tile .v{font-size:22px!important}.infobar,.strip,.key{gap:16px!important}.cards{gap:32px!important}.card{gap:28px!important}}
 
+
+/* every inner box gets a thin line in its coin's colour */
+.card .tile,.card .thermo{border:1.5px solid color-mix(in srgb,var(--cc) 60%,transparent)!important}
+.card .tile .sec,.card .tile .kr,.card .tile .lv{border-color:color-mix(in srgb,var(--cc) 25%,transparent)!important}
+.cv .res div{border:1.5px solid color-mix(in srgb,var(--cc) 50%,transparent)}
+.cv .res div.src{border-color:var(--cc)}
 /* ad spaces: reserved, fixed height (no jumping); hidden until ads are switched on; preview with ?ads=1 */
 .adslot{display:none;margin:0 auto;width:100%;max-width:970px;box-sizing:border-box;border-radius:14px;text-align:center}
 .adslot.lead{min-height:100px}.adslot.rect{min-height:280px;max-width:728px}
@@ -443,12 +449,12 @@ h1{font-size:clamp(28px,3.8vw,42px)!important;margin:6px 0 12px!important}
 </main>
 <footer class="band">
   <div class="wrap">
-    <nav class="flinks" aria-label="Footer"><a href="/">Market Lights</a><a href="/convert/">Unit Converter</a><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/gold-price-per-gram/">Gold Price per Gram</a><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms &amp; Disclaimer</a></nav>
+    <nav class="flinks" aria-label="Footer"><a href="/">Market Lights</a><a href="/convert/">Unit Converter</a><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/gold-price-per-gram/">Gold Price per Gram</a><a href="/silver-price-per-gram/">Silver Price per Gram</a><a href="/troy-ounce-to-grams/">Troy Ounce to Grams</a><a href="/bitcoin-signal-today/">Bitcoin Signal Today</a><a href="/currency-converter/">Currency Converter</a><a href="/percentage-calculator/">Percentage Calculator</a><a href="/rule-of-three-calculator/">Rule of Three</a><a href="/kg-to-lbs/">Kg to Lbs</a><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms &amp; Disclaimer</a></nav>
     <p><strong>Information and education only, not financial advice.</strong> Nothing on this site is an instruction to buy, sell or hold. Make your own decisions and, if needed, speak to a licensed adviser.</p>
     <p>© MarketLights · Universum Media LLC</p>
   </div>
 </footer>
-<script id="data" type="application/json">{"fx": {"EUR": 0.9106638739641197, "GBP": 0.7631257631257631, "AUD": 1.5062509414068384, "THB": 33.93, "JPY": 158.76, "KRW": 1342.41, "CNY": 6.677, "INR": 92.67, "BRL": 5.9488, "MXN": 19.038, "CAD": 1.4323, "CHF": 0.8394, "SGD": 1.2893}, "fx_date": "2026-11-20", "gold_close": 3555.92408004502, "gold_date": "2026-11-26", "curs": [["USD", "US dollar"], ["EUR", "Euro"], ["GBP", "British pound"], ["INR", "Indian rupee"], ["AED", "UAE dirham"], ["SAR", "Saudi riyal"], ["PKR", "Pakistani rupee"], ["TRY", "Turkish lira"], ["CNY", "Chinese yuan"], ["HKD", "Hong Kong dollar"], ["JPY", "Japanese yen"], ["KRW", "Korean won"], ["SGD", "Singapore dollar"], ["MYR", "Malaysian ringgit"], ["IDR", "Indonesian rupiah"], ["PHP", "Philippine peso"], ["VND", "Vietnamese dong"], ["THB", "Thai baht"], ["AUD", "Australian dollar"], ["CAD", "Canadian dollar"], ["CHF", "Swiss franc"], ["MXN", "Mexican peso"], ["BRL", "Brazilian real"], ["ZAR", "South African rand"], ["NGN", "Nigerian naira"], ["EGP", "Egyptian pound"], ["KWD", "Kuwaiti dinar"], ["QAR", "Qatari riyal"], ["BDT", "Bangladeshi taka"]]}</script>
+<script id="data" type="application/json">{"fx": {"EUR": 0.9106638739641197, "GBP": 0.7631257631257631, "AUD": 1.5062509414068384, "THB": 33.93, "JPY": 158.76, "KRW": 1342.41, "CNY": 6.677, "INR": 92.67, "BRL": 5.9488, "MXN": 19.038, "CAD": 1.4323, "CHF": 0.8394, "SGD": 1.2893}, "fx_date": "2026-11-20", "gold_close": 3555.92408004502, "gold_date": "2026-11-26", "curs": [["USD", "US dollar"], ["EUR", "Euro"], ["GBP", "British pound"], ["INR", "Indian rupee"], ["AED", "UAE dirham"], ["SAR", "Saudi riyal"], ["PKR", "Pakistani rupee"], ["TRY", "Turkish lira"], ["CNY", "Chinese yuan"], ["HKD", "Hong Kong dollar"], ["JPY", "Japanese yen"], ["KRW", "Korean won"], ["SGD", "Singapore dollar"], ["MYR", "Malaysian ringgit"], ["IDR", "Indonesian rupiah"], ["PHP", "Philippine peso"], ["VND", "Vietnamese dong"], ["THB", "Thai baht"], ["AUD", "Australian dollar"], ["CAD", "Canadian dollar"], ["CHF", "Swiss franc"], ["MXN", "Mexican peso"], ["BRL", "Brazilian real"], ["ZAR", "South African rand"], ["NGN", "Nigerian naira"], ["EGP", "Egyptian pound"], ["KWD", "Kuwaiti dinar"], ["QAR", "Qatari riyal"], ["BDT", "Bangladeshi taka"]], "silver_close": 44.0}</script>
 <script>
 {
 
