@@ -229,7 +229,7 @@ def main():
     blob = json.dumps(data).replace("</", "<\\/")
     os.makedirs(os.path.join(HERE, "dist"), exist_ok=True)
     import pages as _pg
-    open(os.path.join(HERE, "dist", "index.html"), "w").write(tpl.replace("/*DATA*/null", blob).replace("</body>", _pg.CALC_WIDGET + "\n</body>"))
+    open(os.path.join(HERE, "dist", "index.html"), "w").write(tpl.replace("/*DATA*/null", blob).replace("</body>", _pg.CALC_WIDGET + "\n</body>").replace("<!--TOOLBAR-->", _pg.toolbar("/")))
     json.dump(data, open(os.path.join(HERE, "dist", "data.json"), "w"), indent=1)
     data["rainbow"] = rainbow_data(PRICES["BTC"])
     data["cmp"] = compare_data(PRICES, drows)  # only for the Compare page (kept out of the homepage)

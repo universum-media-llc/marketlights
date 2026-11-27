@@ -13,6 +13,27 @@ UPDATED = "26 November 2026"
 TOOL_LINKS = [("/bitcoin-rainbow-chart/", "Bitcoin Rainbow Chart"), ("/compare/", "Compare Markets"), ("/gold-price-per-gram/", "Gold Price per Gram"), ("/silver-price-per-gram/", "Silver Price per Gram"), ("/troy-ounce-to-grams/", "Troy Ounce to Grams"), ("/bitcoin-signal-today/", "Bitcoin Signal Today"), ("/currency-converter/", "Currency Converter"), ("/percentage-calculator/", "Percentage Calculator"), ("/rule-of-three-calculator/", "Rule of Three"), ("/kg-to-lbs/", "Kg to Lbs"), ("/zakat-calculator/", "Zakat Calculator"), ("/bitcoin-dca-calculator/", "Bitcoin DCA Calculator"), ("/crypto-profit-calculator/", "Crypto Profit Calculator")]
 NAV = [("/", "Market Lights"), ("/bitcoin-rainbow-chart/", "Rainbow"), ("/compare/", "Compare"), ("/convert/", "Unit Converter"), ("#calculator", "Calculator"), ("/about/", "About"), ("/contact/", "Contact")]
 
+TOOL_GROUPS = [
+    ("Crypto", "var(--c-btc)", [("/bitcoin-rainbow-chart/", "Bitcoin Rainbow Chart"), ("/bitcoin-signal-today/", "Bitcoin Signal Today"), ("/compare/", "Compare Markets"), ("/bitcoin-dca-calculator/", "Bitcoin DCA Calculator"), ("/crypto-profit-calculator/", "Crypto Profit Calculator")]),
+    ("Gold &amp; Silver", "var(--c-gold)", [("/gold-price-per-gram/", "Gold Price per Gram"), ("/silver-price-per-gram/", "Silver Price per Gram"), ("/zakat-calculator/", "Zakat Calculator"), ("/troy-ounce-to-grams/", "Troy Ounce to Grams")]),
+    ("Everyday", "#4fa3ff", [("/currency-converter/", "Currency Converter"), ("/percentage-calculator/", "Percentage Calculator"), ("/rule-of-three-calculator/", "Rule of Three"), ("/kg-to-lbs/", "Kg to Lbs"), ("/convert/", "All Unit Converters")]),
+]
+TOOLBAR_CSS = """<style>
+.toolbar{display:grid;gap:9px;margin-top:16px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.toolbar .tgrp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.toolbar .tgrp>span{font:800 11px Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--tc);min-width:118px}
+.toolbar .tgrp a{font:700 13px Inter,sans-serif;color:var(--ink);text-decoration:none;padding:6px 11px;border:1px solid color-mix(in srgb,var(--tc) 45%,var(--line));border-radius:999px;background:color-mix(in srgb,var(--tc) 8%,transparent);white-space:nowrap}
+.toolbar .tgrp a:hover,.toolbar .tgrp a.on{border-color:var(--tc);color:var(--tc)}
+@media(max-width:600px){.toolbar{padding:10px}.toolbar .tgrp>span{min-width:100%;margin-bottom:-1px}.toolbar .tgrp a{font-size:12.5px;padding:6px 10px}}
+</style>"""
+
+
+def toolbar(path="/"):
+    on = lambda h: ' class="on"' if h == path else ""
+    rows = "".join(f'<div class="tgrp" style="--tc:{c}"><span>{n}</span>' + "".join(f'<a href="{h}"{on(h)}>{t}</a>' for h, t in links) + "</div>" for n, c, links in TOOL_GROUPS)
+    return TOOLBAR_CSS + f'<nav class="toolbar" aria-label="Free tools">{rows}</nav>'
+
+
 EXTRA_CSS = """
 .topnav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .topnav a{font:800 13px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);text-decoration:none;padding:8px 14px;border:2px solid var(--line);border-radius:10px;background:var(--panel)}
@@ -192,6 +213,7 @@ def shell(tpl, title, desc, path, body, script="", data=None):
       <a href="/" style="text-decoration:none;color:inherit"><div class="brand disp"><i><b style="background:var(--red);box-shadow:0 0 7px var(--red)"></b><b style="background:var(--amb);box-shadow:0 0 7px var(--amb)"></b><b style="background:var(--grn);box-shadow:0 0 7px var(--grn)"></b></i>MarketLights</div></a>
       <nav class="topnav" aria-label="Main">{nav}</nav>
     </div>
+    {toolbar(path)}
   </div>
 </header>
 <main class="band">
